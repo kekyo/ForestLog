@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog", "ForestLog\ForestLog.csproj", "{6963F985-C548-4ABB-A7C4-A1736FFD2876}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2D3F44E4-8257-47D1-B588-9091FBFFC72A}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		LICENSE = LICENSE
+		nuget.config = nuget.config
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.Core", "ForestLog.Core\ForestLog.Core.csproj", "{79D88349-7802-461B-92B5-9A6AC7C24902}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6963F985-C548-4ABB-A7C4-A1736FFD2876}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6963F985-C548-4ABB-A7C4-A1736FFD2876}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6963F985-C548-4ABB-A7C4-A1736FFD2876}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6963F985-C548-4ABB-A7C4-A1736FFD2876}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79D88349-7802-461B-92B5-9A6AC7C24902}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79D88349-7802-461B-92B5-9A6AC7C24902}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79D88349-7802-461B-92B5-9A6AC7C24902}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79D88349-7802-461B-92B5-9A6AC7C24902}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EC7DF818-2E23-41CF-ABA4-7D5012DB787D}
+	EndGlobalSection
+EndGlobal
