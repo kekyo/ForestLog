@@ -17,13 +17,16 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Infrastructure;
 
-public abstract class LogController
+public abstract class LogController : ILogController
 {
     protected readonly LogLevels minimumLogLevel;
     private readonly Queue<WaitingLogEntry> queue = new();
-    private readonly ManualResetEventSlim available = new();
-    private readonly ManualResetEventSlim abort = new();
-    private readonly Thread thread;
+    private readonly ManualResetEvent available = new(false);
+    private readonly ManualResetEvent abort = new(false);
+
+    private Thread thread;
+
+    internal int scopeIdCount;
 
     //////////////////////////////////////////////////////////////////////
 
@@ -34,6 +37,24 @@ public abstract class LogController
         this.thread = new Thread(this.ThreadEntry);
         this.thread.IsBackground = true;
         this.thread.Start();
+    }
+
+    public void Dispose()
+    {
+        if (this.thread is { } thread)
+        {
+            this.thread = null!;
+            
+            this.abort.Set();
+            thread.Join();
+        }
+    }
+
+    public virtual void Suspend()
+    {
+    }
+    public virtual void Resume()
+    {
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -53,14 +74,14 @@ public abstract class LogController
 
     //////////////////////////////////////////////////////////////////////
 
-    protected abstract void OnAvailable();
+    protected abstract void OnAvailable(WaitingLogEntry waitingLogEntry);
 
     private void ThreadEntry()
     {
-        var waiters = new[]
+        var waiters = new WaitHandle[]
         {
-            this.available.WaitHandle,
-            this.abort.WaitHandle
+            this.available,
+            this.abort,
         };
 
         while (true)
@@ -73,7 +94,10 @@ public abstract class LogController
                     break;
                 }
 
-                this.OnAvailable();
+                if (this.DequeueWaitingLogEntry() is { } waitingLogEntry)
+                {
+                    this.OnAvailable(waitingLogEntry);
+                }
             }
             catch (Exception ex)
             {
@@ -96,6 +120,7 @@ public abstract class LogController
         }
     }
 
+    [DebuggerStepThrough]
     public void Write(
         LogLevels logLevel, int scopeId,
         IFormattable message, Exception? ex, object? additionalData,
@@ -115,6 +140,7 @@ public abstract class LogController
         }
     }
 
+    [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
         LogLevels logLevel, int scopeId,
         IFormattable message, Exception? ex, object? additionalData,
@@ -146,11 +172,12 @@ public abstract class LogController
 
     //////////////////////////////////////////////////////////////////////
 
-    public abstract Task<LogEntry[]> QueryLogEntriesAsync(
+    public abstract LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
         Func<LogEntry, bool> predicate, CancellationToken ct);
 
     //////////////////////////////////////////////////////////////////////
 
-    public Logger CreateLogger() =>
+    [DebuggerStepThrough]
+    public ILogger CreateLogger() =>
         new Logger(this);
 }

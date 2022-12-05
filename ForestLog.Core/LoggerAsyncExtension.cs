@@ -22,7 +22,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
-        this Logger logger,
+        this ILogger logger,
         LogLevels logLevel,
         IFormattable message,
         object? additionalData = null,
@@ -30,7 +30,7 @@ public static class LoggerAsyncExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             logLevel,
             message, null, additionalData,
             memberName, filePath, line, ct);
@@ -40,7 +40,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
-        this Logger logger,
+        this ILogger logger,
         LogLevels logLevel,
         Exception ex,
         IFormattable message,
@@ -49,7 +49,7 @@ public static class LoggerAsyncExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             logLevel,
             message, ex, additionalData,
             memberName, filePath, line, ct);
@@ -61,14 +61,14 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
-        this Logger logger,
+        this ILogger logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Debug,
             message, null, additionalData,
             memberName, filePath, line, ct);
@@ -78,7 +78,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
-        this Logger logger,
+        this ILogger logger,
         Exception ex,
         IFormattable message,
         object? additionalData = null,
@@ -86,7 +86,7 @@ public static class LoggerAsyncExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Debug,
             message, ex, additionalData,
             memberName, filePath, line, ct);
@@ -98,14 +98,14 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
-        this Logger logger,
+        this ILogger logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Trace,
             message, null, additionalData,
             memberName, filePath, line, ct);
@@ -115,7 +115,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
-        this Logger logger,
+        this ILogger logger,
         Exception ex,
         IFormattable message,
         object? additionalData = null,
@@ -123,7 +123,7 @@ public static class LoggerAsyncExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Trace,
             message, ex, additionalData,
             memberName, filePath, line, ct);
@@ -135,14 +135,14 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
-        this Logger logger,
+        this ILogger logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Information,
             message, null, additionalData,
             memberName, filePath, line, ct);
@@ -152,7 +152,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
-        this Logger logger,
+        this ILogger logger,
         Exception ex,
         IFormattable message,
         object? additionalData = null,
@@ -160,7 +160,7 @@ public static class LoggerAsyncExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Information,
             message, ex, additionalData,
             memberName, filePath, line, ct);
@@ -172,14 +172,14 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
-        this Logger logger,
+        this ILogger logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Warning,
             message, null, additionalData,
             memberName, filePath, line, ct);
@@ -189,7 +189,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
-        this Logger logger,
+        this ILogger logger,
         Exception ex,
         IFormattable message,
         object? additionalData = null,
@@ -197,7 +197,7 @@ public static class LoggerAsyncExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Warning,
             message, ex, additionalData,
             memberName, filePath, line, ct);
@@ -209,14 +209,14 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
-        this Logger logger,
+        this ILogger logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Error,
             message, null, additionalData,
             memberName, filePath, line, ct);
@@ -226,7 +226,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
-        this Logger logger,
+        this ILogger logger,
         Exception ex,
         IFormattable message,
         object? additionalData = null,
@@ -234,7 +234,7 @@ public static class LoggerAsyncExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.InternalWriteAsync(
+        logger.WriteAsync(
             LogLevels.Error,
             message, ex, additionalData,
             memberName, filePath, line, ct);

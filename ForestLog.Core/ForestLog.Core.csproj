@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net35;net40;net45;net461;net48;netstandard1.3;netstandard1.6;netstandard2.0;netstandard2.1;netcoreapp2.0;netcoreapp2.1;netcoreapp2.2;netcoreapp3.0;netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,11 @@
         
   <ItemGroup Condition="('$(TargetFramework)' == 'netstandard1.3') OR ('$(TargetFramework)' == 'netstandard1.6')">
     <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+    <PackageReference Include="System.Threading.ThreadPool" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Images\ForestLog.100.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
 </Project>

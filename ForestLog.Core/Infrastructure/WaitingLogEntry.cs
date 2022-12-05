@@ -81,9 +81,15 @@ public sealed class WaitingLogEntry
         if (this.awaiter is { } awaiter)
         {
             this.awaiter = null;
-            awaiter.TrySetResult(true);
-            this.ctr.Dispose();
             this.ctr = default;
+            var ctr = this.ctr;
+
+            // HACK: TCS will deadlock when assigned continuation is hard-blocked.
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                awaiter.TrySetResult(true);
+                ctr.Dispose();
+            });
         }
     }
 

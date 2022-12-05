@@ -19,16 +19,16 @@ namespace ForestLog;
 public static class BlockScopeAsyncExtension
 {
     private static async LoggerAwaitable RunAsync(
-        Logger logger,
+        ILogger logger,
         LogLevels logLevel,
         object?[]? arguments,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct,
         string memberName,
         string filePath,
         int line)
     {
-        var scopedLogger = logger.InternalNewScope();
+        var scopedLogger = logger.NewScope();
 
         if (ct.HasValue)
         {
@@ -73,16 +73,16 @@ public static class BlockScopeAsyncExtension
     }
 
     private static async LoggerAwaitable<T> RunAsync<T>(
-        Logger logger,
+        ILogger logger,
         LogLevels logLevel,
         object?[]? arguments,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct,
         string memberName,
         string filePath,
         int line)
     {
-        var scopedLogger = logger.InternalNewScope();
+        var scopedLogger = logger.NewScope();
 
         if (ct.HasValue)
         {
@@ -136,9 +136,9 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static LoggerAwaitable ScopeAsync(
-        this Logger logger,
+        this ILogger logger,
         LogLevels logLevel,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -150,9 +150,9 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static LoggerAwaitable<T> ScopeAsync<T>(
-        this Logger logger,
+        this ILogger logger,
         LogLevels logLevel,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -164,10 +164,10 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task ScopeAsync(
-        this Logger logger,
+        this ILogger logger,
         LogLevels logLevel,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -179,10 +179,10 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task<T> ScopeAsync<T>(
-        this Logger logger,
+        this ILogger logger,
         LogLevels logLevel,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -195,8 +195,8 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task DebugScopeAsync(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -207,8 +207,8 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task<T> DebugScopeAsync<T>(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -219,9 +219,9 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task DebugScopeAsync(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -232,9 +232,9 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task<T> DebugScopeAsync<T>(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -247,8 +247,8 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task TraceScopeAsync(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -259,8 +259,8 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task<T> TraceScopeAsync<T>(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -271,9 +271,9 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task TraceScopeAsync(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -284,9 +284,9 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task<T> TraceScopeAsync<T>(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -299,8 +299,8 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task InformationScopeAsync(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -311,8 +311,8 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task<T> InformationScopeAsync<T>(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -323,9 +323,9 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task InformationScopeAsync(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -336,9 +336,9 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static Task<T> InformationScopeAsync<T>(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -352,8 +352,8 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task WarningScopeAsync(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -365,8 +365,8 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task<T> WarningScopeAsync<T>(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -378,9 +378,9 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task WarningScopeAsync(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -392,9 +392,9 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task<T> WarningScopeAsync<T>(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -408,8 +408,8 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task ErrorScopeAsync(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -421,8 +421,8 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task<T> ErrorScopeAsync<T>(
-        this Logger logger,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -434,9 +434,9 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task ErrorScopeAsync(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable> scopedAction,
+        Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -448,9 +448,9 @@ public static class BlockScopeAsyncExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static Task<T> ErrorScopeAsync<T>(
-        this Logger logger,
+        this ILogger logger,
         BlockScopeArguments arguments,
-        Func<Logger, LoggerAwaitable<T>> scopedAction,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,

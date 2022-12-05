@@ -7,13 +7,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using ForestLog.Infrastructure;
+using System.Runtime.CompilerServices;
 
-namespace ForestLog;
-
-public static class LoggerFactory
-{
-    public static ILogController CreateJsonLineLogController(
-        LogLevels minimumLogLevel, string basePath) =>
-        new JsonLineLogController(minimumLogLevel, basePath);
-}
+[assembly: InternalsVisibleTo("ForestLog.Tests")]

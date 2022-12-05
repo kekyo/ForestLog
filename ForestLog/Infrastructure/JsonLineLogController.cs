@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Internal;
+using ForestLog.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -36,24 +37,41 @@ internal sealed class JsonLineLogController : LogController
 
     //////////////////////////////////////////////////////////////////////
 
+#if NET35
+    private static Task<List<LogEntry>> LoadLogEntriesFromAsync(
+        string path, Func<LogEntry, bool> predicate, CancellationToken ct) =>
+        TaskEx.Run(() => LoadLogEntriesFrom(path, predicate, ct));
+
     private static List<LogEntry> LoadLogEntriesFrom(
-        string path, Func<LogEntry, bool> predicate)
+        string path, Func<LogEntry, bool> predicate, CancellationToken ct)
+#else
+    private static async Task<List<LogEntry>> LoadLogEntriesFromAsync(
+        string path, Func<LogEntry, bool> predicate, CancellationToken ct)
+#endif
     {
         using var fs = new FileStream(
-            path, FileMode.Open, FileAccess.Read, FileShare.Read, 65536);
+            path, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, true);
 
         var tr = new StreamReader(fs, Utilities.UTF8);
         var results = new List<LogEntry>();
 
         while (true)
         {
+#if NET35
+            ct.ThrowIfCancellationRequested();
             var line = tr.ReadLine();
+#elif NET7_0_OR_GREATER
+            var line = await tr.ReadLineAsync(ct);
+#else
+            ct.ThrowIfCancellationRequested();
+            var line = await tr.ReadLineAsync();
+#endif
             if (line == null)
             {
                 break;
             }
 
-            JsonSerializableLogEntry? jsLogEntry;
+            JsonSerializableLogEntry? jsLogEntry = null;
             try
             {
                 jsLogEntry = Utilities.JsonSerializer.Deserialize<JsonSerializableLogEntry>(
@@ -63,7 +81,6 @@ internal sealed class JsonLineLogController : LogController
             {
                 Trace.WriteLine(
                     $"JsonLineLoggerCore: {ex.GetType().FullName}: {ex.Message}");
-                break;
             }
 
             if (jsLogEntry != null)
@@ -94,7 +111,7 @@ internal sealed class JsonLineLogController : LogController
         return results;
     }
 
-    public override async Task<LogEntry[]> QueryLogEntriesAsync(
+    public override async LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
         Func<LogEntry, bool> predicate, CancellationToken ct)
     {
         // TODO: Giant lock
@@ -103,7 +120,7 @@ internal sealed class JsonLineLogController : LogController
         var results = (await Utilities.WhenAll(
             Utilities.EnumerateFiles(
                 this.basePath, "log*.jsonl", SearchOption.AllDirectories).
-            Select(path => Utilities.Run(() => LoadLogEntriesFrom(path, predicate))))).
+            Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
             SelectMany(results => results).
             ToArray();
 
@@ -112,67 +129,56 @@ internal sealed class JsonLineLogController : LogController
 
     //////////////////////////////////////////////////////////////////////
 
-    protected override void OnAvailable()
+    protected override void OnAvailable(WaitingLogEntry waitingLogEntry)
     {
-        if (this.DequeueWaitingLogEntry() is { } waitingLogEntry)
+        // TODO: Giant lock
+        using var _ = this.locker.UnsafeLock();
+
+        var path = Path.Combine(this.basePath, "log.jsonl");
+
+        using var fs = new FileStream(
+            path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 65536);
+        fs.Seek(0, SeekOrigin.End);
+
+        var tw = new StreamWriter(fs, Utilities.UTF8);
+        var jw = new JsonTextWriter(tw);
+
+        do
         {
             try
             {
-                // TODO: Giant lock
-                using var _ = this.locker.UnsafeLock();
+                var logEntry = new JsonSerializableLogEntry(
+                    Guid.NewGuid(),
+                    waitingLogEntry.LogLevel,
+                    waitingLogEntry.Timestamp,
+                    waitingLogEntry.ScopeId,
+                    waitingLogEntry.Message.ToString(null, CultureInfo.InvariantCulture),
+                    waitingLogEntry.Exception?.GetType().FullName,
+                    waitingLogEntry.Exception?.Message,
+                    waitingLogEntry.AdditionalData is { } ad ? JToken.FromObject(ad) : null,
+                    waitingLogEntry.MemberName,
+                    waitingLogEntry.FilePath,
+                    waitingLogEntry.Line,
+                    waitingLogEntry.ManagedThreadId,
+                    waitingLogEntry.NativeThreadId,
+                    waitingLogEntry.TaskId,
+                    Utilities.ProcessId);
 
-                var path = Path.Combine(this.basePath, "log.jsonl");
-
-                using var fs = new FileStream(
-                    path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 65536);
-                fs.Seek(0, SeekOrigin.End);
-
-                var tw = new StreamWriter(fs, Utilities.UTF8);
-                var jw = new JsonTextWriter(tw);
-
-                do
-                {
-                    try
-                    {
-                        var logEntry = new JsonSerializableLogEntry(
-                            Guid.NewGuid(),
-                            waitingLogEntry.LogLevel,
-                            waitingLogEntry.Timestamp,
-                            waitingLogEntry.ScopeId,
-                            waitingLogEntry.Message.ToString(null, CultureInfo.InvariantCulture),
-                            waitingLogEntry.Exception?.GetType().FullName,
-                            waitingLogEntry.Exception?.Message,
-                            waitingLogEntry.AdditionalData is { } ad ? JToken.FromObject(ad) : null,
-                            waitingLogEntry.MemberName,
-                            waitingLogEntry.FilePath,
-                            waitingLogEntry.Line,
-                            waitingLogEntry.ManagedThreadId,
-                            waitingLogEntry.NativeThreadId,
-                            waitingLogEntry.TaskId,
-                            Utilities.ProcessId);
-
-                        Utilities.JsonSerializer.Serialize(jw, logEntry);
-                        jw.Flush();
-                        tw.WriteLine();
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.WriteLine(
-                            $"JsonLineLoggerCore: {ex.GetType().FullName}: {ex.Message}");
-                    }
-
-                    waitingLogEntry.SetCompleted();
-
-                    waitingLogEntry = this.DequeueWaitingLogEntry();
-                } while (waitingLogEntry != null);
-
-                tw.Flush();
+                Utilities.JsonSerializer.Serialize(jw, logEntry);
+                jw.Flush();
+                tw.WriteLine();
             }
             catch (Exception ex)
             {
                 Trace.WriteLine(
                     $"JsonLineLoggerCore: {ex.GetType().FullName}: {ex.Message}");
             }
-        }
+
+            waitingLogEntry.SetCompleted();
+
+            waitingLogEntry = this.DequeueWaitingLogEntry()!;
+        } while (waitingLogEntry != null);
+
+        tw.Flush();
     }
 }

@@ -7,19 +7,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using ForestLog.Infrastructure;
 using ForestLog.Tasks;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
-namespace ForestLog;
+namespace ForestLog.Infrastructure;
 
-public sealed class Logger
+internal sealed class Logger : ILogger
 {
-    private static int scopeIdCount;
-
     private readonly LogController controller;
     private readonly int scopeId;
 
@@ -28,10 +25,11 @@ public sealed class Logger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal Logger(LogController controller)
+    public Logger(LogController controller)
     {
         this.controller = controller;
-        this.scopeId = Interlocked.Increment(ref scopeIdCount);
+        this.scopeId = Interlocked.Increment(
+            ref this.controller.scopeIdCount);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -39,7 +37,8 @@ public sealed class Logger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal void InternalWrite(
+    [DebuggerStepThrough]
+    public void Write(
         LogLevels logLevel,
         IFormattable message,
         Exception? ex,
@@ -55,7 +54,8 @@ public sealed class Logger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal LoggerAwaitable InternalWriteAsync(
+    [DebuggerStepThrough]
+    public LoggerAwaitable WriteAsync(
         LogLevels logLevel,
         IFormattable message,
         Exception? ex,
@@ -73,13 +73,7 @@ public sealed class Logger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal Logger InternalNewScope() =>
+    [DebuggerStepThrough]
+    public ILogger NewScope() =>
         new Logger(this.controller);
-
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    internal Task<LogEntry[]> InternalQueryLogEntriesAsync(
-        Func<LogEntry, bool> predicate, CancellationToken ct) =>
-        this.controller.QueryLogEntriesAsync(predicate, ct);
 }
