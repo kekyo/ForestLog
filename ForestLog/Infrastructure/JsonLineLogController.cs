@@ -21,14 +21,14 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Infrastructure;
 
-internal sealed class JsonLineLoggerCore : LoggerCore
+internal sealed class JsonLineLogController : LogController
 {
     private readonly string basePath;
     private readonly AsyncLock locker = new();
 
     //////////////////////////////////////////////////////////////////////
 
-    public JsonLineLoggerCore(LogLevels minimumLogLevel, string basePath) :
+    public JsonLineLogController(LogLevels minimumLogLevel, string basePath) :
         base(minimumLogLevel)
     {
         this.basePath = Path.GetFullPath(basePath);

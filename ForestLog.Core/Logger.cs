@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Infrastructure;
+using ForestLog.Tasks;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -19,7 +20,7 @@ public sealed class Logger
 {
     private static int scopeIdCount;
 
-    private readonly LoggerCore core;
+    private readonly LogController controller;
     private readonly int scopeId;
 
     //////////////////////////////////////////////////////////////////////
@@ -27,9 +28,9 @@ public sealed class Logger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal Logger(LoggerCore core)
+    internal Logger(LogController controller)
     {
-        this.core = core;
+        this.controller = controller;
         this.scopeId = Interlocked.Increment(ref scopeIdCount);
     }
 
@@ -46,7 +47,7 @@ public sealed class Logger
         string memberName,
         string filePath,
         int line) =>
-        this.core.Write(
+        this.controller.Write(
             logLevel, this.scopeId,
             message, ex, additionalData,
             memberName, filePath, line);
@@ -63,7 +64,7 @@ public sealed class Logger
         string filePath,
         int line,
         CancellationToken ct) =>
-        this.core.WriteAsync(
+        this.controller.WriteAsync(
             logLevel, this.scopeId,
             message, ex, additionalData,
             memberName, filePath, line,
@@ -73,12 +74,12 @@ public sealed class Logger
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     internal Logger InternalNewScope() =>
-        new Logger(this.core);
+        new Logger(this.controller);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     internal Task<LogEntry[]> InternalQueryLogEntriesAsync(
         Func<LogEntry, bool> predicate, CancellationToken ct) =>
-        this.core.QueryLogEntriesAsync(predicate, ct);
+        this.controller.QueryLogEntriesAsync(predicate, ct);
 }

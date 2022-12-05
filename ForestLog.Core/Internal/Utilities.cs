@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ForestLog.Internal;
 
@@ -36,4 +37,20 @@ internal static class Utilities
 #endif
         get => getCurrentThreadId();
     }
+
+    public static Task<T> FromResult<T>(T value) =>
+#if NET35 || NET40
+        TaskEx.FromResult(value);
+#else
+        Task.FromResult(value);
+#endif
+
+    public static Task CompletedTask =>
+#if NET35 || NET40
+        TaskEx.FromResult(true);
+#elif NET45
+        Task.FromResult(true);
+#else
+        Task.CompletedTask;
+#endif
 }

@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Internal;
+using ForestLog.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Infrastructure;
 
-public abstract class LoggerCore
+public abstract class LogController
 {
     protected readonly LogLevels minimumLogLevel;
     private readonly Queue<WaitingLogEntry> queue = new();
@@ -26,7 +27,7 @@ public abstract class LoggerCore
 
     //////////////////////////////////////////////////////////////////////
 
-    protected LoggerCore(LogLevels minimumLogLevel)
+    protected LogController(LogLevels minimumLogLevel)
     {
         this.minimumLogLevel = minimumLogLevel;
 
@@ -83,7 +84,7 @@ public abstract class LoggerCore
 
     //////////////////////////////////////////////////////////////////////
 
-    private void OnWrite(WaitingLogEntry waitingLogEntry)
+    private void InternalWrite(WaitingLogEntry waitingLogEntry)
     {
         lock (this.queue)
         {
@@ -110,7 +111,7 @@ public abstract class LoggerCore
                 Task.CurrentId ?? -1,
                 null, default);
 
-            this.OnWrite(waitingLogEntry);
+            this.InternalWrite(waitingLogEntry);
         }
     }
 
@@ -133,9 +134,9 @@ public abstract class LoggerCore
                 Task.CurrentId ?? -1,
                 awaiter, ct);
 
-            this.OnWrite(waitingLogEntry);
+            this.InternalWrite(waitingLogEntry);
 
-            return new(awaiter.Task);
+            return awaiter.Task;
         }
         else
         {
@@ -150,6 +151,6 @@ public abstract class LoggerCore
 
     //////////////////////////////////////////////////////////////////////
 
-    public static Logger Create(LoggerCore core) =>
-        new Logger(core);
+    public Logger CreateLogger() =>
+        new Logger(this);
 }

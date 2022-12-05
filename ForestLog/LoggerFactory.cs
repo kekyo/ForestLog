@@ -14,5 +14,5 @@ namespace ForestLog;
 public static class LoggerFactory
 {
     public static Logger CreateJsonLineLogger(LogLevels minimumLogLevel, string basePath) =>
-        LoggerCore.Create(new JsonLineLoggerCore(minimumLogLevel, basePath));
+        new JsonLineLogController(minimumLogLevel, basePath).CreateLogger();
 }

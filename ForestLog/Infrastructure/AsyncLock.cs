@@ -13,10 +13,11 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ForestLog.Tasks;
 
 namespace ForestLog.Infrastructure;
 
-public sealed class AsyncLock
+internal sealed class AsyncLock
 {
     private readonly Disposer disposer;
     private readonly Queue<TaskCompletionSource<Disposer>> queue = new();
@@ -25,24 +26,14 @@ public sealed class AsyncLock
     public AsyncLock() =>
         this.disposer = new(this);
 
-#if NETCOREAPP || NETSTANDARD2_1
-    public ValueTask<Disposer> LockAsync(CancellationToken ct)
-#else
-    public Task<Disposer> LockAsync(CancellationToken ct)
-#endif
+    public LoggerAwaitable<Disposer> LockAsync(CancellationToken ct)
     {
         var count = Interlocked.Increment(ref this.count);
         Debug.Assert(count >= 1);
 
         if (count == 1)
         {
-#if NETCOREAPP || NETSTANDARD2_1
-            return new(this.disposer);
-#elif NET35 || NET40
-            return TaskEx.FromResult(this.disposer);
-#else
-            return Task.FromResult(this.disposer);
-#endif
+            return this.disposer;
         }
 
         var tcs = new TaskCompletionSource<Disposer>();
@@ -53,11 +44,7 @@ public sealed class AsyncLock
             this.queue.Enqueue(tcs);
         }
 
-#if NETCOREAPP || NETSTANDARD2_1
-        return new(tcs.Task);
-#else
         return tcs.Task;
-#endif
     }
 
     public IDisposable UnsafeLock()
