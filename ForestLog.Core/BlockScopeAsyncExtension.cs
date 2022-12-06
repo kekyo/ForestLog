@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using ForestLog.Internal;
 using ForestLog.Tasks;
 
 namespace ForestLog;
@@ -50,12 +51,12 @@ public static class BlockScopeAsyncExtension
             if (ct.HasValue)
             {
                 await scopedLogger.LogAsync(
-                    logLevel, ex, $"Leave with exception.", null, ct.Value, memberName, filePath, line);
+                    logLevel, ex, Utilities.FormatLeaveWithException(ex), null, ct.Value, memberName, filePath, line);
             }
             else
             {
                 scopedLogger.Log(
-                    logLevel, ex, $"Leave with exception.", null, memberName, filePath, line);
+                    logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             }
             throw;
         }
@@ -105,12 +106,12 @@ public static class BlockScopeAsyncExtension
             if (ct.HasValue)
             {
                 await scopedLogger.LogAsync(
-                    logLevel, ex, $"Leave with exception.", null, ct.Value, memberName, filePath, line);
+                    logLevel, ex, Utilities.FormatLeaveWithException(ex), null, ct.Value, memberName, filePath, line);
             }
             else
             {
                 scopedLogger.Log(
-                    logLevel, ex, $"Leave with exception.", null, memberName, filePath, line);
+                    logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             }
             throw;
         }

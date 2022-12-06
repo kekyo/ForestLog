@@ -21,6 +21,9 @@ internal static class Utilities
     public static IFormattable FormatException(Exception ex) =>
         $"{ex.GetType().FullName}: {ex.Message}";
 
+    public static IFormattable FormatLeaveWithException(Exception ex) =>
+        $"Leave with: {ex.GetType().FullName}: {ex.Message}";
+
     [DllImport("kernel32")]
     private static extern int GetCurrentThreadId();
 

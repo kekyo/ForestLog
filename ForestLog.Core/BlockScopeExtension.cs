@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -35,7 +36,7 @@ public static class BlockScopeExtension
         catch (Exception ex)
         {
             scopedLogger.Log(
-                logLevel, ex, $"Leave with exception.", null, memberName, filePath, line);
+                logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             throw;
         }
 
@@ -65,7 +66,7 @@ public static class BlockScopeExtension
         catch (Exception ex)
         {
             scopedLogger.Log(
-                logLevel, ex, $"Leave with exception.", null, memberName, filePath, line);
+                logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             throw;
         }
 
