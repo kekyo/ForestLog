@@ -13,4 +13,5 @@ echo.
 rem git clean -xfd
 
 dotnet build -p:Configuration=Release -p:Platform=AnyCPU ForestLog\ForestLog.csproj
+dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts ForestLog.Core\ForestLog.Core.csproj
 dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts ForestLog\ForestLog.csproj
