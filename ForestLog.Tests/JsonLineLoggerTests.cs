@@ -113,6 +113,25 @@ public sealed class JsonLineLoggerTests
         Assert.AreEqual("CCC456DDD", lines[1]?["message"]?.ToString());
     }
 
+    [Test]
+    public void DebugException()
+    {
+        var lines = LogTestBlock(logger =>
+        {
+            try
+            {
+                throw new ApplicationException("AAA");
+            }
+            catch (Exception ex)
+            {
+                logger.Debug(ex);
+            }
+        });
+
+        Assert.AreEqual("debug", lines.Single()?["logLevel"]?.ToString());
+        Assert.AreEqual("System.ApplicationException: AAA", lines.Single()?["message"]?.ToString());
+    }
+
     //////////////////////////////////////////////////////////
 
     [Test]
@@ -144,6 +163,25 @@ public sealed class JsonLineLoggerTests
         Assert.AreEqual("AAA123BBB", lines[0]?["message"]?.ToString());
         Assert.AreEqual("trace", lines[1]?["logLevel"]?.ToString());
         Assert.AreEqual("CCC456DDD", lines[1]?["message"]?.ToString());
+    }
+
+    [Test]
+    public void TraceException()
+    {
+        var lines = LogTestBlock(logger =>
+        {
+            try
+            {
+                throw new ApplicationException("AAA");
+            }
+            catch (Exception ex)
+            {
+                logger.Trace(ex);
+            }
+        });
+
+        Assert.AreEqual("trace", lines.Single()?["logLevel"]?.ToString());
+        Assert.AreEqual("System.ApplicationException: AAA", lines.Single()?["message"]?.ToString());
     }
 
     //////////////////////////////////////////////////////////

@@ -7,12 +7,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ForestLog;
 
@@ -32,6 +31,21 @@ public static class LoggerExtension
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
         logger.Write(logLevel, message, null, additionalData, memberName, filePath, line);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static void Log(
+        this ILogger logger,
+        LogLevels logLevel,
+        Exception ex,
+        object? additionalData = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.Write(logLevel, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -71,6 +85,19 @@ public static class LoggerExtension
     public static void Debug(
         this ILogger logger,
         Exception ex,
+        object? additionalData = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.Write(LogLevels.Debug, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    public static void Debug(
+        this ILogger logger,
+        Exception ex,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
@@ -92,6 +119,19 @@ public static class LoggerExtension
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Trace, message, null, additionalData, memberName, filePath, line);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    public static void Trace(
+        this ILogger logger,
+        Exception ex,
+        object? additionalData = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.Write(LogLevels.Trace, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -129,6 +169,19 @@ public static class LoggerExtension
     public static void Information(
         this ILogger logger,
         Exception ex,
+        object? additionalData = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.Write(LogLevels.Information, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    public static void Information(
+        this ILogger logger,
+        Exception ex,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
@@ -150,6 +203,19 @@ public static class LoggerExtension
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Warning, message, null, additionalData, memberName, filePath, line);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    public static void Warning(
+        this ILogger logger,
+        Exception ex,
+        object? additionalData = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.Write(LogLevels.Warning, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -187,21 +253,23 @@ public static class LoggerExtension
     public static void Error(
         this ILogger logger,
         Exception ex,
+        object? additionalData = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.Write(LogLevels.Error, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    public static void Error(
+        this ILogger logger,
+        Exception ex,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Error, message, ex, additionalData, memberName, filePath, line);
-
-    //////////////////////////////////////////////////////////////////////
-
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public static Task<LogEntry[]> QueryLogEntriesAsync(
-        this ILogger logger,
-        Func<LogEntry, bool> predicate,
-        CancellationToken ct = default) =>
-        logger.QueryLogEntriesAsync(predicate, ct);
 }
