@@ -25,7 +25,7 @@ namespace ForestLog.Infrastructure;
 internal sealed class JsonLineLogController : LogController
 {
     private readonly string basePath;
-    private readonly AsyncLock locker = new();
+    private readonly LoggerAsyncLock locker = new();
 
     //////////////////////////////////////////////////////////////////////
 

@@ -17,16 +17,16 @@ using ForestLog.Tasks;
 
 namespace ForestLog.Infrastructure;
 
-internal sealed class AsyncLock
+internal sealed class LoggerAsyncLock
 {
-    private readonly Disposer disposer;
-    private readonly Queue<TaskCompletionSource<Disposer>> queue = new();
+    private readonly AsyncLockDisposer disposer;
+    private readonly Queue<TaskCompletionSource<AsyncLockDisposer>> queue = new();
     private int count;
 
-    public AsyncLock() =>
+    public LoggerAsyncLock() =>
         this.disposer = new(this);
 
-    public LoggerAwaitable<Disposer> LockAsync(CancellationToken ct)
+    public LoggerAwaitable<AsyncLockDisposer> LockAsync(CancellationToken ct)
     {
         var count = Interlocked.Increment(ref this.count);
         Debug.Assert(count >= 1);
@@ -36,7 +36,7 @@ internal sealed class AsyncLock
             return this.disposer;
         }
 
-        var tcs = new TaskCompletionSource<Disposer>();
+        var tcs = new TaskCompletionSource<AsyncLockDisposer>();
         ct.Register(() => tcs.TrySetCanceled());
 
         lock (this.queue)
@@ -47,7 +47,7 @@ internal sealed class AsyncLock
         return tcs.Task;
     }
 
-    public IDisposable UnsafeLock()
+    public AsyncLockDisposer UnsafeLock()
     {
         var count = Interlocked.Increment(ref this.count);
         Debug.Assert(count >= 1);
@@ -57,7 +57,7 @@ internal sealed class AsyncLock
             return this.disposer;
         }
 
-        var tcs = new TaskCompletionSource<Disposer>();
+        var tcs = new TaskCompletionSource<AsyncLockDisposer>();
 
         lock (this.queue)
         {
@@ -93,17 +93,26 @@ internal sealed class AsyncLock
         }
     }
 
-    public sealed class Disposer : IDisposable
+    public readonly struct AsyncLockDisposer : IDisposable
     {
-        private readonly AsyncLock parent;
+        private readonly LoggerAsyncLock parent;
 
-        internal Disposer(AsyncLock parent) =>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        internal AsyncLockDisposer(LoggerAsyncLock parent) =>
             this.parent = parent;
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public void Dispose() =>
+            this.parent.Unlock();
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        void IDisposable.Dispose() =>
             this.parent.Unlock();
     }
 }

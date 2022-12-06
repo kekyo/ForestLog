@@ -164,7 +164,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task ScopeAsync(
+    public static LoggerAwaitable ScopeAsync(
         this ILogger logger,
         LogLevels logLevel,
         BlockScopeArguments arguments,
@@ -179,7 +179,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task<T> ScopeAsync<T>(
+    public static LoggerAwaitable<T> ScopeAsync<T>(
         this ILogger logger,
         LogLevels logLevel,
         BlockScopeArguments arguments,
@@ -195,7 +195,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task DebugScopeAsync(
+    public static LoggerAwaitable DebugScopeAsync(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
@@ -207,7 +207,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task<T> DebugScopeAsync<T>(
+    public static LoggerAwaitable<T> DebugScopeAsync<T>(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
@@ -219,7 +219,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task DebugScopeAsync(
+    public static LoggerAwaitable DebugScopeAsync(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
@@ -232,7 +232,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task<T> DebugScopeAsync<T>(
+    public static LoggerAwaitable<T> DebugScopeAsync<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
@@ -247,7 +247,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task TraceScopeAsync(
+    public static LoggerAwaitable TraceScopeAsync(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
@@ -259,7 +259,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task<T> TraceScopeAsync<T>(
+    public static LoggerAwaitable<T> TraceScopeAsync<T>(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
@@ -271,7 +271,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task TraceScopeAsync(
+    public static LoggerAwaitable TraceScopeAsync(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
@@ -284,7 +284,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task<T> TraceScopeAsync<T>(
+    public static LoggerAwaitable<T> TraceScopeAsync<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
@@ -299,7 +299,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task InformationScopeAsync(
+    public static LoggerAwaitable InformationScopeAsync(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
@@ -311,7 +311,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task<T> InformationScopeAsync<T>(
+    public static LoggerAwaitable<T> InformationScopeAsync<T>(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
@@ -323,7 +323,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task InformationScopeAsync(
+    public static LoggerAwaitable InformationScopeAsync(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
@@ -352,7 +352,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task WarningScopeAsync(
+    public static LoggerAwaitable WarningScopeAsync(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
@@ -365,7 +365,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task<T> WarningScopeAsync<T>(
+    public static LoggerAwaitable<T> WarningScopeAsync<T>(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
@@ -378,7 +378,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task WarningScopeAsync(
+    public static LoggerAwaitable WarningScopeAsync(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
@@ -392,7 +392,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task<T> WarningScopeAsync<T>(
+    public static LoggerAwaitable<T> WarningScopeAsync<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
@@ -408,7 +408,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task ErrorScopeAsync(
+    public static LoggerAwaitable ErrorScopeAsync(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
@@ -421,7 +421,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task<T> ErrorScopeAsync<T>(
+    public static LoggerAwaitable<T> ErrorScopeAsync<T>(
         this ILogger logger,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
@@ -434,7 +434,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task ErrorScopeAsync(
+    public static LoggerAwaitable ErrorScopeAsync(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
@@ -448,7 +448,7 @@ public static class BlockScopeAsyncExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public static Task<T> ErrorScopeAsync<T>(
+    public static LoggerAwaitable<T> ErrorScopeAsync<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
