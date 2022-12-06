@@ -51,6 +51,46 @@ public sealed class LoggerAwaitableMethodBuilderTTests
     }
 
     [Test]
+    public void ReturnImmediatelyAsTask()
+    {
+        static async Task RunnerAsync()
+        {
+            var tid = Thread.CurrentThread.ManagedThreadId;
+            var expected = 123;
+            var awaitable = (Task<int>)Return(expected);
+
+            var actual = await awaitable;
+
+            Assert.AreEqual(tid, Thread.CurrentThread.ManagedThreadId);
+            Assert.AreEqual(expected, actual);
+        }
+
+        var sc = new Application();
+        sc.Run(RunnerAsync());
+    }
+
+#if NETCOREAPP
+    [Test]
+    public void ReturnImmediatelyAsValueTask()
+    {
+        static async Task RunnerAsync()
+        {
+            var tid = Thread.CurrentThread.ManagedThreadId;
+            var expected = 123;
+            var awaitable = (ValueTask<int>)Return(expected);
+
+            var actual = await awaitable;
+
+            Assert.AreEqual(tid, Thread.CurrentThread.ManagedThreadId);
+            Assert.AreEqual(expected, actual);
+        }
+
+        var sc = new Application();
+        sc.Run(RunnerAsync());
+    }
+#endif
+
+    [Test]
     public void ReturnWithDelay1()
     {
         static async Task RunnerAsync()
@@ -93,6 +133,48 @@ public sealed class LoggerAwaitableMethodBuilderTTests
         var sc = new Application();
         sc.Run(RunnerAsync());
     }
+
+    [Test]
+    public void ReturnWithDelayAsTask()
+    {
+        static async Task RunnerAsync()
+        {
+            var tid = Thread.CurrentThread.ManagedThreadId;
+
+            var expected = 123;
+            var awaitable = (Task<int>)Return(expected, TimeSpan.FromMilliseconds(500));
+
+            var actual = await awaitable;
+
+            Assert.AreEqual(tid, Thread.CurrentThread.ManagedThreadId);
+            Assert.AreEqual(expected, actual);
+        }
+
+        var sc = new Application();
+        sc.Run(RunnerAsync());
+    }
+
+#if NETCOREAPP
+    [Test]
+    public void ReturnWithDelayAsValueTask()
+    {
+        static async Task RunnerAsync()
+        {
+            var tid = Thread.CurrentThread.ManagedThreadId;
+
+            var expected = 123;
+            var awaitable = (ValueTask<int>)Return(expected, TimeSpan.FromMilliseconds(500));
+
+            var actual = await awaitable;
+
+            Assert.AreEqual(tid, Thread.CurrentThread.ManagedThreadId);
+            Assert.AreEqual(expected, actual);
+        }
+
+        var sc = new Application();
+        sc.Run(RunnerAsync());
+    }
+#endif
 
     //////////////////////////////////////////////////////////////////
 
@@ -169,8 +251,8 @@ public sealed class LoggerAwaitableMethodBuilderTTests
 
                 try
                 {
-                    Assert.Fail();
                     await awaitable;
+                    Assert.Fail();
                 }
                 catch (ApplicationException)
                 {

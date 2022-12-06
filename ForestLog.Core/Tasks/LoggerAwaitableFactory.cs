@@ -36,27 +36,15 @@ partial struct LoggerAwaitable
 
     //////////////////////////////////////////////////////////////////////
 
-#if NETCOREAPP || NETSTANDARD2_1
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LoggerAwaitable<T> FromValueTask<T>(ValueTask<T> task) =>
-        task.IsCompletedSuccessfully ?
-            new(task.GetAwaiter().GetResult()) :
-            new(task.AsTask());
+    public static LoggerAwaitable<T> FromTask<T>(ValueTask<T> task) =>
+        new(task);
 #endif
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LoggerAwaitable FromValueTask(ValueTask task)
-    {
-        if (task.IsCompletedSuccessfully)
-        {
-            task.GetAwaiter().GetResult();
-            return default;
-        }
-        else
-        {
-            return new(task.AsTask());
-        }
-    }
+    public static LoggerAwaitable FromTask(ValueTask task) =>
+        new(task);
 #endif
 }

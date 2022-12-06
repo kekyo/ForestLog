@@ -92,7 +92,7 @@ public sealed class LoggerAwaitableTTests
     public async Task SequentialAwaitings3()
     {
         var expected1 = 123;
-        var actual1 = await LoggerAwaitable.FromValueTask(DelayByValueTask(expected1));
+        var actual1 = await LoggerAwaitable.FromTask(DelayByValueTask(expected1));
 
         Assert.AreEqual(expected1, actual1);
 
@@ -102,12 +102,12 @@ public sealed class LoggerAwaitableTTests
         Assert.AreEqual(expected2, actual2);
 
         var expected3 = 345;
-        var actual3 = await LoggerAwaitable.FromValueTask(DelayByValueTask(expected3));
+        var actual3 = await LoggerAwaitable.FromTask(DelayByValueTask(expected3));
 
         Assert.AreEqual(expected3, actual3);
 
         var expected4 = 456;
-        var actual4 = await LoggerAwaitable.FromValueTask(new ValueTask<int>(expected4));
+        var actual4 = await LoggerAwaitable.FromTask(new ValueTask<int>(expected4));
 
         Assert.AreEqual(expected4, actual4);
     }
@@ -118,7 +118,7 @@ public sealed class LoggerAwaitableTTests
         for (var index = 0; index < 10; index++)
         {
             var expected = 123 + index;
-            var actual = await LoggerAwaitable.FromValueTask(DelayByValueTask(expected));
+            var actual = await LoggerAwaitable.FromTask(DelayByValueTask(expected));
 
             Assert.AreEqual(expected, actual);
         }

@@ -26,18 +26,9 @@ public readonly struct LoggerAwaiter<T> : INotifyCompletion
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal LoggerAwaiter(Task<T> task)
+    internal LoggerAwaiter(Task<T>? task, T value)
     {
         this.task = task;
-        this.value = default!;
-    }
-
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    internal LoggerAwaiter(T value)
-    {
-        this.task = null;        
         this.value = value;
     }
 
