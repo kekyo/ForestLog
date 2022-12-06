@@ -35,11 +35,19 @@ public readonly struct LoggerAwaiter<T> : INotifyCompletion
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal LoggerAwaiter(T value) =>
+    internal LoggerAwaiter(T value)
+    {
+        this.task = null;        
         this.value = value;
+    }
 
-    public bool IsCompleted =>
-        this.task?.IsCompleted ?? true;
+    public bool IsCompleted
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        get => this.task?.IsCompleted ?? true;
+    }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -83,8 +91,13 @@ public readonly struct LoggerAwaiter : INotifyCompletion
     internal LoggerAwaiter(Task? task) =>
         this.task = task;
 
-    public bool IsCompleted =>
-        this.task?.IsCompleted ?? true;
+    public bool IsCompleted
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        get => this.task?.IsCompleted ?? true;
+    }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

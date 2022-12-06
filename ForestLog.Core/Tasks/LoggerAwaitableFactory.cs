@@ -18,7 +18,7 @@ partial struct LoggerAwaitable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static LoggerAwaitable<T> FromResult<T>(T value) =>
-        new LoggerAwaitable<T>(value);
+        new(value);
 
     //////////////////////////////////////////////////////////////////////
 
