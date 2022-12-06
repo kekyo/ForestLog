@@ -93,7 +93,7 @@ internal sealed class JsonLineLogController : LogController
                     jsLogEntry.Message,
                     jsLogEntry.ExceptionType,
                     jsLogEntry.ExceptionMessage,
-                    jsLogEntry.AdditionalData?.ToString(),
+                    jsLogEntry.AdditionalData,
                     jsLogEntry.MemberName,
                     jsLogEntry.FilePath,
                     jsLogEntry.Line,

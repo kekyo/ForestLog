@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Tasks;
 
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public readonly struct LoggerAwaiter<T> : INotifyCompletion
 {
@@ -71,7 +71,7 @@ public readonly struct LoggerAwaiter<T> : INotifyCompletion
 
 //////////////////////////////////////////////////////////////////////
 
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 [EditorBrowsable(EditorBrowsableState.Never)]
 public readonly struct LoggerAwaiter : INotifyCompletion
 {

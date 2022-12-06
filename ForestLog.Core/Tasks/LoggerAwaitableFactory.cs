@@ -25,34 +25,30 @@ partial struct LoggerAwaitable
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static LoggerAwaitable FromTask(Task task)
-    {
-        if (task.IsCompleted)
-        {
-            task.Wait();
-            return default;
-        }
-        else
-        {
-            return new(task);
-        }
-    }
+    public static LoggerAwaitable<T> FromTask<T>(Task<T> task) =>
+        new(task);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static LoggerAwaitable<T> FromTask<T>(Task<T> task) =>
-        task.IsCompleted ?
-            new(task.Result) :
-            new(task);
+    public static LoggerAwaitable FromTask(Task task) =>
+        new(task);
 
     //////////////////////////////////////////////////////////////////////
+
+#if NETCOREAPP || NETSTANDARD2_1
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static LoggerAwaitable<T> FromValueTask<T>(ValueTask<T> task) =>
+        task.IsCompletedSuccessfully ?
+            new(task.GetAwaiter().GetResult()) :
+            new(task.AsTask());
+#endif
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static LoggerAwaitable FromValueTask(ValueTask task)
     {
-        if (task.IsCompleted)
+        if (task.IsCompletedSuccessfully)
         {
             task.GetAwaiter().GetResult();
             return default;
@@ -62,13 +58,5 @@ partial struct LoggerAwaitable
             return new(task.AsTask());
         }
     }
-#endif
-
-#if NETCOREAPP || NETSTANDARD2_1
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LoggerAwaitable<T> FromValueTask<T>(ValueTask<T> task) =>
-        task.IsCompleted ?
-            new(task.GetAwaiter().GetResult()) :
-            new(task.AsTask());
 #endif
 }

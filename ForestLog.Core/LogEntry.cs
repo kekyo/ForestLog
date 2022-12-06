@@ -21,7 +21,7 @@ public sealed class LogEntry
     public readonly string Message;
     public readonly string? ExceptionType;
     public readonly string? ExceptionMessage;
-    public readonly string? AdditionalDataJsonString;
+    public readonly object? AdditionalData;
     public readonly string MemberName;
     public readonly string FilePath;
     public readonly int Line;
@@ -43,7 +43,7 @@ public sealed class LogEntry
         string message,
         string? exceptionType,
         string? exceptionMessage,
-        string? additionalDataJsonString,
+        object? additionalData,
         string memberName,
         string filePath,
         int line,
@@ -59,7 +59,7 @@ public sealed class LogEntry
         this.Message = message;
         this.ExceptionType = exceptionType;
         this.ExceptionMessage = exceptionMessage;
-        this.AdditionalDataJsonString = additionalDataJsonString;
+        this.AdditionalData = additionalData;
         this.MemberName = memberName;
         this.FilePath = filePath;
         this.Line = line;

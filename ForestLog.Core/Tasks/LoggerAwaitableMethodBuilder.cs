@@ -11,14 +11,13 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using ForestLog.Tasks;
 
 namespace ForestLog.Internal;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 public struct LoggerAwaitableMethodBuilder<T>
 {
     private static readonly TaskCompletionSource<T> completed = new();
@@ -41,12 +40,12 @@ public struct LoggerAwaitableMethodBuilder<T>
         {
             if (this.tcs == completed)
             {
-                return value;
+                return new(value);
             }
             else
             {
-                Interlocked.CompareExchange(ref this.tcs, new(), null);
-                return this.tcs.Task;
+                this.tcs ??= new();
+                return new(this.tcs.Task);
             }
         }
     }
@@ -87,12 +86,9 @@ public struct LoggerAwaitableMethodBuilder<T>
 #endif
     public void SetException(Exception ex)
     {
-        if (this.tcs == null)
-        {
-            this.tcs = new();
-        }
+        this.tcs ??= new();
 
-        Debug.Assert(tcs != completed);
+        Debug.Assert(this.tcs != completed);
 
         if (ex is OperationCanceledException)
         {
@@ -126,7 +122,7 @@ public struct LoggerAwaitableMethodBuilder<T>
 //////////////////////////////////////////////////////////////////////
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 public struct LoggerAwaitableMethodBuilder
 {
     private static readonly TaskCompletionSource<bool> completed = new();
@@ -152,7 +148,7 @@ public struct LoggerAwaitableMethodBuilder
             }
             else
             {
-                Interlocked.CompareExchange(ref this.tcs, new(), null);
+                this.tcs ??= new();
                 return this.tcs.Task;
             }
         }
@@ -193,12 +189,9 @@ public struct LoggerAwaitableMethodBuilder
 #endif
     public void SetException(Exception ex)
     {
-        if (this.tcs == null)
-        {
-            this.tcs = new();
-        }
+        this.tcs ??= new();
 
-        Debug.Assert(tcs != completed);
+        Debug.Assert(this.tcs != completed);
 
         if (ex is OperationCanceledException)
         {

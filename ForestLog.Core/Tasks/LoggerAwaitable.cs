@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Tasks;
 
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 [EditorBrowsable(EditorBrowsableState.Never)]
 [AsyncMethodBuilder(typeof(LoggerAwaitableMethodBuilder<>))]
 public struct LoggerAwaitable<T>
@@ -28,8 +28,15 @@ public struct LoggerAwaitable<T>
 #endif
     internal LoggerAwaitable(Task<T> task)
     {
-        this.task = task;
-        this.value = default!;
+        if (task.IsCompleted && !task.IsFaulted && !task.IsCanceled)
+        {
+            this.value = task.Result;
+        }
+        else
+        {
+            this.task = task;
+            this.value = default!;
+        }
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -79,7 +86,7 @@ public struct LoggerAwaitable<T>
 
 //////////////////////////////////////////////////////////////////////
 
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 [EditorBrowsable(EditorBrowsableState.Never)]
 [AsyncMethodBuilder(typeof(LoggerAwaitableMethodBuilder))]
 public partial struct LoggerAwaitable
@@ -89,8 +96,13 @@ public partial struct LoggerAwaitable
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    private LoggerAwaitable(Task task) =>
-        this.task = task;
+    internal LoggerAwaitable(Task task)
+    {
+        if (!(task.IsCompleted && !task.IsFaulted && !task.IsCanceled))
+        {
+            this.task = task;
+        }
+    }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
