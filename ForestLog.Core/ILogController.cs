@@ -11,6 +11,7 @@ using ForestLog.Tasks;
 using System;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ForestLog;
 
@@ -21,7 +22,7 @@ public interface ILogController : IDisposable
 
     ILogger CreateLogger();
 
-    LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
+    Task<LogEntry[]> QueryLogEntriesAsync(
         Func<LogEntry, bool> predicate,
         CancellationToken ct);
 

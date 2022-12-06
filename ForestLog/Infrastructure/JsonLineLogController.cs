@@ -111,7 +111,7 @@ internal sealed class JsonLineLogController : LogController
         return results;
     }
 
-    public override async LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
+    public override async Task<LogEntry[]> QueryLogEntriesAsync(
         Func<LogEntry, bool> predicate, CancellationToken ct)
     {
         // TODO: Giant lock

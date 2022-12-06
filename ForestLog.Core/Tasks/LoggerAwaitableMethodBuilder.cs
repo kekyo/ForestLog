@@ -17,7 +17,7 @@ using ForestLog.Tasks;
 
 namespace ForestLog.Internal;
 
-//[EditorBrowsable(EditorBrowsableState.Never)]
+[EditorBrowsable(EditorBrowsableState.Never)]
 //[DebuggerStepThrough]
 public struct LoggerAwaitableMethodBuilder<T>
 {
@@ -27,7 +27,7 @@ public struct LoggerAwaitableMethodBuilder<T>
     private T value;
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static LoggerAwaitableMethodBuilder<T> Create() =>
         default;
@@ -35,7 +35,7 @@ public struct LoggerAwaitableMethodBuilder<T>
     public LoggerAwaitable<T> Task
     {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         get
         {
@@ -52,21 +52,21 @@ public struct LoggerAwaitableMethodBuilder<T>
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void Start<TStateMachine>(ref TStateMachine stateMachine)
         where TStateMachine : IAsyncStateMachine =>
         stateMachine.MoveNext();
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void SetStateMachine(IAsyncStateMachine stateMachine)
     {
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void SetResult(T value)
     {
@@ -83,7 +83,7 @@ public struct LoggerAwaitableMethodBuilder<T>
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void SetException(Exception ex)
     {
@@ -105,7 +105,7 @@ public struct LoggerAwaitableMethodBuilder<T>
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void AwaitOnCompleted<TAwaiter, TStateMachine>(
         ref TAwaiter awaiter, ref TStateMachine stateMachine)
@@ -114,7 +114,7 @@ public struct LoggerAwaitableMethodBuilder<T>
         awaiter.OnCompleted(stateMachine.MoveNext);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
         ref TAwaiter awaiter, ref TStateMachine stateMachine)

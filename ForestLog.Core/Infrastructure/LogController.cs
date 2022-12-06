@@ -172,7 +172,7 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    public abstract LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
+    public abstract Task<LogEntry[]> QueryLogEntriesAsync(
         Func<LogEntry, bool> predicate, CancellationToken ct);
 
     //////////////////////////////////////////////////////////////////////
