@@ -11,6 +11,7 @@ ForestLog - A minimalist logger interface.
 | Package  | NuGet                                                                                                                |
 |:---------|:---------------------------------------------------------------------------------------------------------------------|
 | ForestLog | [![NuGet ForestLog](https://img.shields.io/nuget/v/ForestLog.svg?style=flat)](https://www.nuget.org/packages/ForestLog) |
+| ForestLog.Core | [![NuGet ForestLog.Core](https://img.shields.io/nuget/v/ForestLog.Core.svg?style=flat)](https://www.nuget.org/packages/ForestLog.Core) |
 
 ----
 
@@ -33,6 +34,8 @@ The following platforms are supported by the package.
 ----
 
 ## Basic usage
+
+Install [ForestCore](https://www.nuget.org/packages/ForestLog) package.
 
 ```csharp
 using ForestLog;
