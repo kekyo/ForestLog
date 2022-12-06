@@ -35,7 +35,7 @@ The following platforms are supported by the package.
 
 ## Basic usage
 
-Install [ForestCore](https://www.nuget.org/packages/ForestLog) package.
+Install [ForestLog](https://www.nuget.org/packages/ForestLog) package.
 
 ```csharp
 using ForestLog;
@@ -150,7 +150,7 @@ public void Scope(ILogger parentLogger)
 
 public Task ScopeAsync(ILogger parentLogger)
 {
-    return parentLogger.TraceScopeAsync(logger =>
+    return parentLogger.TraceScopeAsync(async logger =>
     {
         logger.Debug($"Output in child scope.");
         logger.Warinig($"Same child scope.");
