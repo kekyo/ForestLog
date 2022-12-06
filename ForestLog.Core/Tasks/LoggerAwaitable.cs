@@ -8,17 +8,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Internal;
-using System.ComponentModel;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace ForestLog.Tasks;
 
-[DebuggerStepThrough]
-[EditorBrowsable(EditorBrowsableState.Never)]
+//[DebuggerStepThrough]
 [AsyncMethodBuilder(typeof(LoggerAwaitableMethodBuilder<>))]
-public struct LoggerAwaitable<T>
+public struct LoggerAwaitable<T> : IEquatable<LoggerAwaitable<T>>
 {
     internal Task<T>? task;
     internal T value;
@@ -76,6 +76,22 @@ public struct LoggerAwaitable<T>
 
     //////////////////////////////////////////////////////////////////////
 
+    public bool Equals(LoggerAwaitable<T> rhs) =>
+        (this.task == null && rhs.task == null) ?
+            EqualityComparer<T>.Default.Equals(this.value, rhs.value) :
+            object.ReferenceEquals(this.task, rhs.task);
+
+    public override bool Equals(object? obj) =>
+        obj is LoggerAwaitable<T> rhs && this.Equals(rhs);
+
+    bool IEquatable<LoggerAwaitable<T>>.Equals(LoggerAwaitable<T> rhs) =>
+        this.Equals(rhs);
+
+    public override int GetHashCode() =>
+        this.task?.GetHashCode() ?? this.value?.GetHashCode() ?? 0;
+
+    //////////////////////////////////////////////////////////////////////
+
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -101,16 +117,15 @@ public struct LoggerAwaitable<T>
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator ValueTask<T>(LoggerAwaitable<T> rhs) =>
-        rhs.task != null ? new(rhs.task) : new(rhs.value);
+        rhs.task is { } task ? new(task) : new(rhs.value);
 #endif
 }
 
 //////////////////////////////////////////////////////////////////////
 
-[DebuggerStepThrough]
-[EditorBrowsable(EditorBrowsableState.Never)]
+//[DebuggerStepThrough]
 [AsyncMethodBuilder(typeof(LoggerAwaitableMethodBuilder))]
-public partial struct LoggerAwaitable
+public partial struct LoggerAwaitable : IEquatable<LoggerAwaitable>
 {
     private Task? task;
 
@@ -153,6 +168,20 @@ public partial struct LoggerAwaitable
 #endif
     public LoggerAwaiter GetAwaiter() =>
         new(this.task);
+
+    //////////////////////////////////////////////////////////////////////
+
+    public bool Equals(LoggerAwaitable rhs) =>
+        object.ReferenceEquals(this.task, rhs.task);
+
+    public override bool Equals(object? obj) =>
+        obj is LoggerAwaitable rhs && this.Equals(rhs);
+
+    bool IEquatable<LoggerAwaitable>.Equals(LoggerAwaitable rhs) =>
+        this.Equals(rhs);
+
+    public override int GetHashCode() =>
+        this.task?.GetHashCode() ?? 0;
 
     //////////////////////////////////////////////////////////////////////
 

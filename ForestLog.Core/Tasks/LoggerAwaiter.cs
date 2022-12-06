@@ -16,9 +16,9 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Tasks;
 
-[DebuggerStepThrough]
-[EditorBrowsable(EditorBrowsableState.Never)]
-public readonly struct LoggerAwaiter<T> : INotifyCompletion
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+//[DebuggerStepThrough]
+public readonly struct LoggerAwaiter<T> : ICriticalNotifyCompletion
 {
     private readonly Task<T>? task;
     private readonly T value;
@@ -40,9 +40,6 @@ public readonly struct LoggerAwaiter<T> : INotifyCompletion
         get => this.task?.IsCompleted ?? true;
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public void OnCompleted(Action continuation)
     {
         if (this.task is { } task)
@@ -55,6 +52,18 @@ public readonly struct LoggerAwaiter<T> : INotifyCompletion
         }
     }
 
+    public void UnsafeOnCompleted(Action continuation)
+    {
+        if (this.task is { } task)
+        {
+            task.GetAwaiter().UnsafeOnCompleted(continuation);
+        }
+        else
+        {
+            Utilities.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
+        }
+    }
+
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -64,15 +73,21 @@ public readonly struct LoggerAwaiter<T> : INotifyCompletion
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    void ICriticalNotifyCompletion.UnsafeOnCompleted(Action continuation) =>
+        this.UnsafeOnCompleted(continuation);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public T GetResult() =>
-        this.task != null ? this.task.Result : value;
+        this.task is { } task ? task.Result : this.value;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-[DebuggerStepThrough]
-[EditorBrowsable(EditorBrowsableState.Never)]
-public readonly struct LoggerAwaiter : INotifyCompletion
+[EditorBrowsable(EditorBrowsableState.Advanced)]
+//[DebuggerStepThrough]
+public readonly struct LoggerAwaiter : ICriticalNotifyCompletion
 {
     private readonly Task? task;
 
@@ -90,9 +105,6 @@ public readonly struct LoggerAwaiter : INotifyCompletion
         get => this.task?.IsCompleted ?? true;
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public void OnCompleted(Action continuation)
     {
         if (this.task is { } task)
@@ -105,11 +117,29 @@ public readonly struct LoggerAwaiter : INotifyCompletion
         }
     }
 
+    public void UnsafeOnCompleted(Action continuation)
+    {
+        if (this.task is { } task)
+        {
+            task.GetAwaiter().UnsafeOnCompleted(continuation);
+        }
+        else
+        {
+            Utilities.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
+        }
+    }
+
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     void INotifyCompletion.OnCompleted(Action continuation) =>
         this.OnCompleted(continuation);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    void ICriticalNotifyCompletion.UnsafeOnCompleted(Action continuation) =>
+        this.UnsafeOnCompleted(continuation);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

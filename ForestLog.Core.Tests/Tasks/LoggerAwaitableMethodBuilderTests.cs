@@ -67,7 +67,7 @@ public sealed class LoggerAwaitableMethodBuilderTests
     [Test]
     public void ReturnImmediatelyAsValueTask()
     {
-        static async Task RunnerAsync()
+        async Task RunnerAsync()
         {
             var tid = Thread.CurrentThread.ManagedThreadId;
             var awaitable = (ValueTask)Return();
