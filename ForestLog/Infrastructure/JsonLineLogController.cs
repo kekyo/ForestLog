@@ -87,6 +87,7 @@ internal sealed class JsonLineLogController : LogController
             {
                 var logEntry = new LogEntry(
                     jsLogEntry.Id,
+                    jsLogEntry.Facility,
                     jsLogEntry.LogLevel,
                     jsLogEntry.Timestamp,
                     jsLogEntry.ScopeId,
@@ -149,6 +150,7 @@ internal sealed class JsonLineLogController : LogController
             {
                 var logEntry = new JsonSerializableLogEntry(
                     Guid.NewGuid(),
+                    waitingLogEntry.Facility,
                     waitingLogEntry.LogLevel,
                     waitingLogEntry.Timestamp,
                     waitingLogEntry.ScopeId,

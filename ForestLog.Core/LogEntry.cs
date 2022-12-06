@@ -15,6 +15,7 @@ namespace ForestLog;
 public sealed class LogEntry
 {
     public readonly Guid Id;
+    public readonly string Facility;
     public readonly LogLevels LogLevel;
     public readonly DateTimeOffset Timestamp;
     public readonly int ScopeId;
@@ -37,6 +38,7 @@ public sealed class LogEntry
 #endif
     public LogEntry(
         Guid id,
+        string facility,
         LogLevels logLevel,
         DateTimeOffset timestamp,
         int scopeId,
@@ -53,6 +55,7 @@ public sealed class LogEntry
         int processId)
     {
         this.Id = id;
+        this.Facility = facility;
         this.LogLevel = logLevel;
         this.Timestamp = timestamp;
         this.ScopeId = scopeId;
@@ -70,5 +73,5 @@ public sealed class LogEntry
     }
 
     public override string ToString() =>
-        $"[{this.Timestamp:yyyy/MM/dd HH:mm:ss.fff}]: {this.LogLevel}: [{this.ScopeId}]: {this.Message}";
+        $"[{this.Timestamp:yyyy/MM/dd HH:mm:ss.fff}]: {this.Facility}: {this.LogLevel}: [{this.ScopeId}]: {this.Message}";
 }

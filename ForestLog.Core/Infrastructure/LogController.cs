@@ -122,14 +122,15 @@ public abstract class LogController : ILogController
 
     [DebuggerStepThrough]
     public void Write(
-        LogLevels logLevel, int scopeId,
+        string facility, LogLevels logLevel, int scopeId,
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line)
     {
         if (logLevel >= minimumLogLevel)
         {
             var waitingLogEntry = new WaitingLogEntry(
-                logLevel, DateTimeOffset.Now, scopeId, message, ex, additionalData,
+                facility, logLevel, DateTimeOffset.Now, scopeId,
+                message, ex, additionalData,
                 memberName, filePath, line,
                 Thread.CurrentThread.ManagedThreadId,
                 Utilities.NativeThreadId,
@@ -142,7 +143,7 @@ public abstract class LogController : ILogController
 
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
-        LogLevels logLevel, int scopeId,
+        string facility, LogLevels logLevel, int scopeId,
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line,
         CancellationToken ct)
@@ -153,7 +154,8 @@ public abstract class LogController : ILogController
             var awaiterCTR = ct.Register(() => awaiter.TrySetCanceled());
 
             var waitingLogEntry = new WaitingLogEntry(
-                logLevel, DateTimeOffset.Now, scopeId, message, ex, additionalData,
+                facility, logLevel, DateTimeOffset.Now, scopeId,
+                message, ex, additionalData,
                 memberName, filePath, line,
                 Thread.CurrentThread.ManagedThreadId,
                 Utilities.NativeThreadId,
@@ -178,6 +180,6 @@ public abstract class LogController : ILogController
     //////////////////////////////////////////////////////////////////////
 
     [DebuggerStepThrough]
-    public ILogger CreateLogger() =>
-        new Logger(this);
+    public ILogger CreateLogger(string facility = "Unknown") =>
+        new Logger(this, facility);
 }

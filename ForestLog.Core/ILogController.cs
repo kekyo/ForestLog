@@ -20,7 +20,7 @@ public interface ILogController : IDisposable
     void Suspend();
     void Resume();
 
-    ILogger CreateLogger();
+    ILogger CreateLogger(string facility = "Unknown");
 
     Task<LogEntry[]> QueryLogEntriesAsync(
         Func<LogEntry, bool> predicate,
@@ -28,13 +28,13 @@ public interface ILogController : IDisposable
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     void Write(
-        LogLevels logLevel, int scopeId,
+        string facility, LogLevels logLevel, int scopeId,
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     LoggerAwaitable WriteAsync(
-        LogLevels logLevel, int scopeId,
+        string facility, LogLevels logLevel, int scopeId,
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line,
         CancellationToken ct);
