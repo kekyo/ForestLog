@@ -18,7 +18,7 @@ namespace ForestLog.Tasks;
 
 public sealed class LoggerAwaitableMethodBuilderTests
 {
-    private static async LoggerAwaitable ReturnValue(TimeSpan delay = default)
+    private static async LoggerAwaitable Return(TimeSpan delay = default)
     {
         if (delay == default)
         {
@@ -35,7 +35,7 @@ public sealed class LoggerAwaitableMethodBuilderTests
         static async Task RunnerAsync()
         {
             var tid = Thread.CurrentThread.ManagedThreadId;
-            var awaitable = ReturnValue();
+            var awaitable = Return();
 
             await awaitable;
 
@@ -47,13 +47,49 @@ public sealed class LoggerAwaitableMethodBuilderTests
     }
 
     [Test]
+    public void ReturnImmediatelyAsTask()
+    {
+        static async Task RunnerAsync()
+        {
+            var tid = Thread.CurrentThread.ManagedThreadId;
+            var awaitable = (Task)Return();
+
+            await awaitable;
+
+            Assert.AreEqual(tid, Thread.CurrentThread.ManagedThreadId);
+        }
+
+        var sc = new Application();
+        sc.Run(RunnerAsync());
+    }
+
+#if NETCOREAPP
+    [Test]
+    public void ReturnImmediatelyAsValueTask()
+    {
+        async Task RunnerAsync()
+        {
+            var tid = Thread.CurrentThread.ManagedThreadId;
+            var awaitable = (ValueTask)Return();
+
+            await awaitable;
+
+            Assert.AreEqual(tid, Thread.CurrentThread.ManagedThreadId);
+        }
+
+        var sc = new Application();
+        sc.Run(RunnerAsync());
+    }
+#endif
+
+    [Test]
     public void ReturnWithDelay1()
     {
         static async Task RunnerAsync()
         {
             var tid = Thread.CurrentThread.ManagedThreadId;
 
-            var awaitable = ReturnValue(TimeSpan.FromMilliseconds(500));
+            var awaitable = Return(TimeSpan.FromMilliseconds(500));
 
             await awaitable;
 
@@ -73,7 +109,7 @@ public sealed class LoggerAwaitableMethodBuilderTests
 
             for (var index = 0; index < 10; index++)
             {
-                var awaitable = ReturnValue(TimeSpan.FromMilliseconds((index / 3) * 100));
+                var awaitable = Return(TimeSpan.FromMilliseconds((index / 3) * 100));
 
                 await awaitable;
             }
@@ -84,6 +120,44 @@ public sealed class LoggerAwaitableMethodBuilderTests
         var sc = new Application();
         sc.Run(RunnerAsync());
     }
+
+    [Test]
+    public void ReturnWithDelayAsTask()
+    {
+        static async Task RunnerAsync()
+        {
+            var tid = Thread.CurrentThread.ManagedThreadId;
+
+            var awaitable = (Task)Return(TimeSpan.FromMilliseconds(500));
+
+            await awaitable;
+
+            Assert.AreEqual(tid, Thread.CurrentThread.ManagedThreadId);
+        }
+
+        var sc = new Application();
+        sc.Run(RunnerAsync());
+    }
+
+#if NETCOREAPP
+    [Test]
+    public void ReturnWithDelayAsValueTask()
+    {
+        static async Task RunnerAsync()
+        {
+            var tid = Thread.CurrentThread.ManagedThreadId;
+
+            var awaitable = (ValueTask)Return(TimeSpan.FromMilliseconds(500));
+
+            await awaitable;
+
+            Assert.AreEqual(tid, Thread.CurrentThread.ManagedThreadId);
+        }
+
+        var sc = new Application();
+        sc.Run(RunnerAsync());
+    }
+#endif
 
     //////////////////////////////////////////////////////////////////
 
@@ -160,8 +234,8 @@ public sealed class LoggerAwaitableMethodBuilderTests
 
                 try
                 {
-                    Assert.Fail();
                     await awaitable;
+                    Assert.Fail();
                 }
                 catch (ApplicationException)
                 {

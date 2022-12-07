@@ -18,57 +18,33 @@ partial struct LoggerAwaitable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static LoggerAwaitable<T> FromResult<T>(T value) =>
-        new LoggerAwaitable<T>(value);
+        new(value);
 
     //////////////////////////////////////////////////////////////////////
-
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public static LoggerAwaitable FromTask(Task task)
-    {
-        if (task.IsCompleted)
-        {
-            task.Wait();
-            return default;
-        }
-        else
-        {
-            return new(task);
-        }
-    }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static LoggerAwaitable<T> FromTask<T>(Task<T> task) =>
-        task.IsCompleted ?
-            new(task.Result) :
-            new(task);
+        new(task);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    public static LoggerAwaitable FromTask(Task task) =>
+        new(task);
 
     //////////////////////////////////////////////////////////////////////
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LoggerAwaitable FromValueTask(ValueTask task)
-    {
-        if (task.IsCompleted)
-        {
-            task.GetAwaiter().GetResult();
-            return default;
-        }
-        else
-        {
-            return new(task.AsTask());
-        }
-    }
+    public static LoggerAwaitable<T> FromTask<T>(ValueTask<T> task) =>
+        new(task);
 #endif
 
-#if NETCOREAPP || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LoggerAwaitable<T> FromValueTask<T>(ValueTask<T> task) =>
-        task.IsCompleted ?
-            new(task.GetAwaiter().GetResult()) :
-            new(task.AsTask());
+    public static LoggerAwaitable FromTask(ValueTask task) =>
+        new(task);
 #endif
 }

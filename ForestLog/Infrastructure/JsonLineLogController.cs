@@ -87,13 +87,14 @@ internal sealed class JsonLineLogController : LogController
             {
                 var logEntry = new LogEntry(
                     jsLogEntry.Id,
+                    jsLogEntry.Facility,
                     jsLogEntry.LogLevel,
                     jsLogEntry.Timestamp,
                     jsLogEntry.ScopeId,
                     jsLogEntry.Message,
                     jsLogEntry.ExceptionType,
                     jsLogEntry.ExceptionMessage,
-                    jsLogEntry.AdditionalData?.ToString(),
+                    jsLogEntry.AdditionalData,
                     jsLogEntry.MemberName,
                     jsLogEntry.FilePath,
                     jsLogEntry.Line,
@@ -149,6 +150,7 @@ internal sealed class JsonLineLogController : LogController
             {
                 var logEntry = new JsonSerializableLogEntry(
                     Guid.NewGuid(),
+                    waitingLogEntry.Facility,
                     waitingLogEntry.LogLevel,
                     waitingLogEntry.Timestamp,
                     waitingLogEntry.ScopeId,

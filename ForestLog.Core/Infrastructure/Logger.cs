@@ -18,6 +18,7 @@ namespace ForestLog.Infrastructure;
 internal sealed class Logger : ILogger
 {
     private readonly LogController controller;
+    private readonly string facility;
     private readonly int scopeId;
 
     //////////////////////////////////////////////////////////////////////
@@ -25,9 +26,10 @@ internal sealed class Logger : ILogger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public Logger(LogController controller)
+    public Logger(LogController controller, string facility)
     {
         this.controller = controller;
+        this.facility = facility;
         this.scopeId = Interlocked.Increment(
             ref this.controller.scopeIdCount);
     }
@@ -47,7 +49,7 @@ internal sealed class Logger : ILogger
         string filePath,
         int line) =>
         this.controller.Write(
-            logLevel, this.scopeId,
+            this.facility, logLevel, this.scopeId,
             message, ex, additionalData,
             memberName, filePath, line);
 
@@ -65,7 +67,7 @@ internal sealed class Logger : ILogger
         int line,
         CancellationToken ct) =>
         this.controller.WriteAsync(
-            logLevel, this.scopeId,
+            this.facility, logLevel, this.scopeId,
             message, ex, additionalData,
             memberName, filePath, line,
             ct);
@@ -75,5 +77,5 @@ internal sealed class Logger : ILogger
 #endif
     [DebuggerStepThrough]
     public ILogger NewScope() =>
-        new Logger(this.controller);
+        new Logger(this.controller, this.facility);
 }

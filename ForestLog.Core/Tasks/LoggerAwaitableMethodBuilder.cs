@@ -7,21 +7,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ForestLog.Tasks;
 
-namespace ForestLog.Internal;
+namespace ForestLog.Tasks;
+
+// Field 'LoggerAwaitableMethodBuilder<T>.value' is never assigned to, and will always have its default value
+#pragma warning disable 649
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 public struct LoggerAwaitableMethodBuilder<T>
 {
-    private static readonly TaskCompletionSource<T> completed = new();
+    private static readonly TaskCompletionSource<T> completedGuard = new();
 
     private TaskCompletionSource<T>? tcs;
     private T value;
@@ -39,24 +42,49 @@ public struct LoggerAwaitableMethodBuilder<T>
 #endif
         get
         {
-            if (this.tcs == completed)
+            if (this.tcs == completedGuard)
             {
-                return value;
+                return new(this.value);
             }
             else
             {
-                Interlocked.CompareExchange(ref this.tcs, new(), null);
-                return this.tcs.Task;
+                this.tcs ??= new();
+                return new(this.tcs.Task);
             }
         }
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public void Start<TStateMachine>(ref TStateMachine stateMachine)
-        where TStateMachine : IAsyncStateMachine =>
-        stateMachine.MoveNext();
+        where TStateMachine : IAsyncStateMachine
+    {
+        var sc = SynchronizationContext.Current;
+#if NET5_0_OR_GREATER
+        var ec = ExecutionContext.Capture();
+#endif
+        try
+        {
+            stateMachine.MoveNext();
+        }
+        catch
+        {
+            SynchronizationContext.SetSynchronizationContext(sc);
+#if NET5_0_OR_GREATER
+            if (ec != null)
+            {
+                ExecutionContext.Restore(ec);
+            }
+#endif
+            throw;
+        }
+
+        SynchronizationContext.SetSynchronizationContext(sc);
+#if NET5_0_OR_GREATER
+        if (ec != null)
+        {
+            ExecutionContext.Restore(ec);
+        }
+#endif
+    }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -70,29 +98,22 @@ public struct LoggerAwaitableMethodBuilder<T>
 #endif
     public void SetResult(T value)
     {
-        if (this.tcs is { } tcs)
+        if (this.tcs != null)
         {
-            Debug.Assert(tcs != completed);
-            tcs.SetResult(value);
+            this.tcs.SetResult(value);
         }
         else
         {
             this.value = value;
-            this.tcs = completed;
+            this.tcs = completedGuard;
         }
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public void SetException(Exception ex)
     {
-        if (this.tcs == null)
-        {
-            this.tcs = new();
-        }
+        this.tcs ??= new();
 
-        Debug.Assert(tcs != completed);
+        Debug.Assert(this.tcs != completedGuard);
 
         if (ex is OperationCanceledException)
         {
@@ -104,32 +125,58 @@ public struct LoggerAwaitableMethodBuilder<T>
         }
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public void AwaitOnCompleted<TAwaiter, TStateMachine>(
         ref TAwaiter awaiter, ref TStateMachine stateMachine)
-        where TAwaiter : INotifyCompletion
-        where TStateMachine : IAsyncStateMachine =>
-        awaiter.OnCompleted(stateMachine.MoveNext);
+        where TAwaiter : ICriticalNotifyCompletion
+        where TStateMachine : IAsyncStateMachine
+    {
+        this.tcs ??= new();
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
+        // Will make boxed copy myself (inside of state machine).
+        IAsyncStateMachine boxed = stateMachine;
+
+        //Debug.Assert(boxed.builder.tcs != null);
+
+        try
+        {
+            awaiter.OnCompleted(boxed.MoveNext);
+        }
+        catch (Exception ex)
+        {
+            Utilities.RethrowAsynchronously(ex);
+        }
+    }
+
     public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
         ref TAwaiter awaiter, ref TStateMachine stateMachine)
         where TAwaiter : ICriticalNotifyCompletion
-        where TStateMachine : IAsyncStateMachine =>
-        awaiter.UnsafeOnCompleted(stateMachine.MoveNext);
+        where TStateMachine : IAsyncStateMachine
+    {
+        this.tcs ??= new();
+
+        // Will make boxed copy myself (inside of state machine).
+        IAsyncStateMachine boxed = stateMachine;
+
+        //Debug.Assert(boxed.builder.tcs != null);
+
+        try
+        {
+            awaiter.UnsafeOnCompleted(boxed.MoveNext);
+        }
+        catch (Exception ex)
+        {
+            Utilities.RethrowAsynchronously(ex);
+        }
+    }
 }
 
 //////////////////////////////////////////////////////////////////////
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 public struct LoggerAwaitableMethodBuilder
 {
-    private static readonly TaskCompletionSource<bool> completed = new();
+    private static readonly TaskCompletionSource<bool> completedGuard = new();
 
     private TaskCompletionSource<bool>? tcs;
 
@@ -146,14 +193,14 @@ public struct LoggerAwaitableMethodBuilder
 #endif
         get
         {
-            if (this.tcs == completed)
+            if (this.tcs == completedGuard)
             {
-                return default;
+                return new();
             }
             else
             {
-                Interlocked.CompareExchange(ref this.tcs, new(), null);
-                return this.tcs.Task;
+                this.tcs ??= new();
+                return new(this.tcs.Task);
             }
         }
     }
@@ -162,8 +209,36 @@ public struct LoggerAwaitableMethodBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void Start<TStateMachine>(ref TStateMachine stateMachine)
-        where TStateMachine : IAsyncStateMachine =>
-        stateMachine.MoveNext();
+        where TStateMachine : IAsyncStateMachine
+    {
+        var sc = SynchronizationContext.Current;
+#if NET5_0_OR_GREATER
+        var ec = ExecutionContext.Capture();
+#endif
+        try
+        {
+            stateMachine.MoveNext();
+        }
+        catch
+        {
+            SynchronizationContext.SetSynchronizationContext(sc);
+#if NET5_0_OR_GREATER
+            if (ec != null)
+            {
+                ExecutionContext.Restore(ec);
+            }
+#endif
+            throw;
+        }
+
+        SynchronizationContext.SetSynchronizationContext(sc);
+#if NET5_0_OR_GREATER
+        if (ec != null)
+        {
+            ExecutionContext.Restore(ec);
+        }
+#endif
+    }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -177,28 +252,21 @@ public struct LoggerAwaitableMethodBuilder
 #endif
     public void SetResult()
     {
-        if (this.tcs is { } tcs)
+        if (this.tcs != null)
         {
-            Debug.Assert(tcs != completed);
-            tcs.SetResult(true);
+            this.tcs.SetResult(true);
         }
         else
         {
-            this.tcs = completed;
+            this.tcs = completedGuard;
         }
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public void SetException(Exception ex)
     {
-        if (this.tcs == null)
-        {
-            this.tcs = new();
-        }
+        this.tcs ??= new();
 
-        Debug.Assert(tcs != completed);
+        Debug.Assert(this.tcs != completedGuard);
 
         if (ex is OperationCanceledException)
         {
@@ -210,21 +278,47 @@ public struct LoggerAwaitableMethodBuilder
         }
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public void AwaitOnCompleted<TAwaiter, TStateMachine>(
         ref TAwaiter awaiter, ref TStateMachine stateMachine)
-        where TAwaiter : INotifyCompletion
-        where TStateMachine : IAsyncStateMachine =>
-        awaiter.OnCompleted(stateMachine.MoveNext);
+        where TAwaiter : ICriticalNotifyCompletion
+        where TStateMachine : IAsyncStateMachine
+    {
+        this.tcs ??= new();
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
+        // Will make boxed copy myself (inside of state machine).
+        IAsyncStateMachine boxed = stateMachine;
+
+        //Debug.Assert(boxed.builder.tcs != null);
+
+        try
+        {
+            awaiter.OnCompleted(boxed.MoveNext);
+        }
+        catch (Exception ex)
+        {
+            Utilities.RethrowAsynchronously(ex);
+        }
+    }
+
     public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
         ref TAwaiter awaiter, ref TStateMachine stateMachine)
         where TAwaiter : ICriticalNotifyCompletion
-        where TStateMachine : IAsyncStateMachine =>
-        awaiter.UnsafeOnCompleted(stateMachine.MoveNext);
+        where TStateMachine : IAsyncStateMachine
+    {
+        this.tcs ??= new();
+
+        // Will make boxed copy myself (inside of state machine).
+        IAsyncStateMachine boxed = stateMachine;
+
+        //Debug.Assert(boxed.builder.tcs != null);
+
+        try
+        {
+            awaiter.UnsafeOnCompleted(boxed.MoveNext);
+        }
+        catch (Exception ex)
+        {
+            Utilities.RethrowAsynchronously(ex);
+        }
+    }
 }

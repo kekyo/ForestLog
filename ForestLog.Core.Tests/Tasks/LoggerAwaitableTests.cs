@@ -78,17 +78,17 @@ public sealed class LoggerAwaitableTests
     [Test]
     public async Task SequentialAwaitings3()
     {
-        await LoggerAwaitable.FromValueTask(new ValueTask(Task.Delay(100)));
+        await LoggerAwaitable.FromTask(new ValueTask(Task.Delay(100)));
 
         var expected1 = 123;
         var actual1 = await LoggerAwaitable.FromResult(expected1);
 
         Assert.AreEqual(expected1, actual1);
 
-        await LoggerAwaitable.FromValueTask(new ValueTask(Task.Delay(100)));
+        await LoggerAwaitable.FromTask(new ValueTask(Task.Delay(100)));
 
         var expected2 = 234;
-        var actual2 = await LoggerAwaitable.FromValueTask(new ValueTask<int>(Task.FromResult(expected2)));
+        var actual2 = await LoggerAwaitable.FromTask(new ValueTask<int>(Task.FromResult(expected2)));
 
         Assert.AreEqual(expected2, actual2);
     }
@@ -98,7 +98,7 @@ public sealed class LoggerAwaitableTests
     {
         for (var index = 0; index < 10; index++)
         {
-            await LoggerAwaitable.FromValueTask(new ValueTask(Task.Delay(100)));
+            await LoggerAwaitable.FromTask(new ValueTask(Task.Delay(100)));
         }
     }
 #endif

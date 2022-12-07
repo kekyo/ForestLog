@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Internal;
+using ForestLog.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -186,7 +187,7 @@ public sealed class JsonLineLoggerTests
 
     //////////////////////////////////////////////////////////
 
-    private async Task<LogEntry[]> QueryTestBlockAsync(
+    private async LoggerAwaitable<LogEntry[]> QueryTestBlockAsync(
         Action<ILogger> action, Func<LogEntry, bool> predicate)
     {
         var basePath = Path.Combine(

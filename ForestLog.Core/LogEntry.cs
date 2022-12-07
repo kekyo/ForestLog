@@ -15,13 +15,14 @@ namespace ForestLog;
 public sealed class LogEntry
 {
     public readonly Guid Id;
+    public readonly string Facility;
     public readonly LogLevels LogLevel;
     public readonly DateTimeOffset Timestamp;
     public readonly int ScopeId;
     public readonly string Message;
     public readonly string? ExceptionType;
     public readonly string? ExceptionMessage;
-    public readonly string? AdditionalDataJsonString;
+    public readonly object? AdditionalData;
     public readonly string MemberName;
     public readonly string FilePath;
     public readonly int Line;
@@ -37,13 +38,14 @@ public sealed class LogEntry
 #endif
     public LogEntry(
         Guid id,
+        string facility,
         LogLevels logLevel,
         DateTimeOffset timestamp,
         int scopeId,
         string message,
         string? exceptionType,
         string? exceptionMessage,
-        string? additionalDataJsonString,
+        object? additionalData,
         string memberName,
         string filePath,
         int line,
@@ -53,13 +55,14 @@ public sealed class LogEntry
         int processId)
     {
         this.Id = id;
+        this.Facility = facility;
         this.LogLevel = logLevel;
         this.Timestamp = timestamp;
         this.ScopeId = scopeId;
         this.Message = message;
         this.ExceptionType = exceptionType;
         this.ExceptionMessage = exceptionMessage;
-        this.AdditionalDataJsonString = additionalDataJsonString;
+        this.AdditionalData = additionalData;
         this.MemberName = memberName;
         this.FilePath = filePath;
         this.Line = line;
@@ -70,5 +73,5 @@ public sealed class LogEntry
     }
 
     public override string ToString() =>
-        $"[{this.Timestamp:yyyy/MM/dd HH:mm:ss.fff}]: {this.LogLevel}: [{this.ScopeId}]: {this.Message}";
+        $"[{this.Timestamp:yyyy/MM/dd HH:mm:ss.fff}]: {this.Facility}: {this.LogLevel}: [{this.ScopeId}]: {this.Message}";
 }

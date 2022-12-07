@@ -16,6 +16,7 @@ namespace ForestLog.Infrastructure;
 
 public sealed class WaitingLogEntry
 {
+    public readonly string Facility;
     public readonly LogLevels LogLevel;
     public readonly DateTimeOffset Timestamp;
     public readonly int ScopeId;
@@ -38,6 +39,7 @@ public sealed class WaitingLogEntry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     internal WaitingLogEntry(
+        string facility,
         LogLevels logLevel,
         DateTimeOffset timestamp,
         int scopeId,
@@ -53,6 +55,7 @@ public sealed class WaitingLogEntry
         TaskCompletionSource<bool>? awaiter,
         CancellationToken ct)
     {
+        this.Facility = facility;
         this.LogLevel = logLevel;
         this.Timestamp = timestamp;
         this.ScopeId = scopeId;
@@ -94,5 +97,5 @@ public sealed class WaitingLogEntry
     }
 
     public override string ToString() =>
-        $"[{this.Timestamp:yyyy/MM/dd HH:mm:ss.fff}]: {this.LogLevel}: [{this.ScopeId}]: {this.Message}";
+        $"[{this.Timestamp:yyyy/MM/dd HH:mm:ss.fff}]: {this.Facility}: {this.LogLevel}: [{this.ScopeId}]: {this.Message}";
 }

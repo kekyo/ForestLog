@@ -8,17 +8,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Internal;
-using System.ComponentModel;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace ForestLog.Tasks;
 
-//[DebuggerStepThrough]
-[EditorBrowsable(EditorBrowsableState.Never)]
+[DebuggerStepThrough]
 [AsyncMethodBuilder(typeof(LoggerAwaitableMethodBuilder<>))]
-public struct LoggerAwaitable<T>
+public struct LoggerAwaitable<T> : IEquatable<LoggerAwaitable<T>>
 {
     internal Task<T>? task;
     internal T value;
@@ -26,25 +26,69 @@ public struct LoggerAwaitable<T>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal LoggerAwaitable(Task<T> task)
+    internal LoggerAwaitable(T value)
     {
-        this.task = task;
-        this.value = default!;
+        this.task = null;
+        this.value = value;
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal LoggerAwaitable(T value) =>
-        this.value = value;
+    internal LoggerAwaitable(Task<T> task)
+    {
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
+        if (task.IsCompletedSuccessfully)
+#else
+        if (task.IsCompleted && !task.IsFaulted && !task.IsCanceled)
+#endif
+        {
+            this.value = task.GetAwaiter().GetResult();
+        }
+        else
+        {
+            this.value = default!;
+            this.task = task;
+        }
+    }
+
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal LoggerAwaitable(ValueTask<T> task)
+    {
+        if (task.IsCompletedSuccessfully)
+        {
+            this.value = task.GetAwaiter().GetResult();
+        }
+        else
+        {
+            this.value = default!;
+            this.task = task.AsTask();
+        }
+    }
+#endif
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public LoggerAwaiter<T> GetAwaiter() =>
-        this.task != null ?
-            new(this.task) :
-            new(this.value);
+        new(this.task, this.value);
+
+    //////////////////////////////////////////////////////////////////////
+
+    public bool Equals(LoggerAwaitable<T> rhs) =>
+        (this.task == null && rhs.task == null) ?
+            EqualityComparer<T>.Default.Equals(this.value, rhs.value) :
+            object.ReferenceEquals(this.task, rhs.task);
+
+    public override bool Equals(object? obj) =>
+        obj is LoggerAwaitable<T> rhs && this.Equals(rhs);
+
+    bool IEquatable<LoggerAwaitable<T>>.Equals(LoggerAwaitable<T> rhs) =>
+        this.Equals(rhs);
+
+    public override int GetHashCode() =>
+        this.task?.GetHashCode() ?? this.value?.GetHashCode() ?? 0;
 
     //////////////////////////////////////////////////////////////////////
 
@@ -52,7 +96,7 @@ public struct LoggerAwaitable<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static implicit operator LoggerAwaitable<T>(Task<T> rhs) =>
-        LoggerAwaitable.FromTask(rhs);
+        new(rhs);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -66,31 +110,58 @@ public struct LoggerAwaitable<T>
     public static implicit operator Task<T>(LoggerAwaitable<T> rhs) =>
         rhs.task ?? Utilities.FromResult(rhs.value);
 
-#if NETCOREAPP || NETSTANDARD2_1
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator LoggerAwaitable<T>(ValueTask<T> rhs) =>
-        LoggerAwaitable.FromValueTask(rhs);
+        new(rhs);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator ValueTask<T>(LoggerAwaitable<T> rhs) =>
-        rhs.task != null ? new(rhs.task) : new(rhs.value);
+        rhs.task is { } task ? new(task) : new(rhs.value);
 #endif
 }
 
 //////////////////////////////////////////////////////////////////////
 
-//[DebuggerStepThrough]
-[EditorBrowsable(EditorBrowsableState.Never)]
+[DebuggerStepThrough]
 [AsyncMethodBuilder(typeof(LoggerAwaitableMethodBuilder))]
-public partial struct LoggerAwaitable
+public partial struct LoggerAwaitable : IEquatable<LoggerAwaitable>
 {
     private Task? task;
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    private LoggerAwaitable(Task task) =>
-        this.task = task;
+    internal LoggerAwaitable(Task task)
+    {
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
+        if (task.IsCompletedSuccessfully)
+#else
+        if (task.IsCompleted && !task.IsFaulted && !task.IsCanceled)
+#endif
+        {
+            task.GetAwaiter().GetResult();
+        }
+        else
+        {
+            this.task = task;
+        }
+    }
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal LoggerAwaitable(ValueTask task)
+    {
+        if (task.IsCompletedSuccessfully)
+        {
+            task.GetAwaiter().GetResult();
+        }
+        else
+        {
+            this.task = task.AsTask();
+        }
+    }
+#endif
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -100,22 +171,36 @@ public partial struct LoggerAwaitable
 
     //////////////////////////////////////////////////////////////////////
 
+    public bool Equals(LoggerAwaitable rhs) =>
+        object.ReferenceEquals(this.task, rhs.task);
+
+    public override bool Equals(object? obj) =>
+        obj is LoggerAwaitable rhs && this.Equals(rhs);
+
+    bool IEquatable<LoggerAwaitable>.Equals(LoggerAwaitable rhs) =>
+        this.Equals(rhs);
+
+    public override int GetHashCode() =>
+        this.task?.GetHashCode() ?? 0;
+
+    //////////////////////////////////////////////////////////////////////
+
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static implicit operator LoggerAwaitable(Task rhs) =>
-        FromTask(rhs);
+        new(rhs);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static implicit operator Task(LoggerAwaitable rhs) =>
-        FromTask(rhs);
+        rhs.task ?? Utilities.CompletedTask;
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator LoggerAwaitable(ValueTask rhs) =>
-        FromValueTask(rhs);
+        new(rhs);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator ValueTask(LoggerAwaitable rhs) =>
