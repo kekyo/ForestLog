@@ -65,7 +65,7 @@ public sealed class AsyncJsonLineLoggerTests
         try
         {
             using (var logController = LoggerFactory.CreateJsonLineLogController(
-                LogLevels.Debug, basePath))
+                basePath, LogLevels.Debug))
             {
                 var logger = logController.CreateLogger();
 

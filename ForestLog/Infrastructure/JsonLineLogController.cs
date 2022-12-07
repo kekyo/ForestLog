@@ -25,14 +25,19 @@ namespace ForestLog.Infrastructure;
 internal sealed class JsonLineLogController : LogController
 {
     private readonly string basePath;
+    private readonly long sizeToNextFile;
     private readonly LoggerAsyncLock locker = new();
 
     //////////////////////////////////////////////////////////////////////
 
-    public JsonLineLogController(LogLevels minimumLogLevel, string basePath) :
+    public JsonLineLogController(
+        string basePath,
+        LogLevels minimumLogLevel,
+        long sizeToNextFile) :
         base(minimumLogLevel)
     {
         this.basePath = Path.GetFullPath(basePath);
+        this.sizeToNextFile = sizeToNextFile;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -119,20 +124,50 @@ internal sealed class JsonLineLogController : LogController
     public override async LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
         Func<LogEntry, bool> predicate, CancellationToken ct)
     {
-        // TODO: Giant lock
-        using var _ = await this.locker.LockAsync(ct);
-
-        var results = (await Utilities.WhenAll(
+        var preloadPathList =
             Utilities.EnumerateFiles(
                 this.basePath, "log*.jsonl", SearchOption.AllDirectories).
+            Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
+            ToArray();
+        
+        var preloadResults = (await Utilities.WhenAll(preloadPathList.
             Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
             SelectMany(results => results).
             ToArray();
 
-        return results;
+        // TODO: Giant lock
+        using var _ = await this.locker.LockAsync(ct);
+
+        var remainsPathList = new[] { Path.Combine(this.basePath, "log.jsonl") }.
+            Concat(
+                Utilities.EnumerateFiles(
+                    this.basePath, "log*.jsonl", SearchOption.AllDirectories).
+                Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
+                Except(preloadPathList)).
+            ToArray();
+
+        var remainsResults = (await Utilities.WhenAll(remainsPathList.
+            Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
+            SelectMany(results => results).
+            ToArray();
+
+        return preloadResults.Concat(remainsResults).ToArray();
     }
 
     //////////////////////////////////////////////////////////////////////
+
+    private static string GetCandidateBackupFilePath(string basePath)
+    {
+        var lastIndex = new[] { 0 }.
+            Concat(
+                Utilities.EnumerateFiles(
+                    basePath, "log*.jsonl", SearchOption.AllDirectories).
+                Select(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var index) ? (int?)index : null).
+                Where(index => index.HasValue).
+                Select(index => index!.Value)).
+            Max();
+        return $"log{lastIndex + 1}.jsonl";
+    }
 
 #if NET35 || NET40
     protected override Task OnAvailableAsync(WaitingLogEntry waitingLogEntry) =>
@@ -159,6 +194,15 @@ internal sealed class JsonLineLogController : LogController
         }
 
         var path = Path.Combine(this.basePath, "log.jsonl");
+
+        var fi = new FileInfo(path);
+        if (fi.Length >= this.sizeToNextFile)
+        {
+            var candidatePath = Path.Combine(
+                this.basePath,
+                GetCandidateBackupFilePath(this.basePath));
+            fi.MoveTo(candidatePath);
+        }
 
         using var fs = new FileStream(
             path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 65536, true);
