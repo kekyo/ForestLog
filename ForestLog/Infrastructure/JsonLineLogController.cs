@@ -146,6 +146,18 @@ internal sealed class JsonLineLogController : LogController
         // TODO: Giant lock
         using var _ = this.locker.UnsafeLock();
 
+        if (!Directory.Exists(this.basePath))
+        {
+            try
+            {
+                Directory.CreateDirectory(this.basePath);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
+        }
+
         var path = Path.Combine(this.basePath, "log.jsonl");
 
         using var fs = new FileStream(
