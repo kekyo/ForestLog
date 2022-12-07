@@ -44,10 +44,10 @@ using ForestLog;
 
 // Construct controller:
 using var logController = LoggerFactory.CreateJsonLinesLogger(
-    // Minimum output log level.
-    LogLevels.Debug,
     // Output base directory path.
-    "logs");
+    "logs",
+    // Minimum output log level.
+    LogLevels.Debug);
 
 // Create logger:
 ILogger logger = logController.CreateLogger();
@@ -216,6 +216,15 @@ Causes:
 ```
 
 ## Configure maximum log size and rotation
+
+```csharp
+using var logController = LoggerFactory.CreateJsonLinesLogger(
+    "logs",
+    LogLevels.Debug,
+    // Size to next file.
+    1 * 1024 * 1024  // bytes
+    );
+```
 
 TODO:
 

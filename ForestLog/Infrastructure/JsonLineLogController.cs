@@ -196,7 +196,7 @@ internal sealed class JsonLineLogController : LogController
         var path = Path.Combine(this.basePath, "log.jsonl");
 
         var fi = new FileInfo(path);
-        if (fi.Length >= this.sizeToNextFile)
+        if (fi.Exists && (fi.Length >= this.sizeToNextFile))
         {
             var candidatePath = Path.Combine(
                 this.basePath,
@@ -205,7 +205,11 @@ internal sealed class JsonLineLogController : LogController
         }
 
         using var fs = new FileStream(
-            path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 65536, true);
+            path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 65536
+#if !(NET35 || NET40)
+            , true
+#endif
+            );
         fs.Seek(0, SeekOrigin.End);
 
         var tw = new StreamWriter(fs, Utilities.UTF8);

@@ -21,9 +21,4 @@ public static class LoggerFactory
     public static ILogController CreateJsonLineLogController(
         string basePath, LogLevels minimumLogLevel) =>
         new JsonLineLogController(basePath, minimumLogLevel, 1 * 1024 * 1024);
-
-    [Obsolete]
-    public static ILogController CreateJsonLineLogController(
-        LogLevels minimumLogLevel, string basePath) =>
-        new JsonLineLogController(basePath, minimumLogLevel, 1 * 1024 * 1024);
 }
