@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 namespace ForestLog;
 
 public interface ILogController : IDisposable
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    , IAsyncDisposable
+#endif
 {
     void Suspend();
     void Resume();

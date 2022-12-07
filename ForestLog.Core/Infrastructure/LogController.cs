@@ -18,14 +18,16 @@ using System.Threading.Tasks;
 namespace ForestLog.Infrastructure;
 
 public abstract class LogController : ILogController
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    , IAsyncDisposable
+#endif
 {
     protected readonly LogLevels minimumLogLevel;
     private readonly Queue<WaitingLogEntry> queue = new();
     private readonly ManualResetEvent available = new(false);
     private readonly ManualResetEvent abort = new(false);
 
-    private Thread thread;
-
+    private Task worker;
     internal int scopeIdCount;
 
     //////////////////////////////////////////////////////////////////////
@@ -33,22 +35,38 @@ public abstract class LogController : ILogController
     protected LogController(LogLevels minimumLogLevel)
     {
         this.minimumLogLevel = minimumLogLevel;
-
-        this.thread = new Thread(this.ThreadEntry);
-        this.thread.IsBackground = true;
-        this.thread.Start();
+        this.worker = Task.Factory.StartNew(
+            this.ThreadEntry,
+            TaskCreationOptions.LongRunning);
     }
 
     public void Dispose()
     {
-        if (this.thread is { } thread)
+        if (this.worker is { } worker)
         {
-            this.thread = null!;
+            this.worker = null!;
             
             this.abort.Set();
-            thread.Join();
+            worker.Wait();
         }
     }
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    public ValueTask DisposeAsync()
+    {
+        if (this.worker is { } worker)
+        {
+            this.worker = null!;
+
+            this.abort.Set();
+            return new(worker);
+        }
+        else
+        {
+            return default;
+        }
+    }
+#endif
 
     public virtual void Suspend()
     {
