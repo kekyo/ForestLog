@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,24 +77,33 @@ public sealed class WaitingLogEntry
         }
     }
 
+    public bool IsAwaiting
+    {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        get => this.awaiter is { };
+    }
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void SetCompleted()
     {
-        if (this.awaiter is { } awaiter)
-        {
-            this.awaiter = null;
-            this.ctr = default;
-            var ctr = this.ctr;
+        Debug.Assert(this.awaiter is { });
 
-            // HACK: TCS will deadlock when assigned continuation is hard-blocked.
-            ThreadPool.QueueUserWorkItem(_ =>
-            {
-                awaiter.TrySetResult(true);
-                ctr.Dispose();
-            });
-        }
+        var awaiter = this.awaiter;
+        var ctr = this.ctr;
+
+        this.awaiter = null;
+        this.ctr = default;
+
+        // HACK: TCS will deadlock when assigned continuation is hard-blocked.
+        ThreadPool.QueueUserWorkItem(_ =>
+        {
+            awaiter!.TrySetResult(true);
+            ctr.Dispose();
+        });
     }
 
     public override string ToString() =>

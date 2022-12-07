@@ -10,16 +10,32 @@
 using ForestLog.Tasks;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ForestLog;
+
+public sealed class LogEntryEventArgs : EventArgs
+{
+    public readonly LogEntry LogEntry;
+
+    [DebuggerStepThrough]
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    public LogEntryEventArgs(LogEntry logEntry) =>
+        this.LogEntry = logEntry;
+}
 
 public interface ILogController : IDisposable
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     , IAsyncDisposable
 #endif
 {
+    event EventHandler<LogEntryEventArgs> Arrived;
+
     void Suspend();
     void Resume();
 

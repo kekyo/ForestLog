@@ -12,6 +12,7 @@ using ForestLog.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,6 +69,8 @@ public abstract class LogController : ILogController
     }
 #endif
 
+    //////////////////////////////////////////////////////////////////////
+
     public virtual void Suspend()
     {
     }
@@ -89,6 +92,15 @@ public abstract class LogController : ILogController
             return this.queue.Dequeue();
         }
     }
+
+    public event EventHandler<LogEntryEventArgs>? Arrived;
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    protected void InvokeArrived(LogEntry logEntry) =>
+        this.Arrived?.Invoke(this, new(logEntry));
 
     //////////////////////////////////////////////////////////////////////
 

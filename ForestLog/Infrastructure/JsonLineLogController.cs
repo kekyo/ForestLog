@@ -146,9 +146,10 @@ internal sealed class JsonLineLogController : LogController
 
         do
         {
+            JsonSerializableLogEntry? logEntry = null;
             try
             {
-                var logEntry = new JsonSerializableLogEntry(
+                logEntry = new JsonSerializableLogEntry(
                     Guid.NewGuid(),
                     waitingLogEntry.Facility,
                     waitingLogEntry.LogLevel,
@@ -176,7 +177,16 @@ internal sealed class JsonLineLogController : LogController
                     $"JsonLineLoggerCore: {ex.GetType().FullName}: {ex.Message}");
             }
 
-            waitingLogEntry.SetCompleted();
+            if (waitingLogEntry.IsAwaiting)
+            {
+                tw.Flush();
+                waitingLogEntry.SetCompleted();
+            }
+
+            if (logEntry != null)
+            {
+                this.InvokeArrived(logEntry);
+            }
 
             waitingLogEntry = this.DequeueWaitingLogEntry()!;
         } while (waitingLogEntry != null);
