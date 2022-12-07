@@ -32,9 +32,9 @@ internal sealed class JsonLineLogController : LogController
 
     public JsonLineLogController(
         string basePath,
-        LogLevels minimumLogLevel,
+        LogLevels minimumOutputLogLevel,
         long sizeToNextFile) :
-        base(minimumLogLevel)
+        base(minimumOutputLogLevel)
     {
         this.basePath = Path.GetFullPath(basePath);
         this.sizeToNextFile = sizeToNextFile;
@@ -122,7 +122,9 @@ internal sealed class JsonLineLogController : LogController
     }
 
     public override async LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
-        Func<LogEntry, bool> predicate, CancellationToken ct)
+        int maximumLogEntries,
+        Func<LogEntry, bool> predicate,
+        CancellationToken ct)
     {
         var preloadPathList =
             Utilities.EnumerateFiles(
@@ -130,28 +132,41 @@ internal sealed class JsonLineLogController : LogController
             Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
             ToArray();
         
-        var preloadResults = (await Utilities.WhenAll(preloadPathList.
+        var preloadResultsNotOrdered = (await Utilities.WhenAll(preloadPathList.
             Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
             SelectMany(results => results).
             ToArray();
 
-        // TODO: Giant lock
-        using var _ = await this.locker.LockAsync(ct);
+        if (preloadResultsNotOrdered.Length >= maximumLogEntries)
+        {
+            return preloadResultsNotOrdered.
+                OrderBy(logEntry => logEntry.Timestamp).
+                Take(maximumLogEntries).
+                ToArray();
+        }
 
-        var remainsPathList = new[] { Path.Combine(this.basePath, "log.jsonl") }.
-            Concat(
-                Utilities.EnumerateFiles(
-                    this.basePath, "log*.jsonl", SearchOption.AllDirectories).
-                Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
-                Except(preloadPathList)).
+        LogEntry[] remainsResultsNotOrdered;
+        using (var _ = await this.locker.LockAsync(ct))
+        {
+            var remainsPathList = new[] { Path.Combine(this.basePath, "log.jsonl") }.
+                Concat(
+                    Utilities.EnumerateFiles(
+                        this.basePath, "log*.jsonl", SearchOption.AllDirectories).
+                    Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
+                    Except(preloadPathList)).
+                ToArray();
+
+            remainsResultsNotOrdered = (await Utilities.WhenAll(remainsPathList.
+                Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
+                SelectMany(results => results).
+                ToArray();
+        }
+
+        return preloadResultsNotOrdered.
+            Concat(remainsResultsNotOrdered).
+            OrderBy(logEntry => logEntry.Timestamp).
+            Take(maximumLogEntries).
             ToArray();
-
-        var remainsResults = (await Utilities.WhenAll(remainsPathList.
-            Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
-            SelectMany(results => results).
-            ToArray();
-
-        return preloadResults.Concat(remainsResults).ToArray();
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -178,7 +193,6 @@ internal sealed class JsonLineLogController : LogController
     protected override async Task OnAvailableAsync(WaitingLogEntry waitingLogEntry)
 #endif
     {
-        // TODO: Giant lock
         using var _ = this.locker.UnsafeLock();
 
         if (!Directory.Exists(this.basePath))
@@ -215,17 +229,18 @@ internal sealed class JsonLineLogController : LogController
         var tw = new StreamWriter(fs, Utilities.UTF8);
         var jw = new JsonTextWriter(tw);
 
+        // Will make safer by adding a newline into jsonl file when last output was broken.
 #if NET35 || NET40
         tw.WriteLine();
         tw.Flush();
 #else
-        static async LoggerAwaitable MakeSaferAtTailAsync(TextWriter tw)
+        static async LoggerAwaitable MakeSaferByAddingNewLineAsync(TextWriter tw)
         {
             await tw.WriteLineAsync();
             await tw.FlushAsync();
         }
 
-        var lastOffloadedTask = MakeSaferAtTailAsync(tw);
+        var lastOffloadedTask = MakeSaferByAddingNewLineAsync(tw);
 #endif
         do
         {

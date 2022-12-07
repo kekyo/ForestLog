@@ -42,8 +42,9 @@ public interface ILogController : IDisposable
     ILogger CreateLogger(string facility = "Unknown");
 
     LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
+        int maximumLogEntries,
         Func<LogEntry, bool> predicate,
-        CancellationToken ct);
+        CancellationToken ct = default);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     void Write(
@@ -57,4 +58,17 @@ public interface ILogController : IDisposable
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line,
         CancellationToken ct);
+}
+
+public static class LogControllerExtension
+{
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    public static LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
+        this ILogController logController,
+        Func<LogEntry, bool> predicate,
+        CancellationToken ct = default) =>
+        logController.QueryLogEntriesAsync(1000, predicate, ct);
 }

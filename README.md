@@ -217,6 +217,8 @@ Causes:
 
 ## Configure maximum log size and rotation
 
+Will switch log file when current log file size is exceed.
+
 ```csharp
 using var logController = LoggerFactory.CreateJsonLinesLogger(
     "logs",
@@ -226,15 +228,38 @@ using var logController = LoggerFactory.CreateJsonLinesLogger(
     );
 ```
 
-TODO:
+Result:
+
+![Applied log size configuration](Images/logs_directory.png)
+
+TODO: Rotation
 
 ## Suspend and resume
 
 TODO:
 
-## Crawling logs
+## Programatically retreive log entries
 
-TODO:
+Caught by event:
+
+```csharp
+logController.Arrived += (s, e) =>
+{
+    // This thread context is worker thread.
+    // So you have to dispatch UI thread when using GUI frameworks.
+    Console.WriteLine(e.LogEntry.ToString());
+};
+```
+
+Query interface:
+
+```csharp
+LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
+    // Maximum number of log entries.
+    100,
+    // Filter function.
+    logEntry => logEntry.LogLevel >= LogLevels.Warning);
+```
 
 ----
 

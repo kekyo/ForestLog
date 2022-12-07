@@ -23,7 +23,7 @@ public abstract class LogController : ILogController
     , IAsyncDisposable
 #endif
 {
-    protected readonly LogLevels minimumLogLevel;
+    protected readonly LogLevels minimumOutputLogLevel;
     private readonly Queue<WaitingLogEntry> queue = new();
     private readonly ManualResetEvent available = new(false);
     private readonly ManualResetEvent abort = new(false);
@@ -33,9 +33,9 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    protected LogController(LogLevels minimumLogLevel)
+    protected LogController(LogLevels minimumOutputLogLevel)
     {
-        this.minimumLogLevel = minimumLogLevel;
+        this.minimumOutputLogLevel = minimumOutputLogLevel;
         this.worker = Task.Factory.StartNew(
             this.WorkerEntry,
             TaskCreationOptions.LongRunning);
@@ -160,7 +160,7 @@ public abstract class LogController : ILogController
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line)
     {
-        if (logLevel >= minimumLogLevel)
+        if (logLevel >= this.minimumOutputLogLevel)
         {
             var waitingLogEntry = new WaitingLogEntry(
                 facility, logLevel, DateTimeOffset.Now, scopeId,
@@ -185,10 +185,9 @@ public abstract class LogController : ILogController
         string memberName, string filePath, int line,
         CancellationToken ct)
     {
-        if (logLevel >= minimumLogLevel)
+        if (logLevel >= this.minimumOutputLogLevel)
         {
             var awaiter = new TaskCompletionSource<bool>();
-            var awaiterCTR = ct.Register(() => awaiter.TrySetCanceled());
 
             var waitingLogEntry = new WaitingLogEntry(
                 facility, logLevel, DateTimeOffset.Now, scopeId,
@@ -212,7 +211,9 @@ public abstract class LogController : ILogController
     //////////////////////////////////////////////////////////////////////
 
     public abstract LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
-        Func<LogEntry, bool> predicate, CancellationToken ct);
+        int maximumLogEntries,
+        Func<LogEntry, bool> predicate,
+        CancellationToken ct);
 
     //////////////////////////////////////////////////////////////////////
 

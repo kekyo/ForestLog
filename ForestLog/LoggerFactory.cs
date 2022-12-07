@@ -15,10 +15,10 @@ namespace ForestLog;
 public static class LoggerFactory
 {
     public static ILogController CreateJsonLineLogController(
-        string basePath, LogLevels minimumLogLevel, long sizeToNextFile) =>
-        new JsonLineLogController(basePath, minimumLogLevel, sizeToNextFile);
+        string basePath, LogLevels minimumOutputLogLevel, long sizeToNextFile) =>
+        new JsonLineLogController(basePath, minimumOutputLogLevel, sizeToNextFile);
 
     public static ILogController CreateJsonLineLogController(
-        string basePath, LogLevels minimumLogLevel) =>
-        new JsonLineLogController(basePath, minimumLogLevel, 1 * 1024 * 1024);
+        string basePath, LogLevels minimumOutputLogLevel) =>
+        new JsonLineLogController(basePath, minimumOutputLogLevel, 1 * 1024 * 1024);
 }
