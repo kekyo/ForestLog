@@ -9,8 +9,11 @@
 
 #if NET35 || NET40 || NET45
 
+using System.Diagnostics;
+
 namespace System.Runtime.CompilerServices;
 
+[DebuggerStepThrough]
 internal static class FormattableStringFactory
 {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP

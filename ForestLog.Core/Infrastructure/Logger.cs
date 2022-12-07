@@ -39,6 +39,9 @@ internal sealed class Logger : ILogger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public void Write(
         LogLevels logLevel,
@@ -55,6 +58,9 @@ internal sealed class Logger : ILogger
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
@@ -74,6 +80,9 @@ internal sealed class Logger : ILogger
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public ILogger NewScope() =>

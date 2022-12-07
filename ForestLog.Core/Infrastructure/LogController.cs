@@ -138,6 +138,9 @@ public abstract class LogController : ILogController
         }
     }
 
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public void Write(
         string facility, LogLevels logLevel, int scopeId,
@@ -159,6 +162,9 @@ public abstract class LogController : ILogController
         }
     }
 
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
         string facility, LogLevels logLevel, int scopeId,
@@ -197,7 +203,6 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    [DebuggerStepThrough]
     public ILogger CreateLogger(string facility = "Unknown") =>
         new Logger(this, facility);
 }

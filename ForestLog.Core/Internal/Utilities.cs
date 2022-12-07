@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Internal;
 
+[DebuggerStepThrough]
 internal static class Utilities
 {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP

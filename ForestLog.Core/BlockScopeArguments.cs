@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
+[DebuggerStepThrough]
 public readonly struct BlockScopeArguments
 {
     public readonly object?[] Arguments;
@@ -19,7 +20,6 @@ public readonly struct BlockScopeArguments
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    [DebuggerStepThrough]
     public BlockScopeArguments(params object?[] arguments) =>
         this.Arguments = arguments;
 }
