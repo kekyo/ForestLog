@@ -17,6 +17,8 @@ ForestLog - A minimalist logger interface.
 
 ## What is this?
 
+* TODO: Still under construction...
+
 A minimalist logger interface, formatted as Json Lines (`*.jsonl`).
 
 It provides the information required for logging with a simple interface and minimal configuration.
@@ -71,6 +73,7 @@ Output to (pseudo json formatted from jsonl):
 ```json
 {
     "id": "0a913e2e-4ba7-4606-b703-2c9eccc9d217",
+    "facility": "Unknown",
     "logLevel": "debug",
     "timestamp": "2022-12-06T09:27:04.5451256+09:00",
     "scopeId": 1,
@@ -88,6 +91,7 @@ Output to (pseudo json formatted from jsonl):
 }
 {
     "id": "31b4709f-f7f5-45b5-9381-75f64e23efce",
+    "facility": "Unknown",
     "logLevel": "trace",
     "timestamp": "2022-12-06T09:27:04.5473678+09:00",
     "scopeId": 1,
@@ -105,6 +109,7 @@ Output to (pseudo json formatted from jsonl):
 }
 {
     "id": "5848c701-0190-453a-83b7-271023306d4a",
+    "facility": "Unknown",
     "logLevel": "error",
     "timestamp": "2022-12-06T09:56:17.968195+09:00",
     "scopeId": 1,
@@ -122,10 +127,33 @@ Output to (pseudo json formatted from jsonl):
 }
 ```
 
+## Annotates facility name
+
+
+```csharp
+// Create facility annoteted logger
+var logger = logController.CreateLogger("DispatchController");
+
+var unitCount = 5;
+logger.Information($"Through the valid unit: Units={unitCount}");
+```
+
+Causes:
+
+```json
+{
+    "facility": "DispatchController",
+    "logLevel": "information",
+    "message": "Through the valid unit: Units=5",
+    // ...
+}
+```
+
 ## Awaited for exactly output
 
 Normally, ForestLog outputs all log entries in the background context.
 The use of an Awaitable method ensures that the log entries are actually output to a file.
+
 ```csharp
 public async Task OutputAsync(ILogger logger)
 {
