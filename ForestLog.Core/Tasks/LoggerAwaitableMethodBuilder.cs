@@ -21,7 +21,7 @@ namespace ForestLog.Tasks;
 #pragma warning disable 649
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 public struct LoggerAwaitableMethodBuilder<T>
 {
     private static readonly TaskCompletionSource<T> completedGuard = new();
@@ -173,7 +173,7 @@ public struct LoggerAwaitableMethodBuilder<T>
 //////////////////////////////////////////////////////////////////////
 
 [EditorBrowsable(EditorBrowsableState.Never)]
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 public struct LoggerAwaitableMethodBuilder
 {
     private static readonly TaskCompletionSource<bool> completedGuard = new();

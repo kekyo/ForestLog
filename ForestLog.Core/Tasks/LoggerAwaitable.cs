@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Tasks;
 
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 [AsyncMethodBuilder(typeof(LoggerAwaitableMethodBuilder<>))]
 public struct LoggerAwaitable<T> : IEquatable<LoggerAwaitable<T>>
 {
@@ -123,7 +123,7 @@ public struct LoggerAwaitable<T> : IEquatable<LoggerAwaitable<T>>
 
 //////////////////////////////////////////////////////////////////////
 
-//[DebuggerStepThrough]
+[DebuggerStepThrough]
 [AsyncMethodBuilder(typeof(LoggerAwaitableMethodBuilder))]
 public partial struct LoggerAwaitable : IEquatable<LoggerAwaitable>
 {
