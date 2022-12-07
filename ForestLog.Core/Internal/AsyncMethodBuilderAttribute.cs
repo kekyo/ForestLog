@@ -9,9 +9,11 @@
 
 #if !(NETCOREAPP || NETSTANDARD2_1)
 
+using System.Diagnostics;
+
 namespace System.Runtime.CompilerServices;
 
-
+[DebuggerStepThrough]
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum | AttributeTargets.Interface | AttributeTargets.Delegate, Inherited = false, AllowMultiple = false)]
 internal sealed class AsyncMethodBuilderAttribute : Attribute
 {

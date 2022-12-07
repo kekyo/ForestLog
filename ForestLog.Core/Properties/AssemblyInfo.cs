@@ -7,19 +7,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace ForestLog;
-
-[DebuggerStepThrough]
-public readonly struct BlockScopeArguments
-{
-    public readonly object?[] Arguments;
-
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public BlockScopeArguments(params object?[] arguments) =>
-        this.Arguments = arguments;
-}
+[assembly: InternalsVisibleTo("ForestLog")]

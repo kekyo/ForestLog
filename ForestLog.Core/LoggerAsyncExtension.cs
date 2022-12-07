@@ -21,6 +21,9 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
         this ILogger logger,
@@ -39,6 +42,9 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
         this ILogger logger,
@@ -51,11 +57,14 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             logLevel,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
@@ -78,6 +87,9 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
         this ILogger logger,
@@ -95,6 +107,9 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
         this ILogger logger,
@@ -106,11 +121,14 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Debug,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
@@ -131,6 +149,9 @@ public static class LoggerAsyncExtension
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
@@ -149,6 +170,9 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
         this ILogger logger,
@@ -160,11 +184,14 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Trace,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
@@ -185,6 +212,9 @@ public static class LoggerAsyncExtension
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
@@ -203,6 +233,9 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
         this ILogger logger,
@@ -214,11 +247,14 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Information,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
@@ -239,6 +275,9 @@ public static class LoggerAsyncExtension
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
@@ -257,6 +296,9 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
         this ILogger logger,
@@ -268,11 +310,14 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Warning,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
@@ -293,6 +338,9 @@ public static class LoggerAsyncExtension
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
@@ -311,6 +359,9 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
         this ILogger logger,
@@ -322,11 +373,14 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Error,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(

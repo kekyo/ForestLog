@@ -36,6 +36,11 @@ public sealed class JsonLineLoggerTests
                 break;
             }
 
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
             var jr = new JsonTextReader(new StringReader(line));
             yield return Utilities.JsonSerializer.Deserialize<JObject>(jr);
         }
@@ -61,7 +66,7 @@ public sealed class JsonLineLoggerTests
         try
         {
             using (var logController = LoggerFactory.CreateJsonLineLogController(
-                LogLevels.Debug, basePath))
+                basePath, LogLevels.Debug))
             {
                 var logger = logController.CreateLogger();
 
@@ -188,7 +193,7 @@ public sealed class JsonLineLoggerTests
     //////////////////////////////////////////////////////////
 
     private async LoggerAwaitable<LogEntry[]> QueryTestBlockAsync(
-        Action<ILogger> action, Func<LogEntry, bool> predicate)
+        Action<ILogger> action, int maximumLogEntries, Func<LogEntry, bool> predicate)
     {
         var basePath = Path.Combine(
             Path.GetDirectoryName(this.GetType().Assembly.Location)!,
@@ -208,7 +213,7 @@ public sealed class JsonLineLoggerTests
         try
         {
             using (var logController = LoggerFactory.CreateJsonLineLogController(
-                LogLevels.Debug, basePath))
+                basePath, LogLevels.Debug))
             {
                 var logger = logController.CreateLogger();
 
@@ -217,7 +222,8 @@ public sealed class JsonLineLoggerTests
                 // Wait for flushing.
                 await Task.Delay(500);
 
-                return await logController.QueryLogEntriesAsync(predicate, default);
+                return await logController.QueryLogEntriesAsync(
+                    maximumLogEntries, predicate, default);
             }
         }
         finally
@@ -239,6 +245,7 @@ public sealed class JsonLineLoggerTests
             var value2 = 456;
             logger.Trace($"CCC{value2}DDD");
         },
+        10,
         entry => entry.LogLevel == LogLevels.Debug);
 
         Assert.AreEqual("AAA123BBB", entries.Single().Message);
@@ -254,6 +261,7 @@ public sealed class JsonLineLoggerTests
             var value2 = 456;
             logger.Trace($"CCC{value2}DDD");
         },
+        10,
         entry => entry.LogLevel == LogLevels.Trace);
 
         Assert.AreEqual("CCC456DDD", entries.Single().Message);
@@ -269,6 +277,7 @@ public sealed class JsonLineLoggerTests
             var value2 = 456;
             logger.Trace($"CCC{value2}DDD");
         },
+        10,
         entry => true);
 
         Assert.AreEqual(2, entries.Length);
@@ -286,8 +295,31 @@ public sealed class JsonLineLoggerTests
             var value2 = 456;
             logger.Trace($"CCC{value2}DDD");
         },
+        10,
         entry => false);
 
         Assert.AreEqual(0, entries.Length);
+    }
+
+    [TestCase(0)]
+    [TestCase(1)]
+    [TestCase(9)]
+    [TestCase(10)]
+    [TestCase(11)]
+    public async Task ReadMultipleMessageWithLimit(int max)
+    {
+        var entries = await QueryTestBlockAsync(logger =>
+        {
+            for (var index = 0; index < 10; index++)
+            {
+                logger.Debug($"AAA{index}BBB");
+                logger.Trace($"CCC{index}DDD");
+            }
+        },
+        max,
+        entry => entry.LogLevel == LogLevels.Trace);
+
+        Assert.AreEqual(Math.Min(max, 10), entries.Length);
+        Assert.IsTrue(entries.All(e => e.Message.StartsWith("CCC")));
     }
 }

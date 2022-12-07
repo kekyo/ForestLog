@@ -10,6 +10,7 @@
 using ForestLog.Internal;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ForestLog;
@@ -36,7 +37,7 @@ public static class BlockScopeExtension
         catch (Exception ex)
         {
             scopedLogger.Log(
-                logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             throw;
         }
 
@@ -66,7 +67,7 @@ public static class BlockScopeExtension
         catch (Exception ex)
         {
             scopedLogger.Log(
-                logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             throw;
         }
 
@@ -82,6 +83,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static void Scope(
         this ILogger logger,
         LogLevels logLevel,
@@ -95,6 +97,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static T Scope<T>(
         this ILogger logger,
         LogLevels logLevel,
@@ -108,6 +111,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static void Scope(
         this ILogger logger,
         LogLevels logLevel,
@@ -122,6 +126,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static T Scope<T>(
         this ILogger logger,
         LogLevels logLevel,
@@ -137,6 +142,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static void DebugScope(
         this ILogger logger,
         Action<ILogger> scopedAction,
@@ -148,6 +154,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static T DebugScope<T>(
         this ILogger logger,
         Func<ILogger, T> scopedAction,
@@ -159,6 +166,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static void DebugScope(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -171,6 +179,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static T DebugScope<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -185,6 +194,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static void TraceScope(
         this ILogger logger,
         Action<ILogger> scopedAction,
@@ -196,6 +206,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static T TraceScope<T>(
         this ILogger logger,
         Func<ILogger, T> scopedAction,
@@ -207,6 +218,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static void TraceScope(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -219,6 +231,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static T TraceScope<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -233,6 +246,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static void InformationScope(
         this ILogger logger,
         Action<ILogger> scopedAction,
@@ -244,6 +258,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static T InformationScope<T>(
         this ILogger logger,
         Func<ILogger, T> scopedAction,
@@ -255,6 +270,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static void InformationScope(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -267,6 +283,7 @@ public static class BlockScopeExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [DebuggerStepThrough]
     public static T InformationScope<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -282,6 +299,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static void WarningScope(
         this ILogger logger,
         Action<ILogger> scopedAction,
@@ -294,6 +312,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static T WarningScope<T>(
         this ILogger logger,
         Func<ILogger, T> scopedAction,
@@ -306,6 +325,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static void WarningScope(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -319,6 +339,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static T WarningScope<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -334,6 +355,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static void ErrorScope(
         this ILogger logger,
         Action<ILogger> scopedAction,
@@ -346,6 +368,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static T ErrorScope<T>(
         this ILogger logger,
         Func<ILogger, T> scopedAction,
@@ -358,6 +381,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static void ErrorScope(
         this ILogger logger,
         BlockScopeArguments arguments,
@@ -371,6 +395,7 @@ public static class BlockScopeExtension
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
     public static T ErrorScope<T>(
         this ILogger logger,
         BlockScopeArguments arguments,

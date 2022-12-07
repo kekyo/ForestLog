@@ -8,12 +8,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Infrastructure;
+using System;
 
 namespace ForestLog;
 
 public static class LoggerFactory
 {
     public static ILogController CreateJsonLineLogController(
-        LogLevels minimumLogLevel, string basePath) =>
-        new JsonLineLogController(minimumLogLevel, basePath);
+        string basePath, LogLevels minimumOutputLogLevel, long sizeToNextFile) =>
+        new JsonLineLogController(basePath, minimumOutputLogLevel, sizeToNextFile);
+
+    public static ILogController CreateJsonLineLogController(
+        string basePath, LogLevels minimumOutputLogLevel) =>
+        new JsonLineLogController(basePath, minimumOutputLogLevel, 1 * 1024 * 1024);
 }

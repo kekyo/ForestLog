@@ -12,43 +12,64 @@ using ForestLog.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ForestLog.Infrastructure;
 
 public abstract class LogController : ILogController
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    , IAsyncDisposable
+#endif
 {
-    protected readonly LogLevels minimumLogLevel;
+    protected readonly LogLevels minimumOutputLogLevel;
     private readonly Queue<WaitingLogEntry> queue = new();
     private readonly ManualResetEvent available = new(false);
     private readonly ManualResetEvent abort = new(false);
 
-    private Thread thread;
-
+    private Task worker;
     internal int scopeIdCount;
 
     //////////////////////////////////////////////////////////////////////
 
-    protected LogController(LogLevels minimumLogLevel)
+    protected LogController(LogLevels minimumOutputLogLevel)
     {
-        this.minimumLogLevel = minimumLogLevel;
-
-        this.thread = new Thread(this.ThreadEntry);
-        this.thread.IsBackground = true;
-        this.thread.Start();
+        this.minimumOutputLogLevel = minimumOutputLogLevel;
+        this.worker = Task.Factory.StartNew(
+            this.WorkerEntry,
+            TaskCreationOptions.LongRunning);
     }
 
     public void Dispose()
     {
-        if (this.thread is { } thread)
+        if (this.worker is { } worker)
         {
-            this.thread = null!;
+            this.worker = null!;
             
             this.abort.Set();
-            thread.Join();
+            worker.Wait();
         }
     }
+
+#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    public ValueTask DisposeAsync()
+    {
+        if (this.worker is { } worker)
+        {
+            this.worker = null!;
+
+            this.abort.Set();
+            return new(worker);
+        }
+        else
+        {
+            return default;
+        }
+    }
+#endif
+
+    //////////////////////////////////////////////////////////////////////
 
     public virtual void Suspend()
     {
@@ -72,11 +93,21 @@ public abstract class LogController : ILogController
         }
     }
 
+    public event EventHandler<LogEntryEventArgs>? Arrived;
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    protected void InvokeArrived(LogEntry logEntry) =>
+        this.Arrived?.Invoke(this, new(logEntry));
+
     //////////////////////////////////////////////////////////////////////
 
-    protected abstract void OnAvailable(WaitingLogEntry waitingLogEntry);
+    protected abstract Task OnAvailableAsync(
+        WaitingLogEntry waitingLogEntry);
 
-    private void ThreadEntry()
+    private void WorkerEntry()
     {
         var waiters = new WaitHandle[]
         {
@@ -96,7 +127,7 @@ public abstract class LogController : ILogController
 
                 if (this.DequeueWaitingLogEntry() is { } waitingLogEntry)
                 {
-                    this.OnAvailable(waitingLogEntry);
+                    this.OnAvailableAsync(waitingLogEntry).Wait();
                 }
             }
             catch (Exception ex)
@@ -120,20 +151,23 @@ public abstract class LogController : ILogController
         }
     }
 
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public void Write(
         string facility, LogLevels logLevel, int scopeId,
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line)
     {
-        if (logLevel >= minimumLogLevel)
+        if (logLevel >= this.minimumOutputLogLevel)
         {
             var waitingLogEntry = new WaitingLogEntry(
                 facility, logLevel, DateTimeOffset.Now, scopeId,
                 message, ex, additionalData,
                 memberName, filePath, line,
                 Thread.CurrentThread.ManagedThreadId,
-                Utilities.NativeThreadId,
+                CoreUtilities.NativeThreadId,
                 Task.CurrentId ?? -1,
                 null, default);
 
@@ -141,6 +175,9 @@ public abstract class LogController : ILogController
         }
     }
 
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
         string facility, LogLevels logLevel, int scopeId,
@@ -148,17 +185,16 @@ public abstract class LogController : ILogController
         string memberName, string filePath, int line,
         CancellationToken ct)
     {
-        if (logLevel >= minimumLogLevel)
+        if (logLevel >= this.minimumOutputLogLevel)
         {
             var awaiter = new TaskCompletionSource<bool>();
-            var awaiterCTR = ct.Register(() => awaiter.TrySetCanceled());
 
             var waitingLogEntry = new WaitingLogEntry(
                 facility, logLevel, DateTimeOffset.Now, scopeId,
                 message, ex, additionalData,
                 memberName, filePath, line,
                 Thread.CurrentThread.ManagedThreadId,
-                Utilities.NativeThreadId,
+                CoreUtilities.NativeThreadId,
                 Task.CurrentId ?? -1,
                 awaiter, ct);
 
@@ -175,11 +211,12 @@ public abstract class LogController : ILogController
     //////////////////////////////////////////////////////////////////////
 
     public abstract LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
-        Func<LogEntry, bool> predicate, CancellationToken ct);
+        int maximumLogEntries,
+        Func<LogEntry, bool> predicate,
+        CancellationToken ct);
 
     //////////////////////////////////////////////////////////////////////
 
-    [DebuggerStepThrough]
     public ILogger CreateLogger(string facility = "Unknown") =>
         new Logger(this, facility);
 }

@@ -143,7 +143,7 @@ public struct LoggerAwaitableMethodBuilder<T>
         }
         catch (Exception ex)
         {
-            Utilities.RethrowAsynchronously(ex);
+            CoreUtilities.RethrowAsynchronously(ex);
         }
     }
 
@@ -165,7 +165,7 @@ public struct LoggerAwaitableMethodBuilder<T>
         }
         catch (Exception ex)
         {
-            Utilities.RethrowAsynchronously(ex);
+            CoreUtilities.RethrowAsynchronously(ex);
         }
     }
 }
@@ -296,7 +296,7 @@ public struct LoggerAwaitableMethodBuilder
         }
         catch (Exception ex)
         {
-            Utilities.RethrowAsynchronously(ex);
+            CoreUtilities.RethrowAsynchronously(ex);
         }
     }
 
@@ -318,7 +318,7 @@ public struct LoggerAwaitableMethodBuilder
         }
         catch (Exception ex)
         {
-            Utilities.RethrowAsynchronously(ex);
+            CoreUtilities.RethrowAsynchronously(ex);
         }
     }
 }

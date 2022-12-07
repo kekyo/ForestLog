@@ -35,6 +35,11 @@ public sealed class AsyncJsonLineLoggerTests
                 break;
             }
 
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
             var jr = new JsonTextReader(new StringReader(line));
             yield return Utilities.JsonSerializer.Deserialize<JObject>(jr);
         }
@@ -60,7 +65,7 @@ public sealed class AsyncJsonLineLoggerTests
         try
         {
             using (var logController = LoggerFactory.CreateJsonLineLogController(
-                LogLevels.Debug, basePath))
+                basePath, LogLevels.Debug))
             {
                 var logger = logController.CreateLogger();
 

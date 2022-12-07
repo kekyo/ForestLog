@@ -108,7 +108,7 @@ public struct LoggerAwaitable<T> : IEquatable<LoggerAwaitable<T>>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static implicit operator Task<T>(LoggerAwaitable<T> rhs) =>
-        rhs.task ?? Utilities.FromResult(rhs.value);
+        rhs.task ?? CoreUtilities.FromResult(rhs.value);
 
 #if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -195,7 +195,7 @@ public partial struct LoggerAwaitable : IEquatable<LoggerAwaitable>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static implicit operator Task(LoggerAwaitable rhs) =>
-        rhs.task ?? Utilities.CompletedTask;
+        rhs.task ?? CoreUtilities.CompletedTask;
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -12,24 +12,24 @@ using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
-public sealed class LogEntry
+public class LogEntry
 {
-    public readonly Guid Id;
-    public readonly string Facility;
-    public readonly LogLevels LogLevel;
-    public readonly DateTimeOffset Timestamp;
-    public readonly int ScopeId;
-    public readonly string Message;
-    public readonly string? ExceptionType;
-    public readonly string? ExceptionMessage;
-    public readonly object? AdditionalData;
-    public readonly string MemberName;
-    public readonly string FilePath;
-    public readonly int Line;
-    public readonly int ManagedThreadId;
-    public readonly int NativeThreadId;
-    public readonly int TaskId;
-    public readonly int ProcessId;
+    public Guid Id { get; }
+    public string Facility { get; }
+    public LogLevels LogLevel { get; }
+    public DateTimeOffset Timestamp { get; }
+    public int ScopeId { get; }
+    public string Message { get; }
+    public string? ExceptionType { get; }
+    public string? ExceptionMessage { get; }
+    public object? AdditionalData { get; }
+    public string MemberName { get; }
+    public string FilePath { get; }
+    public int Line { get; }
+    public int ManagedThreadId { get; }
+    public int NativeThreadId { get; }
+    public int TaskId { get; }
+    public int ProcessId { get; }
 
     //////////////////////////////////////////////////////////////////////
 
