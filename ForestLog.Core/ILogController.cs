@@ -22,7 +22,7 @@ public interface ILogController : IDisposable
 
     ILogger CreateLogger(string facility = "Unknown");
 
-    Task<LogEntry[]> QueryLogEntriesAsync(
+    LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
         Func<LogEntry, bool> predicate,
         CancellationToken ct);
 

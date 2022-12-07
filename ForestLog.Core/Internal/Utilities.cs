@@ -9,6 +9,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -18,9 +19,15 @@ namespace ForestLog.Internal;
 
 internal static class Utilities
 {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static IFormattable FormatException(Exception ex) =>
         $"{ex.GetType().FullName}: {ex.Message}";
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static IFormattable FormatLeaveWithException(Exception ex) =>
         $"Leave with: {ex.GetType().FullName}: {ex.Message}";
 
@@ -44,6 +51,9 @@ internal static class Utilities
         get => getCurrentThreadId();
     }
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static Task<T> FromResult<T>(T value) =>
 #if NET35 || NET40
         TaskEx.FromResult(value);
@@ -51,12 +61,36 @@ internal static class Utilities
         Task.FromResult(value);
 #endif
 
-    public static Task CompletedTask =>
-#if NET35 || NET40
-        TaskEx.FromResult(true);
-#elif NET45
-        Task.FromResult(true);
-#else
-        Task.CompletedTask;
+    public static Task CompletedTask
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        get =>
+#if NET35 || NET40
+            TaskEx.FromResult(true);
+#elif NET45
+            Task.FromResult(true);
+#else
+            Task.CompletedTask;
+#endif
+    }
+
+    public static void RethrowAsynchronously(Exception ex)
+    {
+#if NET35 || NET40
+        ThreadPool.QueueUserWorkItem(p =>
+        {
+            var ex = (Exception)p!;
+            throw new TargetInvocationException(ex);
+        }, ex);
+#else
+        var edi = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex);
+        ThreadPool.QueueUserWorkItem(p =>
+        {
+            var edi = (System.Runtime.ExceptionServices.ExceptionDispatchInfo)p!;
+            edi.Throw();
+        }, edi);
+#endif
+    }
 }

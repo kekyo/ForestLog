@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -53,12 +54,37 @@ public struct LoggerAwaitableMethodBuilder<T>
         }
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public void Start<TStateMachine>(ref TStateMachine stateMachine)
-        where TStateMachine : IAsyncStateMachine =>
-        stateMachine.MoveNext();
+        where TStateMachine : IAsyncStateMachine
+    {
+        var sc = SynchronizationContext.Current;
+#if NET5_0_OR_GREATER
+        var ec = ExecutionContext.Capture();
+#endif
+        try
+        {
+            stateMachine.MoveNext();
+        }
+        catch
+        {
+            SynchronizationContext.SetSynchronizationContext(sc);
+#if NET5_0_OR_GREATER
+            if (ec != null)
+            {
+                ExecutionContext.Restore(ec);
+            }
+#endif
+            throw;
+        }
+
+        SynchronizationContext.SetSynchronizationContext(sc);
+#if NET5_0_OR_GREATER
+        if (ec != null)
+        {
+            ExecutionContext.Restore(ec);
+        }
+#endif
+    }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,7 +137,14 @@ public struct LoggerAwaitableMethodBuilder<T>
 
         //Debug.Assert(boxed.builder.tcs != null);
 
-        awaiter.OnCompleted(boxed.MoveNext);
+        try
+        {
+            awaiter.OnCompleted(boxed.MoveNext);
+        }
+        catch (Exception ex)
+        {
+            Utilities.RethrowAsynchronously(ex);
+        }
     }
 
     public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
@@ -126,7 +159,14 @@ public struct LoggerAwaitableMethodBuilder<T>
 
         //Debug.Assert(boxed.builder.tcs != null);
 
-        awaiter.UnsafeOnCompleted(boxed.MoveNext);
+        try
+        {
+            awaiter.UnsafeOnCompleted(boxed.MoveNext);
+        }
+        catch (Exception ex)
+        {
+            Utilities.RethrowAsynchronously(ex);
+        }
     }
 }
 
@@ -169,8 +209,36 @@ public struct LoggerAwaitableMethodBuilder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void Start<TStateMachine>(ref TStateMachine stateMachine)
-        where TStateMachine : IAsyncStateMachine =>
-        stateMachine.MoveNext();
+        where TStateMachine : IAsyncStateMachine
+    {
+        var sc = SynchronizationContext.Current;
+#if NET5_0_OR_GREATER
+        var ec = ExecutionContext.Capture();
+#endif
+        try
+        {
+            stateMachine.MoveNext();
+        }
+        catch
+        {
+            SynchronizationContext.SetSynchronizationContext(sc);
+#if NET5_0_OR_GREATER
+            if (ec != null)
+            {
+                ExecutionContext.Restore(ec);
+            }
+#endif
+            throw;
+        }
+
+        SynchronizationContext.SetSynchronizationContext(sc);
+#if NET5_0_OR_GREATER
+        if (ec != null)
+        {
+            ExecutionContext.Restore(ec);
+        }
+#endif
+    }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -222,7 +290,14 @@ public struct LoggerAwaitableMethodBuilder
 
         //Debug.Assert(boxed.builder.tcs != null);
 
-        awaiter.OnCompleted(boxed.MoveNext);
+        try
+        {
+            awaiter.OnCompleted(boxed.MoveNext);
+        }
+        catch (Exception ex)
+        {
+            Utilities.RethrowAsynchronously(ex);
+        }
     }
 
     public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
@@ -237,6 +312,13 @@ public struct LoggerAwaitableMethodBuilder
 
         //Debug.Assert(boxed.builder.tcs != null);
 
-        awaiter.UnsafeOnCompleted(boxed.MoveNext);
+        try
+        {
+            awaiter.UnsafeOnCompleted(boxed.MoveNext);
+        }
+        catch (Exception ex)
+        {
+            Utilities.RethrowAsynchronously(ex);
+        }
     }
 }

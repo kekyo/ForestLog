@@ -336,7 +336,7 @@ public static class BlockScopeAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static Task<T> InformationScopeAsync<T>(
+    public static LoggerAwaitable<T> InformationScopeAsync<T>(
         this ILogger logger,
         BlockScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
