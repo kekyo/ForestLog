@@ -49,7 +49,7 @@ public readonly struct LoggerAwaiter<T> : ICriticalNotifyCompletion
         }
         else
         {
-            Utilities.CompletedTask.GetAwaiter().OnCompleted(continuation);
+            CoreUtilities.CompletedTask.GetAwaiter().OnCompleted(continuation);
         }
     }
 
@@ -61,7 +61,7 @@ public readonly struct LoggerAwaiter<T> : ICriticalNotifyCompletion
         }
         else
         {
-            Utilities.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
+            CoreUtilities.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
         }
     }
 
@@ -116,7 +116,7 @@ public readonly struct LoggerAwaiter : ICriticalNotifyCompletion
         }
         else
         {
-            Utilities.CompletedTask.GetAwaiter().OnCompleted(continuation);
+            CoreUtilities.CompletedTask.GetAwaiter().OnCompleted(continuation);
         }
     }
 
@@ -128,7 +128,7 @@ public readonly struct LoggerAwaiter : ICriticalNotifyCompletion
         }
         else
         {
-            Utilities.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
+            CoreUtilities.CompletedTask.GetAwaiter().UnsafeOnCompleted(continuation);
         }
     }
 

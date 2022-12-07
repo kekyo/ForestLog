@@ -52,12 +52,12 @@ public static class BlockScopeAsyncExtension
             if (ct.HasValue)
             {
                 await scopedLogger.LogAsync(
-                    logLevel, ex, Utilities.FormatLeaveWithException(ex), null, ct.Value, memberName, filePath, line);
+                    logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, ct.Value, memberName, filePath, line);
             }
             else
             {
                 scopedLogger.Log(
-                    logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                    logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             }
             throw;
         }
@@ -107,12 +107,12 @@ public static class BlockScopeAsyncExtension
             if (ct.HasValue)
             {
                 await scopedLogger.LogAsync(
-                    logLevel, ex, Utilities.FormatLeaveWithException(ex), null, ct.Value, memberName, filePath, line);
+                    logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, ct.Value, memberName, filePath, line);
             }
             else
             {
                 scopedLogger.Log(
-                    logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                    logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             }
             throw;
         }

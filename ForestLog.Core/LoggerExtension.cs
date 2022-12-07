@@ -51,7 +51,7 @@ public static class LoggerExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(logLevel, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.Write(logLevel, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -104,7 +104,7 @@ public static class LoggerExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Debug, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.Write(LogLevels.Debug, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -155,7 +155,7 @@ public static class LoggerExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Trace, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.Write(LogLevels.Trace, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -206,7 +206,7 @@ public static class LoggerExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Information, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.Write(LogLevels.Information, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -257,7 +257,7 @@ public static class LoggerExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Warning, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.Write(LogLevels.Warning, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -308,7 +308,7 @@ public static class LoggerExtension
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Error, Utilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.Write(LogLevels.Error, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -36,6 +36,11 @@ public sealed class JsonLineLoggerTests
                 break;
             }
 
+            if (string.IsNullOrWhiteSpace(line))
+            {
+                continue;
+            }
+
             var jr = new JsonTextReader(new StringReader(line));
             yield return Utilities.JsonSerializer.Deserialize<JObject>(jr);
         }

@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 namespace ForestLog.Internal;
 
 [DebuggerStepThrough]
-internal static class Utilities
+internal static class CoreUtilities
 {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

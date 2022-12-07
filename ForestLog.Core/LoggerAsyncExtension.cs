@@ -57,7 +57,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             logLevel,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -121,7 +121,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Debug,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -184,7 +184,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Trace,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -247,7 +247,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Information,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -310,7 +310,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Warning,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -373,7 +373,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Error,
-            Utilities.FormatException(ex), ex, additionalData,
+            CoreUtilities.FormatException(ex), ex, additionalData,
             memberName, filePath, line, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP

@@ -37,7 +37,7 @@ public static class BlockScopeExtension
         catch (Exception ex)
         {
             scopedLogger.Log(
-                logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             throw;
         }
 
@@ -67,7 +67,7 @@ public static class BlockScopeExtension
         catch (Exception ex)
         {
             scopedLogger.Log(
-                logLevel, ex, Utilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
             throw;
         }
 

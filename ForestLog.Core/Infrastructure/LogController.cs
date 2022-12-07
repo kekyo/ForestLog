@@ -37,7 +37,7 @@ public abstract class LogController : ILogController
     {
         this.minimumLogLevel = minimumLogLevel;
         this.worker = Task.Factory.StartNew(
-            this.ThreadEntry,
+            this.WorkerEntry,
             TaskCreationOptions.LongRunning);
     }
 
@@ -104,9 +104,10 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    protected abstract void OnAvailable(WaitingLogEntry waitingLogEntry);
+    protected abstract Task OnAvailableAsync(
+        WaitingLogEntry waitingLogEntry);
 
-    private void ThreadEntry()
+    private void WorkerEntry()
     {
         var waiters = new WaitHandle[]
         {
@@ -126,7 +127,7 @@ public abstract class LogController : ILogController
 
                 if (this.DequeueWaitingLogEntry() is { } waitingLogEntry)
                 {
-                    this.OnAvailable(waitingLogEntry);
+                    this.OnAvailableAsync(waitingLogEntry).Wait();
                 }
             }
             catch (Exception ex)
@@ -166,7 +167,7 @@ public abstract class LogController : ILogController
                 message, ex, additionalData,
                 memberName, filePath, line,
                 Thread.CurrentThread.ManagedThreadId,
-                Utilities.NativeThreadId,
+                CoreUtilities.NativeThreadId,
                 Task.CurrentId ?? -1,
                 null, default);
 
@@ -194,7 +195,7 @@ public abstract class LogController : ILogController
                 message, ex, additionalData,
                 memberName, filePath, line,
                 Thread.CurrentThread.ManagedThreadId,
-                Utilities.NativeThreadId,
+                CoreUtilities.NativeThreadId,
                 Task.CurrentId ?? -1,
                 awaiter, ct);
 

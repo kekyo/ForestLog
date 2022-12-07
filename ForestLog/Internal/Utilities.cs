@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,6 +49,9 @@ internal static class Utilities
         JsonSerializer.Converters.Add(new StringEnumConverter(defaultNamingStrategy));
     }
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static Task<T[]> WhenAll<T>(IEnumerable<Task<T>> enumerable) =>
 #if NET35 || NET40
         TaskEx.WhenAll(enumerable);
@@ -55,6 +59,9 @@ internal static class Utilities
         Task.WhenAll(enumerable);
 #endif
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static Task<T> Run<T>(Func<T> action) =>
 #if NET35 || NET40
         TaskEx.Run(action);
@@ -62,11 +69,24 @@ internal static class Utilities
         Task.Run(action);
 #endif
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static IEnumerable<string> EnumerateFiles(
         string path, string pattern, SearchOption so) =>
 #if NET35
         Directory.GetFiles(path, pattern, so);
 #else
         Directory.EnumerateFiles(path, pattern, so);
+#endif
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    public static bool IsNullOrWhiteSpace(string? text) =>
+#if NET35
+        string.IsNullOrEmpty(text) || (text!.Trim().Length == 0);
+#else
+        string.IsNullOrWhiteSpace(text);
 #endif
 }
