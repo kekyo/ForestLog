@@ -265,7 +265,85 @@ LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
 
 ## Uses builtin awaitable value task (Advanced topic)
 
-TODO:
+ForestLog has its own awaitable type, the `LoggerAwaitable` type.
+This structure is a value-type likes the `ValueTask` type and allowing low-cost asynchronous operations.
+It also defines an inter-conversion operator between the `Task` and `ValueTask` type,
+allowing seamless use as follows:
+
+```csharp
+// Implicitly conversion from `Task`
+async Task AsyncOperation()
+{
+    // ...
+}
+
+LoggerAwaitable awaitable = AsyncOperation();
+await awaitable;
+```
+
+```csharp
+// Implicitly conversion from `ValueTask`
+async ValueTask AsyncOperation()
+{
+    // ...
+}
+
+LoggerAwaitable awaitable = AsyncOperation();
+await awaitable;
+```
+
+```csharp
+// Implicitly conversion from `Task<T>`
+async Task<int> AsyncOperationWithResult()
+{
+    // ...
+}
+
+LoggerAwaitable<int> awaitable = AsyncOperationWithResult();
+var result = await awaitable;
+```
+
+```csharp
+// async-await operation
+async LoggerAwaitable AsyncOperation()
+{
+    await Task.Delay(100);
+}
+```
+
+```csharp
+// async-await operation with result
+async LoggerAwaitable<int> AsyncOperationWithResult()
+{
+    await Task.Delay(100);
+    return 123;
+}
+
+var result = await AsyncOperationWithResult();
+```
+
+These `LoggerAwaitable` types are defined for the following reasons:
+
+* Elimination of dependencies on assemblies containing `ValueTask` types.
+* Elimination of complications due to inter-conversion between `Task` and `ValueTask` types.
+
+For example, using the `LoggerAwaitable` type,
+you can easily write and reduce asynchronous operation cost the following code:
+
+```csharp
+// `TraceScope` method receives `Func<ILogger, LoggerAwaitable<int>>` delegate type
+// and returns `LoggerAwaitable<int>` type.
+public Task<int> ComplextOperationAsync() =>
+    this.logger.TraceScope(async logger =>
+    {
+        // ...
+
+        return result;
+    });
+```
+
+Note: In `netcoreapp2.1` or later and `netstandard2.1`, the `ValueTask` is not required any external dependencies.
+So we can use `ValueTask` conversion naturally on these environments.
 
 ----
 
