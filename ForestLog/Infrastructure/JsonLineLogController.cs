@@ -26,18 +26,22 @@ internal sealed class JsonLineLogController : LogController
 {
     private readonly string basePath;
     private readonly long sizeToNextFile;
+    private readonly int maximumLogFiles;
     private readonly LoggerAsyncLock locker = new();
+    private readonly LoggerAsyncLock rotationLocker = new();
 
     //////////////////////////////////////////////////////////////////////
 
     public JsonLineLogController(
         string basePath,
         LogLevels minimumOutputLogLevel,
-        long sizeToNextFile) :
+        long sizeToNextFile,
+        int maximumLogFiles) :
         base(minimumOutputLogLevel)
     {
         this.basePath = Path.GetFullPath(basePath);
         this.sizeToNextFile = sizeToNextFile;
+        this.maximumLogFiles = maximumLogFiles;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -131,12 +135,14 @@ internal sealed class JsonLineLogController : LogController
             return Utilities.Empty<LogEntry>();
         }
 
+        using var __ = this.rotationLocker.UnsafeLock();
+
         var preloadPathList =
             Utilities.EnumerateFiles(
                 this.basePath, "log*.jsonl", SearchOption.AllDirectories).
             Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
             ToArray();
-        
+
         var preloadResultsNotOrdered = (await Utilities.WhenAll(preloadPathList.
             Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
             SelectMany(results => results).
@@ -176,17 +182,48 @@ internal sealed class JsonLineLogController : LogController
 
     //////////////////////////////////////////////////////////////////////
 
-    private static string GetCandidateBackupFilePath(string basePath)
+    private readonly struct CandidatePaths
     {
-        var lastIndex = new[] { 0 }.
-            Concat(
-                Utilities.EnumerateFiles(
-                    basePath, "log*.jsonl", SearchOption.AllDirectories).
-                Select(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var index) ? (int?)index : null).
-                Where(index => index.HasValue).
-                Select(index => index!.Value)).
-            Max();
-        return $"log{lastIndex + 1}.jsonl";
+        public readonly string BackupPath;
+        public readonly string[] RemovePaths;
+
+        public CandidatePaths(string backupPath, string[] removePaths)
+        {
+            this.BackupPath = backupPath;
+            this.RemovePaths = removePaths;
+        }
+    }
+
+    private static CandidatePaths GetCandidatePaths(
+        string basePath, int maximumLogFiles)
+    {
+        var indices = Utilities.EnumerateFiles(
+            basePath, "log*.jsonl", SearchOption.AllDirectories).
+            Select(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var index) ? (int?)index : null).
+            Where(index => index.HasValue).
+            Select(index => index!.Value).
+            OrderBy(index => index).
+            ToArray();
+
+        if (indices.Length == 0)
+        {
+            return new(Path.Combine(basePath, "log1.jsonl"), Utilities.Empty<string>());
+        }
+
+        var backupPath = Path.Combine(basePath, $"log{indices.Last() + 1}.jsonl");
+
+        if (indices.Length >= maximumLogFiles)
+        {
+            var removePaths = indices.
+                Take(maximumLogFiles - indices.Length + 1).
+                Select(index => $"log{index}.jsonl").
+                ToArray();
+            return new(backupPath, removePaths);
+        }
+        else
+        {
+            return new(Path.Combine(basePath, "log1.jsonl"), Utilities.Empty<string>());
+        }
     }
 
 #if NET35 || NET40
@@ -198,8 +235,6 @@ internal sealed class JsonLineLogController : LogController
     protected override async Task OnAvailableAsync(WaitingLogEntry waitingLogEntry)
 #endif
     {
-        using var _ = this.locker.UnsafeLock();
-
         if (!Directory.Exists(this.basePath))
         {
             try
@@ -217,11 +252,33 @@ internal sealed class JsonLineLogController : LogController
         var fi = new FileInfo(path);
         if (fi.Exists && (fi.Length >= this.sizeToNextFile))
         {
-            var candidatePath = Path.Combine(
-                this.basePath,
-                GetCandidateBackupFilePath(this.basePath));
-            fi.MoveTo(candidatePath);
+            using var __ = this.rotationLocker.UnsafeLock();
+
+            var candidatePaths = GetCandidatePaths(this.basePath, this.maximumLogFiles);
+
+            try
+            {
+                fi.MoveTo(candidatePaths.BackupPath);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
+
+            foreach (var removePath in candidatePaths.RemovePaths)
+            {
+                try
+                {
+                    File.Delete(removePath);
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex);
+                }
+            }
         }
+
+        using var _ = this.locker.UnsafeLock();
 
         using var fs = new FileStream(
             path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 65536

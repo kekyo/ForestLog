@@ -329,7 +329,17 @@ Result:
 
 ![Applied log size configuration](Images/logs_directory.png)
 
-TODO: Rotation
+Enable log file rotation:
+
+```csharp
+using var logController = LoggerFactory.CreateJsonLinesLogger(
+    "logs",
+    LogLevels.Debug,
+    1 * 1024 * 1024,
+    // Maximum log files.
+    10
+    );
+```
 
 ## Suspend and resume
 
