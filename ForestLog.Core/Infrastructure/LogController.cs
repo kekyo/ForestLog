@@ -82,14 +82,30 @@ public abstract class LogController : ILogController
 
     protected WaitingLogEntry? DequeueWaitingLogEntry()
     {
-        lock (this.queue)
+        while (true)
         {
-            if (this.queue.Count == 0)
+            WaitingLogEntry logEntry;
+            lock (this.queue)
             {
-                this.available.Reset();
-                return null;
+                if (this.queue.Count == 0)
+                {
+                    this.available.Reset();
+                    return null;
+                }
+                
+                logEntry = this.queue.Dequeue();
             }
-            return this.queue.Dequeue();
+
+            if (logEntry.LogLevel < LogLevels.Ignore)
+            {
+                return logEntry;
+            }
+
+            // Invalid log level (Ignore)
+            if (logEntry.IsAwaiting)
+            {
+                logEntry.SetCompleted();
+            }
         }
     }
 

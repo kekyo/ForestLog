@@ -154,6 +154,22 @@ Output to (pseudo json formatted from jsonl):
 }
 ```
 
+The log level values are:
+
+```csharp
+// The lower symbol name is the most important.
+// This order affects `MinimumOutputLogLevel` limitation.
+public enum LogLevels
+{
+    Debug,
+    Trace,
+    Information,
+    Warning,
+    Error,
+    Ignore,   // <-- Will ignore any log output.
+}
+```
+
 ## Annotates facility name
 
 ```csharp
@@ -412,10 +428,10 @@ For example, using the `LoggerAwaitable` type,
 you can easily (simply) write and reduce asynchronous operation cost the following:
 
 ```csharp
-// `TraceScope` method receives `Func<ILogger, LoggerAwaitable<int>>` delegate type
+// `TraceScopeAsync` method receives `Func<ILogger, LoggerAwaitable<int>>` delegate type
 // and returns `LoggerAwaitable<int>` type.
 public Task<int> ComplextOperationAsync() =>
-    this.logger.TraceScope(async logger =>
+    this.logger.TraceScopeAsync(async logger =>
     {
         // ...
 

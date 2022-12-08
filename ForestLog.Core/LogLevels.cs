@@ -15,5 +15,6 @@ public enum LogLevels
     Trace,
     Information,
     Warning,
-    Error
+    Error,
+    Ignore = int.MaxValue,
 }

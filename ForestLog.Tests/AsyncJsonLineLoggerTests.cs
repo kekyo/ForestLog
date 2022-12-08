@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace ForestLog;
@@ -45,7 +46,9 @@ public sealed class AsyncJsonLineLoggerTests
         }
     }
 
-    private async ValueTask<JObject?[]> LogTestBlockAsync(Func<ILogger, ValueTask> action)
+    private async ValueTask<JObject?[]> LogTestBlockAsync(
+        Func<ILogger, ValueTask> action,
+        LogLevels maximumOutputLogLevel = LogLevels.Debug)
     {
         var basePath = Path.Combine(
             Path.GetDirectoryName(this.GetType().Assembly.Location)!,
@@ -65,7 +68,7 @@ public sealed class AsyncJsonLineLoggerTests
         try
         {
             using (var logController = LoggerFactory.CreateJsonLineLogController(
-                basePath, LogLevels.Debug))
+                basePath, maximumOutputLogLevel))
             {
                 var logger = logController.CreateLogger();
 
@@ -152,4 +155,76 @@ public sealed class AsyncJsonLineLoggerTests
     }
 
     //////////////////////////////////////////////////////////
+
+    [TestCase(LogLevels.Debug)]
+    [TestCase(LogLevels.Trace)]
+    [TestCase(LogLevels.Information)]
+    [TestCase(LogLevels.Warning)]
+    [TestCase(LogLevels.Error)]
+    public async Task LogSingleMessage(LogLevels logLevel)
+    {
+        var lines = await LogTestBlockAsync(async logger =>
+        {
+            var value = 123;
+            await logger.LogAsync(logLevel, $"AAA{value}BBB");
+        });
+
+        Assert.AreEqual("AAA123BBB", lines.Single()?["message"]?.ToString());
+        Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines.Single()?["logLevel"]?.ToString());
+    }
+
+    [Test]
+    public async Task LogIgnore1()
+    {
+        var lines = await LogTestBlockAsync(async logger =>
+        {
+            var value = 123;
+            await logger.LogAsync(LogLevels.Ignore, $"AAA{value}BBB");
+        });
+
+        Assert.AreEqual(0, lines.Length);
+    }
+
+    [Test]
+    public async Task LimitOutputLogLevel()
+    {
+        for (var targetLogLevel = LogLevels.Debug;
+            targetLogLevel <= LogLevels.Error;
+            targetLogLevel++)
+        {
+            for (var minimumOutputLogLevel = LogLevels.Debug;
+                minimumOutputLogLevel <= LogLevels.Error;
+                minimumOutputLogLevel++)
+            {
+                var lines = await LogTestBlockAsync(async logger =>
+                {
+                    var value = 123;
+                    await logger.LogAsync(targetLogLevel, $"AAA{value}BBB");
+                },
+                minimumOutputLogLevel);
+
+                if (targetLogLevel >= minimumOutputLogLevel)
+                {
+                    Assert.AreEqual("AAA123BBB", lines.Single()?["message"]?.ToString());
+                    Assert.AreEqual(targetLogLevel.ToString().ToLowerInvariant(), lines.Single()?["logLevel"]?.ToString());
+                }
+                else
+                {
+                    Assert.AreEqual(0, lines.Length);
+                }
+            }
+        }
+    }
+
+    [Test]
+    public async Task LogIgnore2()
+    {
+        var lines = await LogTestBlockAsync(async logger =>
+        {
+            var value = 123;
+            await logger.LogAsync(LogLevels.Debug, $"AAA{value}BBB");
+        }, LogLevels.Ignore);
+
+        Assert.AreEqual(0, lines.Length);
+    }
 }
