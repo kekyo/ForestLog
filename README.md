@@ -193,7 +193,7 @@ Result:
 {
     "logLevel": "trace",
     "scopeId": 123,      // <-- Same scope id
-    "message": "Enter.",
+    "message": "Enter: Parent=42",   // <-- Parent logger scope id
     // ...
 }
 {
@@ -237,7 +237,7 @@ Result:
 {
     "logLevel": "trace",
     "scopeId": 456, 
-    "message": "Enter.",
+    "message": "Enter: Parent=42",
     "additionalData": [
         111,
         222.333,

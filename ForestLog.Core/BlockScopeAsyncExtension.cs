@@ -35,12 +35,14 @@ public static class BlockScopeAsyncExtension
         if (ct.HasValue)
         {
             await scopedLogger.LogAsync(
-                logLevel, $"Enter.", arguments, ct.Value, memberName, filePath, line);
+                logLevel, $"Enter: Parent={logger.ScopeId}",
+                arguments, ct.Value, memberName, filePath, line);
         }
         else
         {
             scopedLogger.Log(
-                logLevel, $"Enter.", arguments, memberName, filePath, line);
+                logLevel, $"Enter: Parent={logger.ScopeId}",
+                arguments, memberName, filePath, line);
         }
 
         var sw = Stopwatch.StartNew();
@@ -72,12 +74,14 @@ public static class BlockScopeAsyncExtension
         if (ct.HasValue)
         {
             await scopedLogger.LogAsync(
-                logLevel, $"Leave: Elapsed={elapsed2}", null, ct.Value, memberName, filePath, line);
+                logLevel, $"Leave: Elapsed={elapsed2}",
+                null, ct.Value, memberName, filePath, line);
         }
         else
         {
             scopedLogger.Log(
-                logLevel, $"Leave: Elapsed={elapsed2}", null, memberName, filePath, line);
+                logLevel, $"Leave: Elapsed={elapsed2}",
+                null, memberName, filePath, line);
         }
     }
 
@@ -96,12 +100,14 @@ public static class BlockScopeAsyncExtension
         if (ct.HasValue)
         {
             await scopedLogger.LogAsync(
-                logLevel, $"Enter.", arguments, ct.Value, memberName, filePath, line);
+                logLevel, $"Enter: Parent={logger.ScopeId}",
+                arguments, ct.Value, memberName, filePath, line);
         }
         else
         {
             scopedLogger.Log(
-                logLevel, $"Enter.", arguments, memberName, filePath, line);
+                logLevel, $"Enter: Parent={logger.ScopeId}",
+                arguments, memberName, filePath, line);
         }
 
         var sw = Stopwatch.StartNew();
@@ -134,12 +140,14 @@ public static class BlockScopeAsyncExtension
         if (ct.HasValue)
         {
             await scopedLogger.LogAsync(
-                logLevel, $"Leave: Elapsed={elapsed2}", result, ct.Value, memberName, filePath, line);
+                logLevel, $"Leave: Elapsed={elapsed2}",
+                result, ct.Value, memberName, filePath, line);
         }
         else
         {
             scopedLogger.Log(
-                logLevel, $"Leave: Elapsed={elapsed2}", result, memberName, filePath, line);
+                logLevel, $"Leave: Elapsed={elapsed2}",
+                result, memberName, filePath, line);
         }
 
         return result;

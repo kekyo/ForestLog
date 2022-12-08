@@ -16,6 +16,8 @@ namespace ForestLog;
 
 public interface ILogger
 {
+    int ScopeId { get; }
+
     [EditorBrowsable(EditorBrowsableState.Never)]
     void Write(
         LogLevels logLevel,
