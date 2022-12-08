@@ -47,6 +47,8 @@ public sealed class LoggerAwaitableTests
         Assert.IsTrue(actual >= expected);
     }
 
+    //////////////////////////////////////////////////////////////////
+
     [Test]
     public async Task SequentialAwaitings1()
     {
@@ -99,6 +101,67 @@ public sealed class LoggerAwaitableTests
         for (var index = 0; index < 10; index++)
         {
             await LoggerAwaitable.FromTask(new ValueTask(Task.Delay(100)));
+        }
+    }
+#endif
+
+    //////////////////////////////////////////////////////////////////
+
+    [Test]
+    public async Task ExceptionThrowed()
+    {
+        var awaitable = LoggerAwaitable.FromTask(Task.FromException(new ApplicationException()));
+
+        try
+        {
+            await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
+        }
+    }
+
+    [Test]
+    public async Task ExceptionThrowedAfterAwaitedOnTask()
+    {
+        static async Task ThrowAfterDelay()
+        {
+            await Task.Delay(500);
+            throw new ApplicationException();
+        }
+
+        var awaitable = LoggerAwaitable.FromTask(ThrowAfterDelay());
+
+        try
+        {
+            await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
+        }
+    }
+
+#if NETCOREAPP
+    [Test]
+    public async Task ExceptionThrowedAfterAwaitedOnValueTask()
+    {
+        static async ValueTask ThrowAfterDelay()
+        {
+            await Task.Delay(500);
+            throw new ApplicationException();
+        }
+
+        var awaitable = LoggerAwaitable.FromTask(ThrowAfterDelay());
+
+        try
+        {
+            await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
         }
     }
 #endif
