@@ -126,6 +126,11 @@ internal sealed class JsonLineLogController : LogController
         Func<LogEntry, bool> predicate,
         CancellationToken ct)
     {
+        if (!Directory.Exists(this.basePath))
+        {
+            return Utilities.Empty<LogEntry>();
+        }
+
         var preloadPathList =
             Utilities.EnumerateFiles(
                 this.basePath, "log*.jsonl", SearchOption.AllDirectories).

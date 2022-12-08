@@ -89,4 +89,21 @@ internal static class Utilities
 #else
         string.IsNullOrWhiteSpace(text);
 #endif
+
+#if NET35 || NET40 || NET45
+    private static class EmptyArray<T>
+    {
+        public static readonly T[] Empty = new T[0]; 
+    }
+#endif
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    public static T[] Empty<T>() =>
+#if NET35 || NET40 || NET45
+        EmptyArray<T>.Empty;
+#else
+        Array.Empty<T>();
+#endif
 }
