@@ -138,7 +138,7 @@ var unitCount = 5;
 logger.Information($"Through the valid unit: Units={unitCount}");
 ```
 
-Causes:
+Result:
 
 ```json
 {
@@ -165,6 +165,7 @@ public async Task OutputAsync(ILogger logger)
 ## Scoped output
 
 The scoped output features will apply log entry relations with `scopeId` identity on log key.
+And the time between entering and exiting the scope is then measured.
 
 ```csharp
 public void Scope(ILogger parentLogger)
@@ -186,31 +187,84 @@ public Task ScopeAsync(ILogger parentLogger)
 }
 ```
 
-Causes:
+Result:
 
 ```json
 {
     "logLevel": "trace",
-    "scopeId": 123, 
+    "scopeId": 123,      // <-- Same scope id
     "message": "Enter.",
     // ...
 }
 {
     "logLevel": "debug",
-    "scopeId": 123, 
+    "scopeId": 123,      // <-- Same scope id
     "message": "Output in child scope.",
     // ...
 }
 {
     "logLevel": "warning",
-    "scopeId": 123,
+    "scopeId": 123,      // <-- Same scope id
     "message": "Same child scope.",
     // ...
 }
 {
     "logLevel": "trace",
-    "scopeId": 123, 
-    "message": "Leave.",
+    "scopeId": 123,      // <-- Same scope id
+    "message": "Leave: Elapsed=00:00:00.00146248",
+    // ...
+}
+```
+
+The timestamp from `Enter` to `Leave` in the same `scopeId` can be used to calculate the time at tally time,
+but elapsed time indicated in `Leave` message is even more precise.
+
+Scope output can include arguments, return values and exception information:
+
+```csharp
+public string Scope(ILogger parentLogger, int a, double b, string c)
+{
+    return parentLogger.TraceScope(new(a, b, c), logger =>
+    {
+        return (a + b) + c;
+    });
+}
+```
+
+Result:
+
+```json
+{
+    "logLevel": "trace",
+    "scopeId": 456, 
+    "message": "Enter.",
+    "additionalData": [
+        111,
+        222.333,
+        "ABC"
+    ],
+    // ...
+}
+{
+    "logLevel": "trace",
+    "scopeId": 456, 
+    "message": "Leave: Elapsed=00:00:00.00146248",
+    "additionalData": "333.333ABC",
+    // ...
+}
+```
+
+Leave with exception:
+
+```json
+{
+    "logLevel": "trace",
+    "scopeId": 456, 
+    "message": "Leave with exception: Elapsed=00:00:00.00146248",
+    "additionalData": {
+        "name": "System.ApplicationException",
+        "message": "Application might has invalid state..."
+    },
     // ...
 }
 ```
@@ -328,7 +382,7 @@ These `LoggerAwaitable` types are defined for the following reasons:
 * Elimination of complications due to inter-conversion between `Task` and `ValueTask` types.
 
 For example, using the `LoggerAwaitable` type,
-you can easily write and reduce asynchronous operation cost the following code:
+you can easily (simply) write and reduce asynchronous operation cost the following:
 
 ```csharp
 // `TraceScope` method receives `Func<ILogger, LoggerAwaitable<int>>` delegate type
@@ -342,7 +396,8 @@ public Task<int> ComplextOperationAsync() =>
     });
 ```
 
-Note: In `netcoreapp2.1` or later and `netstandard2.1`, the `ValueTask` is not required any external dependencies.
+Note: In `netcoreapp2.1` or later and `netstandard2.1`,
+the `ValueTask` is not required any external dependencies.
 So we can use `ValueTask` conversion naturally on these environments.
 
 ----

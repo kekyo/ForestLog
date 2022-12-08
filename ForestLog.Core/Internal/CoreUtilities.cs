@@ -29,8 +29,8 @@ internal static class CoreUtilities
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public static IFormattable FormatLeaveWithException(Exception ex) =>
-        $"Leave with: {ex.GetType().FullName}: {ex.Message}";
+    public static object ToExceptionDetailObject(Exception ex) =>
+        new { Name = ex.GetType().FullName, Message = ex.Message };
 
     [DllImport("kernel32")]
     private static extern int GetCurrentThreadId();
