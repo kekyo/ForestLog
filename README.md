@@ -39,16 +39,22 @@ The following platforms are supported by the package.
 
 Install [ForestLog](https://www.nuget.org/packages/ForestLog) package.
 
+We need to create "Log controller" from the factory:
+
 ```csharp
 using ForestLog;
 
-// Construct controller:
+// Construct log controller:
 using var logController = LoggerFactory.CreateJsonLinesLogger(
     // Output base directory path.
     "logs",
     // Minimum output log level.
     LogLevels.Debug);
+```
 
+Then, create a logger interface and ready to output:
+
+```csharp
 // Create logger:
 ILogger logger = logController.CreateLogger();
 
@@ -66,6 +72,14 @@ catch (Exception ex)
 {
     logger.Error(ex);
 }
+
+// Write log entry with additional data:
+logger.Information($"See additional data below",
+    new {
+        Amount = 123,
+        Message = "ABC",
+        NameOfProduct = "PAC-MAN quarter",
+    });
 ```
 
 Output to (pseudo json formatted from jsonl):
@@ -78,16 +92,13 @@ Output to (pseudo json formatted from jsonl):
     "timestamp": "2022-12-06T09:27:04.5451256+09:00",
     "scopeId": 1,
     "message": "Always using string interpolation: 123",
-    "exceptionType": null,
-    "exceptionMessage": null,
-    "additionalData": null,
-    "memberName": "ReadMultipleMessage3",
-    "filePath": "D:\\Projects\\ForestLog\\ForestLog.Tests\\JsonLineLoggerTests.cs",
+    "memberName": "PurchaseProductAsync",
+    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
     "line": 229,
     "managedThreadId": 16,
     "nativeThreadId": 11048,
     "taskId": -1,
-    "processId": 55000
+    "processId": 43608
 }
 {
     "id": "31b4709f-f7f5-45b5-9381-75f64e23efce",
@@ -96,16 +107,13 @@ Output to (pseudo json formatted from jsonl):
     "timestamp": "2022-12-06T09:27:04.5473678+09:00",
     "scopeId": 1,
     "message": "Always using string interpolation: 456",
-    "exceptionType": null,
-    "exceptionMessage": null,
-    "additionalData": null,
-    "memberName": "ReadMultipleMessage3",
-    "filePath": "D:\\Projects\\ForestLog\\ForestLog.Tests\\JsonLineLoggerTests.cs",
-    "line": 231,
+    "memberName": "PurchaseProductAsync",
+    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
+    "line": 230,
     "managedThreadId": 16,
     "nativeThreadId": 11048,
     "taskId": -1,
-    "processId": 55000
+    "processId": 43608
 }
 {
     "id": "5848c701-0190-453a-83b7-271023306d4a",
@@ -116,19 +124,37 @@ Output to (pseudo json formatted from jsonl):
     "message": "System.ApplicationException: Failed a operation.",
     "exceptionType": "System.ApplicationException",
     "exceptionMessage": "Failed a operation.",
-    "additionalData": null,
-    "memberName": "TraceException",
-    "filePath": "D:\\Projects\\ForestLog\\ForestLog.Tests\\JsonLineLoggerTests.cs",
-    "line": 179,
+    "memberName": "PurchaseProductAsync",
+    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
+    "line": 238,
     "managedThreadId": 16,
     "nativeThreadId": 11048,
     "taskId": -1,
-    "processId": 55000
+    "processId": 43608
+}
+{
+    "id": "e453d20f-e1cb-4464-b189-833153237e5b",
+    "facility": "Unknown",
+    "logLevel": "information",
+    "timestamp": "2022-12-08T10:07:00.2802106+09:00",
+    "scopeId": 1,
+    "message": "See additional data below",
+    "additionalData": {
+        "amount": 123,
+        "message": "ABC",
+        "nameOfProduct": "PAC-MAN quarter"
+    },
+    "memberName": "PurchaseProductAsync",
+    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
+    "line": 242,
+    "managedThreadId": 16,
+    "nativeThreadId": 11048,
+    "taskId": -1,
+    "processId": 43608
 }
 ```
 
 ## Annotates facility name
-
 
 ```csharp
 // Create facility annoteted logger
@@ -224,6 +250,7 @@ Scope output can include arguments, return values and exception information:
 ```csharp
 public string Scope(ILogger parentLogger, int a, double b, string c)
 {
+    // Using `new` operator with implicitly type `BlockScopeArguments`.
     return parentLogger.TraceScope(new(a, b, c), logger =>
     {
         return (a + b) + c;

@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace ForestLog;
@@ -20,8 +21,11 @@ public class LogEntry
     public DateTimeOffset Timestamp { get; }
     public int ScopeId { get; }
     public string Message { get; }
+    [DefaultValue(null)]
     public string? ExceptionType { get; }
+    [DefaultValue(null)]
     public string? ExceptionMessage { get; }
+    [DefaultValue(null)]
     public object? AdditionalData { get; }
     public string MemberName { get; }
     public string FilePath { get; }
