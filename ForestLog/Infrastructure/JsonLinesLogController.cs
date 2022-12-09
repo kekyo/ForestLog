@@ -235,12 +235,12 @@ internal sealed class JsonLinesLogController : LogController
     }
 
 #if NET35 || NET40
-    protected override Task OnAvailableAsync(WaitingLogEntry waitingLogEntry) =>
+    protected override LoggerAwaitable OnAvailableAsync(WaitingLogEntry waitingLogEntry) =>
         Task.Factory.StartNew(() => this.OnAvailable(waitingLogEntry));
 
     private void OnAvailable(WaitingLogEntry waitingLogEntry)
 #else
-    protected override async Task OnAvailableAsync(WaitingLogEntry waitingLogEntry)
+    protected override async LoggerAwaitable OnAvailableAsync(WaitingLogEntry waitingLogEntry)
 #endif
     {
         if (!Directory.Exists(this.basePath))

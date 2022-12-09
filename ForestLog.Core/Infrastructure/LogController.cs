@@ -25,8 +25,13 @@ public abstract class LogController : ILogController
 {
     protected readonly LogLevels minimumOutputLogLevel;
     private readonly Queue<WaitingLogEntry> queue = new();
-    private readonly ManualResetEvent available = new(false);
-    private readonly ManualResetEvent abort = new(false);
+
+    private readonly ManualResetEventSlim available = new();
+    private readonly ManualResetEventSlim abort = new();
+
+    private readonly ManualResetEventSlim suspending = new();
+    private readonly ManualResetEventSlim suspended = new();
+    private readonly ManualResetEventSlim resume = new();
 
     private Task worker;
     internal int scopeIdCount;
@@ -71,12 +76,16 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    public virtual void Suspend()
+    public void Suspend()
     {
+        Trace.WriteLine("LogController: Suspending...");
+
+        this.suspending.Set();
+        this.suspended.Wait();
     }
-    public virtual void Resume()
-    {
-    }
+
+    public void Resume() =>
+        this.resume.Set();
 
     //////////////////////////////////////////////////////////////////////
 
@@ -120,15 +129,16 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    protected abstract Task OnAvailableAsync(
+    protected abstract LoggerAwaitable OnAvailableAsync(
         WaitingLogEntry waitingLogEntry);
 
     private void WorkerEntry()
     {
-        var waiters = new WaitHandle[]
+        var waiters = new[]
         {
-            this.available,
-            this.abort,
+            this.available.WaitHandle,
+            this.suspending.WaitHandle,
+            this.abort.WaitHandle,
         };
 
         while (true)
@@ -136,19 +146,57 @@ public abstract class LogController : ILogController
             try
             {
                 var result = WaitHandle.WaitAny(waiters);
+                
+                // Aborted
                 if (result == 1)
                 {
+                    Trace.WriteLine("LogController: Aborted.");
+
                     break;
                 }
-
-                if (this.DequeueWaitingLogEntry() is { } waitingLogEntry)
+                // Suspending
+                else if (result == 2)
                 {
-                    this.OnAvailableAsync(waitingLogEntry).Wait();
+                    Trace.WriteLine("LogController: Suspended.");
+
+                    this.suspended.Set();
+                    try
+                    {
+                        // Aborted
+                        if (WaitHandle.WaitAny(new[] {
+                            this.abort.WaitHandle,
+                            this.resume.WaitHandle }) == 0)
+                        {
+                            Trace.WriteLine("LogController: Aborted.");
+
+                            break;
+                        }
+                    }
+                    finally
+                    {
+                        this.suspended.Reset();
+                        this.suspending.Reset();
+                        this.resume.Reset();
+                    }
+
+                    Trace.WriteLine("LogController: Resumed.");
+                    continue;
+                }
+                // Available
+                else
+                {
+                    if (this.DequeueWaitingLogEntry() is { } waitingLogEntry)
+                    {
+                        this.OnAvailableAsync(waitingLogEntry).
+                            GetAwaiter().
+                            GetResult();
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"LoggerCore: {ex.GetType().FullName}: {ex.Message}");
+                Trace.WriteLine(
+                    $"LogController: {ex.GetType().FullName}: {ex.Message}");
             }
         }
     }
@@ -176,7 +224,8 @@ public abstract class LogController : ILogController
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line)
     {
-        if (logLevel >= this.minimumOutputLogLevel)
+        if (logLevel >= this.minimumOutputLogLevel &&
+            !this.suspending.IsSet)
         {
             var waitingLogEntry = new WaitingLogEntry(
                 facility, logLevel, DateTimeOffset.Now, scopeId,
@@ -201,7 +250,8 @@ public abstract class LogController : ILogController
         string memberName, string filePath, int line,
         CancellationToken ct)
     {
-        if (logLevel >= this.minimumOutputLogLevel)
+        if (logLevel >= this.minimumOutputLogLevel &&
+            !this.suspending.IsSet)
         {
             var awaiter = new TaskCompletionSource<bool>();
 
@@ -233,6 +283,6 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    public ILogger CreateLogger(string facility = "Unknown") =>
+    public ILogger CreateLogger(string facility) =>
         new Logger(this, facility);
 }
