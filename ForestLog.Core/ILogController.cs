@@ -38,6 +38,11 @@ public interface ILogController : IDisposable
 #endif
 {
     /// <summary>
+    /// For reference use only current queued entries.
+    /// </summary>
+    int CurrentQueuedEntries { get; }
+
+    /// <summary>
     /// Fire when log entry arrived (wrote to file).
     /// </summary>
     event EventHandler<LogEntryEventArgs> Arrived;
@@ -62,18 +67,6 @@ public interface ILogController : IDisposable
     ILogger CreateLogger(string facility = "Unknown");
 
     /// <summary>
-    /// Query log entries now.
-    /// </summary>
-    /// <param name="maximumLogEntries">Maximum result log entries.</param>
-    /// <param name="predicate">Query predicate.</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <returns>Result log entries.</returns>
-    LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
-        int maximumLogEntries,
-        Func<LogEntry, bool> predicate,
-        CancellationToken ct = default);
-
-    /// <summary>
     /// Raw level write log entry.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -91,6 +84,18 @@ public interface ILogController : IDisposable
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line,
         CancellationToken ct);
+
+    /// <summary>
+    /// Query log entries now.
+    /// </summary>
+    /// <param name="maximumLogEntries">Maximum result log entries.</param>
+    /// <param name="predicate">Query predicate.</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Result log entries.</returns>
+    LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
+        int maximumLogEntries,
+        Func<LogEntry, bool> predicate,
+        CancellationToken ct = default);
 }
 
 public static class LogControllerExtension
