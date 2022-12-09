@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // ForestLog - A minimalist logger interface.
 // Copyright (c) Kouji Matsui (@kozy_kekyo, @kekyo@mastodon.cloud)
@@ -63,7 +63,7 @@ public abstract class LogController : ILogController
             this.worker = null!;
             
             this.abort.Set();
-            worker.Wait();
+            worker.GetAwaiter().GetResult();
         }
     }
 
@@ -204,8 +204,11 @@ public abstract class LogController : ILogController
     /// Resume log controller.
     /// </summary>
     /// <remarks>Release suspending state.</remarks>
-    public void Resume() =>
+    public void Resume()
+    {
+        this.suspending.Reset();
         this.resume.Set();
+    }
 
     //////////////////////////////////////////////////////////////////////
 
@@ -233,14 +236,14 @@ public abstract class LogController : ILogController
                 var result = WaitHandle.WaitAny(waiters);
                 
                 // Aborted
-                if (result == 1)
+                if (result == 2)
                 {
                     Trace.WriteLine("LogController: Aborted.");
 
                     break;
                 }
                 // Suspending
-                else if (result == 2)
+                else if (result == 1)
                 {
                     Trace.WriteLine("LogController: Suspended.");
 
@@ -260,7 +263,6 @@ public abstract class LogController : ILogController
                     finally
                     {
                         this.suspended.Reset();
-                        this.suspending.Reset();
                         this.resume.Reset();
                     }
 
