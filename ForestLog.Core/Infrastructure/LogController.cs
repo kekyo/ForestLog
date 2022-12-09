@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // ForestLog - A minimalist logger interface.
 // Copyright (c) Kouji Matsui (@kozy_kekyo, @kekyo@mastodon.cloud)
@@ -88,6 +88,18 @@ public abstract class LogController : ILogController
 #endif
 
     //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// For reference use only minimum output log level.
+    /// </summary>
+    public LogLevels MinimumOutputLogLevel
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        [DebuggerStepThrough]
+        get => this.minimumOutputLogLevel;
+    }
 
     /// <summary>
     /// Create logger interface.

@@ -34,7 +34,16 @@ internal sealed class Logger : ILogger
     }
 
     //////////////////////////////////////////////////////////////////////
-    
+
+    public LogLevels MinimumOutputLogLevel
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        [DebuggerStepThrough]
+        get => this.controller.MinimumOutputLogLevel;
+    }
+
     public int ScopeId
     {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP

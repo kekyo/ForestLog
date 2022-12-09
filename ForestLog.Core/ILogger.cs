@@ -20,7 +20,12 @@ namespace ForestLog;
 public interface ILogger
 {
     /// <summary>
-    /// Current scope id.
+    /// For reference use only minimum output log level.
+    /// </summary>
+    LogLevels MinimumOutputLogLevel { get; }
+
+    /// <summary>
+    /// For reference use only current scope id.
     /// </summary>
     int ScopeId { get; }
 

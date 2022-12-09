@@ -53,14 +53,14 @@ public sealed class JsonLinesLoggerTests
         int maximumLogFiles = 0) =>
         this.LogTestBlock(
             out var _,
-            action,
+            (_, logger) => action(logger),
             maximumOutputLogLevel,
             sizeToNextFile,
             maximumLogFiles);
 
     private JObject?[] LogTestBlock(
         out int files,
-        Action<ILogger> action,
+        Action<ILogController, ILogger> action,
         LogLevels maximumOutputLogLevel = LogLevels.Debug,
         long sizeToNextFile = 1 * 1024 * 1024,
         int maximumLogFiles = 0)
@@ -87,7 +87,7 @@ public sealed class JsonLinesLoggerTests
             {
                 var logger = logController.CreateLogger();
 
-                action(logger);
+                action(logController, logger);
             }
 
             var paths = Directory.GetFiles(
@@ -425,17 +425,55 @@ public sealed class JsonLinesLoggerTests
     [TestCase(10, 5)]
     public void RotateLogFiles(long sizeToNextFile, int maximumLogFiles)
     {
-        var lines = LogTestBlock(logger =>
-        {
-            for (var index = 0; index < 100; index++)
+        var lines = LogTestBlock(
+            out var files,
+            (_, logger) =>
             {
-                logger.Debug($"AAA{index}BBB");
-            }
-        },
-        LogLevels.Debug,
-        sizeToNextFile,
-        maximumLogFiles);
+                for (var index = 0; index < 100; index++)
+                {
+                    logger.Debug($"AAA{index}BBB");
+                }
+            },
+            LogLevels.Debug,
+            sizeToNextFile,
+            maximumLogFiles);
 
+        Assert.AreEqual(maximumLogFiles, files);
         Assert.AreEqual(maximumLogFiles, lines.Length);
+    }
+
+    //////////////////////////////////////////////////////////
+
+    [Test]
+    public void SuspendAndResume()
+    {
+        var lines = LogTestBlock(
+            out var files,
+            (logController, logger) =>
+            {
+                for (var index = 0; index < 10000; index++)
+                {
+                    logger.Debug($"AAA{index}BBB");
+                }
+                Assert.AreNotEqual(0, logController.CurrentQueuedEntries);
+
+                logController.Suspend();
+                Assert.AreEqual(0, logController.CurrentQueuedEntries);
+
+                for (var index = 0; index < 10000; index++)
+                {
+                    logger.Debug($"AAA{index}BBB");
+                }
+                Assert.AreEqual(0, logController.CurrentQueuedEntries);
+
+                logController.Resume();
+
+                for (var index = 0; index < 10000; index++)
+                {
+                    logger.Debug($"AAA{index}BBB");
+                }
+            });
+
+        Assert.AreEqual(20000, lines.Length);
     }
 }

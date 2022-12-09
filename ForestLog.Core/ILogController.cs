@@ -38,6 +38,11 @@ public interface ILogController : IDisposable
 #endif
 {
     /// <summary>
+    /// For reference use only maximum output log level.
+    /// </summary>
+    LogLevels MinimumOutputLogLevel { get; }
+
+    /// <summary>
     /// For reference use only current queued entries.
     /// </summary>
     int CurrentQueuedEntries { get; }
