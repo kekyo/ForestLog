@@ -343,11 +343,40 @@ using var logController = LogControllerFactory.CreateJsonLines(
 
 ## Suspend and resume
 
-TODO:
+In an environment such as a smartphone,
+log output must be suspended and resumed as the application transitions between states.
 
-## Programatically retreive log entries
+The following example will correspond to an application transition in Xamarin Android:
 
-Caught by event:
+```csharp
+public sealed class MainActivity
+{
+    private readonly ILogController logController =
+        LogControllerFactory.CreateJsonLines(...);
+
+    // ...
+
+    protected override void OnPause()
+    {
+        this.logController.Suspend();
+        base.OnPause();
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
+        this.logController.Resume();
+    }
+}
+```
+
+* `Suspend()` method writes all queued log entries into the log files (will block while completed).
+  * After that, any logging request will be ignored when before `Resume()` is called.
+* `Resume()` method releases the above.
+
+## Programmatically retreive log entries
+
+Event to monitor log outputted in real time:
 
 ```csharp
 logController.Arrived += (s, e) =>
@@ -358,7 +387,7 @@ logController.Arrived += (s, e) =>
 };
 ```
 
-Query interface:
+Or, filter by predicates from all logs recorded (including outputted to files):
 
 ```csharp
 LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
