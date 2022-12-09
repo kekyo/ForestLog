@@ -42,7 +42,16 @@ public interface ILogController : IDisposable
     /// </summary>
     event EventHandler<LogEntryEventArgs> Arrived;
 
+    /// <summary>
+    /// Suspend log controller.
+    /// </summary>
+    /// <remarks>Will writes queued log entries in log files and transition to susupend.</remarks>
     void Suspend();
+
+    /// <summary>
+    /// Resume log controller.
+    /// </summary>
+    /// <remarks>Release suspending state.</remarks>
     void Resume();
 
     /// <summary>

@@ -12,11 +12,21 @@ using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
+/// <summary>
+/// Contains method arguments of block logging.
+/// </summary>
 [DebuggerStepThrough]
 public readonly struct BlockScopeArguments
 {
+    /// <summary>
+    /// Method arguments.
+    /// </summary>
     public readonly object?[] Arguments;
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif

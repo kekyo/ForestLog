@@ -15,11 +15,20 @@ using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
+// Parameter has no matching param tag in the XML comment (but other parameters do)
+#pragma warning disable CS1573
+
 /// <summary>
 /// ForestLog logger interface extension.
 /// </summary>
 public static class LoggerExtension
 {
+    /// <summary>
+    /// Write a log entry.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -38,6 +47,12 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(logLevel, message, null, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a log entry.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="ex">Exception</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -56,6 +71,13 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(logLevel, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a log entry.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -77,6 +99,11 @@ public static class LoggerExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write a debug log entry.
+    /// </summary>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -93,6 +120,11 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Debug, message, null, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a debug log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -109,6 +141,12 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Debug, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a debug log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -128,6 +166,11 @@ public static class LoggerExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write a trace log entry.
+    /// </summary>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -144,6 +187,11 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Trace, message, null, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a trace log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -160,6 +208,12 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Trace, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a trace log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -179,6 +233,11 @@ public static class LoggerExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write a information log entry.
+    /// </summary>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -195,6 +254,11 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Information, message, null, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a information log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -211,6 +275,12 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Information, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a information log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -230,6 +300,11 @@ public static class LoggerExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write a warning log entry.
+    /// </summary>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -246,6 +321,11 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Warning, message, null, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a warning log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -262,6 +342,12 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Warning, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a warning log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -281,6 +367,11 @@ public static class LoggerExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write a error log entry.
+    /// </summary>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -297,6 +388,11 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Error, message, null, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a error log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -313,6 +409,12 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(LogLevels.Error, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
 
+    /// <summary>
+    /// Write a error log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
