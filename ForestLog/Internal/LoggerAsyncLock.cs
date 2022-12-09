@@ -15,7 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ForestLog.Tasks;
 
-namespace ForestLog.Infrastructure;
+namespace ForestLog.Internal;
 
 internal sealed class LoggerAsyncLock
 {
@@ -24,7 +24,7 @@ internal sealed class LoggerAsyncLock
     private int count;
 
     public LoggerAsyncLock() =>
-        this.disposer = new(this);
+        disposer = new(this);
 
     public LoggerAwaitable<AsyncLockDisposer> LockAsync(CancellationToken ct)
     {
@@ -33,15 +33,15 @@ internal sealed class LoggerAsyncLock
 
         if (count == 1)
         {
-            return this.disposer;
+            return disposer;
         }
 
         var tcs = new TaskCompletionSource<AsyncLockDisposer>();
         ct.Register(() => tcs.TrySetCanceled());
 
-        lock (this.queue)
+        lock (queue)
         {
-            this.queue.Enqueue(tcs);
+            queue.Enqueue(tcs);
         }
 
         return tcs.Task;
@@ -54,14 +54,14 @@ internal sealed class LoggerAsyncLock
 
         if (count == 1)
         {
-            return this.disposer;
+            return disposer;
         }
 
         var tcs = new TaskCompletionSource<AsyncLockDisposer>();
 
-        lock (this.queue)
+        lock (queue)
         {
-            this.queue.Enqueue(tcs);
+            queue.Enqueue(tcs);
         }
 
         return tcs.Task.Result;
@@ -80,11 +80,11 @@ internal sealed class LoggerAsyncLock
             }
             else if (count >= 1)
             {
-                lock (this.queue)
+                lock (queue)
                 {
-                    Debug.Assert(this.queue.Count >= 1);
-                    var tcs = this.queue.Dequeue();
-                    if (tcs.TrySetResult(this.disposer))
+                    Debug.Assert(queue.Count >= 1);
+                    var tcs = queue.Dequeue();
+                    if (tcs.TrySetResult(disposer))
                     {
                         break;
                     }
@@ -107,12 +107,12 @@ internal sealed class LoggerAsyncLock
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public void Dispose() =>
-            this.parent.Unlock();
+            parent.Unlock();
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         void IDisposable.Dispose() =>
-            this.parent.Unlock();
+            parent.Unlock();
     }
 }

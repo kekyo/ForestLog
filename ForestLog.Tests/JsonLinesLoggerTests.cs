@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace ForestLog;
 
-public sealed class JsonLineLoggerTests
+public sealed class JsonLinesLoggerTests
 {
     private IEnumerable<JObject?> LoadLines(string path)
     {
@@ -82,7 +82,7 @@ public sealed class JsonLineLoggerTests
 
         try
         {
-            using (var logController = LoggerFactory.CreateJsonLinesLogController(
+            using (var logController = LogControllerFactory.CreateJsonLines(
                 basePath, maximumOutputLogLevel, sizeToNextFile, maximumLogFiles))
             {
                 var logger = logController.CreateLogger();
@@ -307,7 +307,7 @@ public sealed class JsonLineLoggerTests
 
         try
         {
-            using (var logController = LoggerFactory.CreateJsonLinesLogController(
+            using (var logController = LogControllerFactory.CreateJsonLines(
                 basePath, LogLevels.Debug))
             {
                 var logger = logController.CreateLogger();

@@ -25,7 +25,7 @@ namespace ForestLog.Infrastructure;
 /// <summary>
 /// ForestLog Json Lines log controller.
 /// </summary>
-internal sealed class JsonLineLogController : LogController
+internal sealed class JsonLinesLogController : LogController
 {
     private readonly string basePath;
     private readonly long sizeToNextFile;
@@ -35,7 +35,7 @@ internal sealed class JsonLineLogController : LogController
 
     //////////////////////////////////////////////////////////////////////
 
-    public JsonLineLogController(
+    public JsonLinesLogController(
         string basePath,
         LogLevels minimumOutputLogLevel,
         long sizeToNextFile,

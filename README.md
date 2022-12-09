@@ -19,7 +19,7 @@ ForestLog - A minimalist logger interface.
 
 * TODO: Still under construction...
 
-A minimalist logger interface, formatted as Json Lines (`*.jsonl`).
+A minimalist logger interface, formatted as [Json Lines (`*.jsonl`).](https://jsonlines.org/)
 
 It provides the information required for logging with a simple interface and minimal configuration.
 Eliminates complex configurations and maintenance labor.
@@ -45,7 +45,7 @@ We need to create "Log controller" from the factory:
 using ForestLog;
 
 // Construct log controller:
-using var logController = LoggerFactory.CreateJsonLinesController(
+using var logController = LogControllerFactory.CreateJsonLines(
     // Output base directory path.
     "logs",
     // Minimum output log level.
@@ -317,7 +317,7 @@ Leave with exception:
 Will switch log file when current log file size is exceed.
 
 ```csharp
-using var logController = LoggerFactory.CreateJsonLinesController(
+using var logController = LogControllerFactory.CreateJsonLines(
     "logs",
     LogLevels.Debug,
     // Size to next file.
@@ -332,7 +332,7 @@ Result:
 Enable log file rotation:
 
 ```csharp
-using var logController = LoggerFactory.CreateJsonLinesController(
+using var logController = LogControllerFactory.CreateJsonLines(
     "logs",
     LogLevels.Debug,
     1 * 1024 * 1024,
