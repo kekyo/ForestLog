@@ -45,7 +45,7 @@ We need to create "Log controller" from the factory:
 using ForestLog;
 
 // Construct log controller:
-using var logController = LoggerFactory.CreateJsonLinesLogger(
+using var logController = LoggerFactory.CreateJsonLinesController(
     // Output base directory path.
     "logs",
     // Minimum output log level.
@@ -317,7 +317,7 @@ Leave with exception:
 Will switch log file when current log file size is exceed.
 
 ```csharp
-using var logController = LoggerFactory.CreateJsonLinesLogger(
+using var logController = LoggerFactory.CreateJsonLinesController(
     "logs",
     LogLevels.Debug,
     // Size to next file.
@@ -332,7 +332,7 @@ Result:
 Enable log file rotation:
 
 ```csharp
-using var logController = LoggerFactory.CreateJsonLinesLogger(
+using var logController = LoggerFactory.CreateJsonLinesController(
     "logs",
     LogLevels.Debug,
     1 * 1024 * 1024,
@@ -416,6 +416,8 @@ async LoggerAwaitable AsyncOperation()
 {
     await Task.Delay(100);
 }
+
+await AsyncOperation();
 ```
 
 ```csharp

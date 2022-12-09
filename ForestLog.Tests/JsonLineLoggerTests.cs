@@ -82,7 +82,7 @@ public sealed class JsonLineLoggerTests
 
         try
         {
-            using (var logController = LoggerFactory.CreateJsonLineLogController(
+            using (var logController = LoggerFactory.CreateJsonLinesLogController(
                 basePath, maximumOutputLogLevel, sizeToNextFile, maximumLogFiles))
             {
                 var logger = logController.CreateLogger();
@@ -307,7 +307,7 @@ public sealed class JsonLineLoggerTests
 
         try
         {
-            using (var logController = LoggerFactory.CreateJsonLineLogController(
+            using (var logController = LoggerFactory.CreateJsonLinesLogController(
                 basePath, LogLevels.Debug))
             {
                 var logger = logController.CreateLogger();
