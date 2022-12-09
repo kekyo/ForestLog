@@ -29,29 +29,53 @@ public sealed class LogEntryEventArgs : EventArgs
         this.LogEntry = logEntry;
 }
 
+/// <summary>
+/// ForestLog controller interface.
+/// </summary>
 public interface ILogController : IDisposable
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     , IAsyncDisposable
 #endif
 {
+    /// <summary>
+    /// Fire when log entry arrived (wrote to file).
+    /// </summary>
     event EventHandler<LogEntryEventArgs> Arrived;
 
     void Suspend();
     void Resume();
 
+    /// <summary>
+    /// Create logger interface.
+    /// </summary>
+    /// <param name="facility">Facility name.</param>
+    /// <returns>Logger interface</returns>
     ILogger CreateLogger(string facility = "Unknown");
 
+    /// <summary>
+    /// Query log entries now.
+    /// </summary>
+    /// <param name="maximumLogEntries">Maximum result log entries.</param>
+    /// <param name="predicate">Query predicate.</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Result log entries.</returns>
     LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
         int maximumLogEntries,
         Func<LogEntry, bool> predicate,
         CancellationToken ct = default);
 
+    /// <summary>
+    /// Raw level write log entry.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     void Write(
         string facility, LogLevels logLevel, int scopeId,
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line);
 
+    /// <summary>
+    /// Raw level write log entry.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     LoggerAwaitable WriteAsync(
         string facility, LogLevels logLevel, int scopeId,
@@ -62,6 +86,14 @@ public interface ILogController : IDisposable
 
 public static class LogControllerExtension
 {
+    /// <summary>
+    /// Query log entries now.
+    /// </summary>
+    /// <param name="logController">Log controller.</param>
+    /// <param name="predicate">Query predicate.</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Result log entries.</returns>
+    /// <remarks>This overload can be produced 1000 log entries.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif

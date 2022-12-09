@@ -14,10 +14,27 @@ using System.Threading;
 
 namespace ForestLog;
 
+/// <summary>
+/// ForestLog logger interface.
+/// </summary>
 public interface ILogger
 {
+    /// <summary>
+    /// Current scope id.
+    /// </summary>
     int ScopeId { get; }
 
+    /// <summary>
+    /// Write a log entry.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="ex">Exception when need to write</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
+    /// <param name="memberName">Member name</param>
+    /// <param name="filePath">File path</param>
+    /// <param name="line">File line number</param>
+    /// <remarks>This is a low-level API interface.</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     void Write(
         LogLevels logLevel,
@@ -28,6 +45,18 @@ public interface ILogger
         string filePath,
         int line);
 
+    /// <summary>
+    /// Write a log entry.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="ex">Exception when need to write</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
+    /// <param name="memberName">Member name</param>
+    /// <param name="filePath">File path</param>
+    /// <param name="line">File line number</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>This is a low-level API interface.</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     LoggerAwaitable WriteAsync(
         LogLevels logLevel,
@@ -39,6 +68,11 @@ public interface ILogger
         int line,
         CancellationToken ct);
 
+    /// <summary>
+    /// Create new scope logger interface.
+    /// </summary>
+    /// <returns>Logger interface</returns>
+    /// <remarks>This is a low-level API interface.</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     ILogger NewScope();
 }

@@ -15,6 +15,9 @@ using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
+/// <summary>
+/// ForestLog logger interface extension.
+/// </summary>
 public static class LoggerExtension
 {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP

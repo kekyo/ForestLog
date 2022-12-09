@@ -22,6 +22,9 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Infrastructure;
 
+/// <summary>
+/// ForestLog JsonLine log controller.
+/// </summary>
 internal sealed class JsonLineLogController : LogController
 {
     private readonly string basePath;

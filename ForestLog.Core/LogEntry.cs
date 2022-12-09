@@ -13,6 +13,10 @@ using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
+/// <summary>
+/// ForestLog log entry entity.
+/// </summary>
+/// <remarks>This is an immutable type of log entry information.</remarks>
 public class LogEntry
 {
     public Guid Id { get; }
