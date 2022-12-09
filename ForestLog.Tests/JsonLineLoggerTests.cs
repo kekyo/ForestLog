@@ -48,7 +48,22 @@ public sealed class JsonLineLoggerTests
 
     private JObject?[] LogTestBlock(
         Action<ILogger> action,
-        LogLevels maximumOutputLogLevel = LogLevels.Debug)
+        LogLevels maximumOutputLogLevel = LogLevels.Debug,
+        long sizeToNextFile = 1 * 1024 * 1024,
+        int maximumLogFiles = 0) =>
+        this.LogTestBlock(
+            out var _,
+            action,
+            maximumOutputLogLevel,
+            sizeToNextFile,
+            maximumLogFiles);
+
+    private JObject?[] LogTestBlock(
+        out int files,
+        Action<ILogger> action,
+        LogLevels maximumOutputLogLevel = LogLevels.Debug,
+        long sizeToNextFile = 1 * 1024 * 1024,
+        int maximumLogFiles = 0)
     {
         var basePath = Path.Combine(
             Path.GetDirectoryName(this.GetType().Assembly.Location)!,
@@ -68,15 +83,18 @@ public sealed class JsonLineLoggerTests
         try
         {
             using (var logController = LoggerFactory.CreateJsonLineLogController(
-                basePath, maximumOutputLogLevel))
+                basePath, maximumOutputLogLevel, sizeToNextFile, maximumLogFiles))
             {
                 var logger = logController.CreateLogger();
 
                 action(logger);
             }
 
-            return Directory.EnumerateFiles(
-                basePath, "log.jsonl", SearchOption.AllDirectories).
+            var paths = Directory.GetFiles(
+                basePath, "log*.jsonl", SearchOption.AllDirectories);
+            files = paths.Length;
+
+            return paths.
                 SelectMany(path => LoadLines(path)).
                 ToArray();
         }
@@ -398,5 +416,26 @@ public sealed class JsonLineLoggerTests
 
         Assert.AreEqual(Math.Min(max, 10), entries.Length);
         Assert.IsTrue(entries.All(e => e.Message.StartsWith("CCC")));
+    }
+
+    //////////////////////////////////////////////////////////
+
+    [TestCase(10, 1)]
+    [TestCase(10, 2)]
+    [TestCase(10, 5)]
+    public void RotateLogFiles(long sizeToNextFile, int maximumLogFiles)
+    {
+        var lines = LogTestBlock(logger =>
+        {
+            for (var index = 0; index < 100; index++)
+            {
+                logger.Debug($"AAA{index}BBB");
+            }
+        },
+        LogLevels.Debug,
+        sizeToNextFile,
+        maximumLogFiles);
+
+        Assert.AreEqual(maximumLogFiles, lines.Length);
     }
 }

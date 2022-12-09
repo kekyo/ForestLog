@@ -76,7 +76,7 @@ public sealed class AsyncJsonLineLoggerTests
             }
 
             return Directory.EnumerateFiles(
-                basePath, "log.jsonl", SearchOption.AllDirectories).
+                basePath, "log*.jsonl", SearchOption.AllDirectories).
                 SelectMany(path => LoadLines(path)).
                 ToArray();
         }

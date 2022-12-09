@@ -40,8 +40,12 @@ internal sealed class JsonLineLogController : LogController
         base(minimumOutputLogLevel)
     {
         this.basePath = Path.GetFullPath(basePath);
-        this.sizeToNextFile = sizeToNextFile;
-        this.maximumLogFiles = maximumLogFiles;
+        this.sizeToNextFile = sizeToNextFile >= 1 ?
+            sizeToNextFile :
+            long.MaxValue;
+        this.maximumLogFiles = maximumLogFiles >= 1 ?
+            maximumLogFiles :
+            int.MaxValue;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -212,17 +216,18 @@ internal sealed class JsonLineLogController : LogController
 
         var backupPath = Path.Combine(basePath, $"log{indices.Last() + 1}.jsonl");
 
-        if (indices.Length >= maximumLogFiles)
+        // "-1" is one of current log file (log.jsonl).
+        if (indices.Length >= (maximumLogFiles - 1))
         {
             var removePaths = indices.
-                Take(maximumLogFiles - indices.Length + 1).
-                Select(index => $"log{index}.jsonl").
+                Take(indices.Length - (maximumLogFiles - 1) + 1).
+                Select(index => Path.Combine(basePath, $"log{index}.jsonl")).
                 ToArray();
             return new(backupPath, removePaths);
         }
         else
         {
-            return new(Path.Combine(basePath, "log1.jsonl"), Utilities.Empty<string>());
+            return new(backupPath, Utilities.Empty<string>());
         }
     }
 
@@ -249,6 +254,7 @@ internal sealed class JsonLineLogController : LogController
 
         var path = Path.Combine(this.basePath, "log.jsonl");
 
+        // Need to backup when file size exceeded.
         var fi = new FileInfo(path);
         if (fi.Exists && (fi.Length >= this.sizeToNextFile))
         {
@@ -258,13 +264,23 @@ internal sealed class JsonLineLogController : LogController
 
             try
             {
-                fi.MoveTo(candidatePaths.BackupPath);
+                // Need to backup.
+                if (this.maximumLogFiles >= 2)
+                {
+                    fi.MoveTo(candidatePaths.BackupPath);
+                }
+                // Need to reset.
+                else
+                {
+                    fi.Delete();
+                }
             }
             catch (Exception ex)
             {
                 Trace.WriteLine(ex);
             }
 
+            // Need to rotate.
             foreach (var removePath in candidatePaths.RemovePaths)
             {
                 try
@@ -333,6 +349,9 @@ internal sealed class JsonLineLogController : LogController
                 try
                 {
                     jt.WriteTo(jw);
+
+                    // TODO: We need to flush because will append LF after json body.
+                    //   But flush method maybe "flushing" entire stream I/O.
                     jw.Flush();
                     tw.WriteLine();
                 }
@@ -358,6 +377,10 @@ internal sealed class JsonLineLogController : LogController
                     try
                     {
                         await jt.WriteToAsync(jw);
+
+                        // TODO: We need to flush because will append LF after json body.
+                        //   But the flush method maybe "flushing" entire stream I/O related internal buffers...
+                        //   It is decreased performance.
                         await jw.FlushAsync();
                         await tw.WriteLineAsync();
                     }
@@ -392,6 +415,13 @@ internal sealed class JsonLineLogController : LogController
             if (logEntry != null)
             {
                 this.InvokeArrived(logEntry);
+            }
+
+            // Length is not contained buffered data in readers.
+            // This gate will make splitting as is.
+            if (fs.Length >= this.sizeToNextFile)
+            {
+                break;
             }
 
             waitingLogEntry = this.DequeueWaitingLogEntry()!;
