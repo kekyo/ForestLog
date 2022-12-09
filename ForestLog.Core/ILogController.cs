@@ -38,11 +38,30 @@ public interface ILogController : IDisposable
 #endif
 {
     /// <summary>
+    /// For reference use only maximum output log level.
+    /// </summary>
+    LogLevels MinimumOutputLogLevel { get; }
+
+    /// <summary>
+    /// For reference use only current queued entries.
+    /// </summary>
+    int CurrentQueuedEntries { get; }
+
+    /// <summary>
     /// Fire when log entry arrived (wrote to file).
     /// </summary>
     event EventHandler<LogEntryEventArgs> Arrived;
 
+    /// <summary>
+    /// Suspend log controller.
+    /// </summary>
+    /// <remarks>Will writes queued log entries in log files and transition to susupend.</remarks>
     void Suspend();
+
+    /// <summary>
+    /// Resume log controller.
+    /// </summary>
+    /// <remarks>Release suspending state.</remarks>
     void Resume();
 
     /// <summary>
@@ -51,18 +70,6 @@ public interface ILogController : IDisposable
     /// <param name="facility">Facility name.</param>
     /// <returns>Logger interface</returns>
     ILogger CreateLogger(string facility = "Unknown");
-
-    /// <summary>
-    /// Query log entries now.
-    /// </summary>
-    /// <param name="maximumLogEntries">Maximum result log entries.</param>
-    /// <param name="predicate">Query predicate.</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <returns>Result log entries.</returns>
-    LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
-        int maximumLogEntries,
-        Func<LogEntry, bool> predicate,
-        CancellationToken ct = default);
 
     /// <summary>
     /// Raw level write log entry.
@@ -82,6 +89,18 @@ public interface ILogController : IDisposable
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line,
         CancellationToken ct);
+
+    /// <summary>
+    /// Query log entries now.
+    /// </summary>
+    /// <param name="maximumLogEntries">Maximum result log entries.</param>
+    /// <param name="predicate">Query predicate.</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Result log entries.</returns>
+    LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
+        int maximumLogEntries,
+        Func<LogEntry, bool> predicate,
+        CancellationToken ct = default);
 }
 
 public static class LogControllerExtension

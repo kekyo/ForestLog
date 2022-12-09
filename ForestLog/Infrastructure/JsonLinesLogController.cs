@@ -23,9 +23,9 @@ using System.Threading.Tasks;
 namespace ForestLog.Infrastructure;
 
 /// <summary>
-/// ForestLog JsonLine log controller.
+/// ForestLog Json Lines log controller.
 /// </summary>
-internal sealed class JsonLineLogController : LogController
+internal sealed class JsonLinesLogController : LogController
 {
     private readonly string basePath;
     private readonly long sizeToNextFile;
@@ -35,7 +35,7 @@ internal sealed class JsonLineLogController : LogController
 
     //////////////////////////////////////////////////////////////////////
 
-    public JsonLineLogController(
+    public JsonLinesLogController(
         string basePath,
         LogLevels minimumOutputLogLevel,
         long sizeToNextFile,
@@ -235,12 +235,12 @@ internal sealed class JsonLineLogController : LogController
     }
 
 #if NET35 || NET40
-    protected override Task OnAvailableAsync(WaitingLogEntry waitingLogEntry) =>
+    protected override LoggerAwaitable OnAvailableAsync(WaitingLogEntry waitingLogEntry) =>
         Task.Factory.StartNew(() => this.OnAvailable(waitingLogEntry));
 
     private void OnAvailable(WaitingLogEntry waitingLogEntry)
 #else
-    protected override async Task OnAvailableAsync(WaitingLogEntry waitingLogEntry)
+    protected override async LoggerAwaitable OnAvailableAsync(WaitingLogEntry waitingLogEntry)
 #endif
     {
         if (!Directory.Exists(this.basePath))
@@ -255,14 +255,19 @@ internal sealed class JsonLineLogController : LogController
             }
         }
 
+        //////////////////////////////////////////////////////////////
+
         var path = Path.Combine(this.basePath, "log.jsonl");
 
         // Need to backup when file size exceeded.
         var fi = new FileInfo(path);
         if (fi.Exists && (fi.Length >= this.sizeToNextFile))
         {
+#if NET35 || NET40
             using var __ = this.rotationLocker.UnsafeLock();
-
+#else
+            using var __ = await this.rotationLocker.LockAsync(default);
+#endif
             var candidatePaths = GetCandidatePaths(this.basePath, this.maximumLogFiles);
 
             try
@@ -297,7 +302,13 @@ internal sealed class JsonLineLogController : LogController
             }
         }
 
+        //////////////////////////////////////////////////////////////
+
+#if NET35 || NET40
         using var _ = this.locker.UnsafeLock();
+#else
+        using var _ = await this.locker.LockAsync(default);
+#endif
 
         using var fs = new FileStream(
             path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, 65536

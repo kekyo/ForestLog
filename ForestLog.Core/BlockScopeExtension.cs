@@ -15,6 +15,12 @@ using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
+// Parameter has no matching param tag in the XML comment (but other parameters do)
+#pragma warning disable CS1573
+
+/// <summary>
+/// ForestLog logger interface extension.
+/// </summary>
 public static class BlockScopeExtension
 {
     private static void Run(
@@ -93,6 +99,11 @@ public static class BlockScopeExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave log entries.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -107,6 +118,13 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, logLevel, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -121,6 +139,12 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, logLevel, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave log entries.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -136,6 +160,14 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, logLevel, arguments.Arguments, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -153,6 +185,10 @@ public static class BlockScopeExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave debug log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -165,6 +201,12 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Debug, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave debug log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -177,6 +219,11 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Debug, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave debug log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -190,6 +237,13 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Debug, arguments.Arguments, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave debug log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -205,6 +259,10 @@ public static class BlockScopeExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave trace log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -217,6 +275,12 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Trace, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave trace log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -229,6 +293,11 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Trace, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave trace log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -242,6 +311,13 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Trace, arguments.Arguments, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave trace log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -257,6 +333,10 @@ public static class BlockScopeExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave information log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -269,6 +349,12 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Information, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave information log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -281,6 +367,11 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Information, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave information log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -294,6 +385,13 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Information, arguments.Arguments, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave information log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -309,6 +407,10 @@ public static class BlockScopeExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave warning log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -322,6 +424,12 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Warning, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave warning log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -335,6 +443,11 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Warning, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave warning log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -349,6 +462,13 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Warning, arguments.Arguments, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave warning log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -365,6 +485,10 @@ public static class BlockScopeExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave error log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -378,6 +502,12 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Error, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave error log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -391,6 +521,11 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Error, null, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave error log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -405,6 +540,13 @@ public static class BlockScopeExtension
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Error, arguments.Arguments, scopedAction, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave error log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif

@@ -30,12 +30,20 @@ internal sealed class Logger : ILogger
     {
         this.controller = controller;
         this.facility = facility;
-        this.scopeId = Interlocked.Increment(
-            ref this.controller.scopeIdCount);
+        this.scopeId = this.controller.NewScopeId();
     }
 
     //////////////////////////////////////////////////////////////////////
-    
+
+    public LogLevels MinimumOutputLogLevel
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        [DebuggerStepThrough]
+        get => this.controller.MinimumOutputLogLevel;
+    }
+
     public int ScopeId
     {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP

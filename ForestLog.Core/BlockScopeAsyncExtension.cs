@@ -18,6 +18,12 @@ using ForestLog.Tasks;
 
 namespace ForestLog;
 
+// Parameter has no matching param tag in the XML comment (but other parameters do)
+#pragma warning disable CS1573
+
+/// <summary>
+/// ForestLog logger interface extension.
+/// </summary>
 public static class BlockScopeAsyncExtension
 {
     private static async LoggerAwaitable RunAsync(
@@ -155,6 +161,13 @@ public static class BlockScopeAsyncExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave log entries.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -170,6 +183,15 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, logLevel, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -185,6 +207,14 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, logLevel, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave log entries.
+    /// </summary>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -201,6 +231,16 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, logLevel, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="logLevel">Log level</param>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -219,6 +259,12 @@ public static class BlockScopeAsyncExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave debug log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -232,6 +278,14 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Debug, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave debug log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -245,6 +299,13 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Debug, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave debug log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -259,6 +320,15 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Debug, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave debug log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -275,6 +345,12 @@ public static class BlockScopeAsyncExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave trace log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -288,6 +364,14 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Trace, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave trace log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -301,6 +385,13 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Trace, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave trace log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -315,6 +406,15 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Trace, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave trace log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -331,6 +431,12 @@ public static class BlockScopeAsyncExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave information log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -344,6 +450,14 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Information, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave information log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -357,6 +471,13 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Information, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave information log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -371,6 +492,15 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Information, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave information log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -387,6 +517,12 @@ public static class BlockScopeAsyncExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave warning log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -401,6 +537,14 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Warning, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave warning log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -415,6 +559,13 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Warning, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave warning log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -430,6 +581,15 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Warning, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave warning log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -447,6 +607,12 @@ public static class BlockScopeAsyncExtension
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Write enter and leave error log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -461,6 +627,14 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Error, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave error log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -475,6 +649,13 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Error, null, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave error log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -490,6 +671,15 @@ public static class BlockScopeAsyncExtension
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Error, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
 
+    /// <summary>
+    /// Write enter and leave error log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif

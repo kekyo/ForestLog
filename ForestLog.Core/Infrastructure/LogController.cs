@@ -18,21 +18,33 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Infrastructure;
 
+/// <summary>
+/// The log controller base class.
+/// </summary>
 public abstract class LogController : ILogController
 #if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     , IAsyncDisposable
 #endif
 {
-    protected readonly LogLevels minimumOutputLogLevel;
+    private readonly LogLevels minimumOutputLogLevel;
     private readonly Queue<WaitingLogEntry> queue = new();
-    private readonly ManualResetEvent available = new(false);
-    private readonly ManualResetEvent abort = new(false);
+
+    private readonly ManualResetEventSlim available = new();
+    private readonly ManualResetEventSlim abort = new();
+
+    private readonly ManualResetEventSlim suspending = new();
+    private readonly ManualResetEventSlim suspended = new();
+    private readonly ManualResetEventSlim resume = new();
 
     private Task worker;
-    internal int scopeIdCount;
+    private int scopeIdCount;
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="minimumOutputLogLevel">Minimum output log level.</param>
     protected LogController(LogLevels minimumOutputLogLevel)
     {
         this.minimumOutputLogLevel = minimumOutputLogLevel;
@@ -41,6 +53,9 @@ public abstract class LogController : ILogController
             TaskCreationOptions.LongRunning);
     }
 
+    /// <summary>
+    /// Dispose method.
+    /// </summary>
     public void Dispose()
     {
         if (this.worker is { } worker)
@@ -48,11 +63,14 @@ public abstract class LogController : ILogController
             this.worker = null!;
             
             this.abort.Set();
-            worker.Wait();
+            worker.GetAwaiter().GetResult();
         }
     }
 
 #if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    /// <summary>
+    /// Dispose method.
+    /// </summary>
     public ValueTask DisposeAsync()
     {
         if (this.worker is { } worker)
@@ -71,15 +89,57 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    public virtual void Suspend()
+    /// <summary>
+    /// For reference use only minimum output log level.
+    /// </summary>
+    public LogLevels MinimumOutputLogLevel
     {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        [DebuggerStepThrough]
+        get => this.minimumOutputLogLevel;
     }
-    public virtual void Resume()
-    {
-    }
+
+    /// <summary>
+    /// Create logger interface.
+    /// </summary>
+    /// <param name="facility">Facility name.</param>
+    /// <returns>Logger interface</returns>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    public ILogger CreateLogger(string facility) =>
+        new Logger(this, facility);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    internal int NewScopeId() =>
+        Interlocked.Increment(ref this.scopeIdCount);
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// For reference use only current queued entries.
+    /// </summary>
+    public int CurrentQueuedEntries
+    {
+        get
+        {
+            lock (this.queue)
+            {
+                return this.queue.Count;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Dequeue next waiting log entry.
+    /// </summary>
+    /// <returns>Waiting log entry when available</returns>
     protected WaitingLogEntry? DequeueWaitingLogEntry()
     {
         while (true)
@@ -109,8 +169,15 @@ public abstract class LogController : ILogController
         }
     }
 
+    /// <summary>
+    /// Fire when log entry arrived (wrote to file).
+    /// </summary>
     public event EventHandler<LogEntryEventArgs>? Arrived;
 
+    /// <summary>
+    /// Invoke Arrived event.
+    /// </summary>
+    /// <param name="logEntry">Log entry</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -120,15 +187,46 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
-    protected abstract Task OnAvailableAsync(
+    /// <summary>
+    /// Suspend log controller.
+    /// </summary>
+    /// <remarks>Will writes queued log entries in log files and transition to susupend.</remarks>
+    public void Suspend()
+    {
+        Trace.WriteLine("LogController: Suspending...");
+
+        this.resume.Reset();
+        this.suspending.Set();
+        this.suspended.Wait();
+    }
+
+    /// <summary>
+    /// Resume log controller.
+    /// </summary>
+    /// <remarks>Release suspending state.</remarks>
+    public void Resume()
+    {
+        this.suspending.Reset();
+        this.resume.Set();
+    }
+
+    //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Called when arrived log entry.
+    /// </summary>
+    /// <param name="waitingLogEntry">Log entry</param>
+    /// <returns></returns>
+    protected abstract LoggerAwaitable OnAvailableAsync(
         WaitingLogEntry waitingLogEntry);
 
     private void WorkerEntry()
     {
-        var waiters = new WaitHandle[]
+        var waiters = new[]
         {
-            this.available,
-            this.abort,
+            this.available.WaitHandle,
+            this.suspending.WaitHandle,
+            this.abort.WaitHandle,
         };
 
         while (true)
@@ -136,25 +234,68 @@ public abstract class LogController : ILogController
             try
             {
                 var result = WaitHandle.WaitAny(waiters);
-                if (result == 1)
+                
+                // Aborted
+                if (result == 2)
                 {
+                    Trace.WriteLine("LogController: Aborted.");
+
                     break;
                 }
-
-                if (this.DequeueWaitingLogEntry() is { } waitingLogEntry)
+                // Suspending
+                else if (result == 1)
                 {
-                    this.OnAvailableAsync(waitingLogEntry).Wait();
+                    Trace.WriteLine("LogController: Suspended.");
+
+                    this.suspended.Set();
+                    try
+                    {
+                        // Aborted
+                        if (WaitHandle.WaitAny(new[] {
+                            this.abort.WaitHandle,
+                            this.resume.WaitHandle }) == 0)
+                        {
+                            Trace.WriteLine("LogController: Aborted.");
+
+                            break;
+                        }
+                    }
+                    finally
+                    {
+                        this.suspended.Reset();
+                        this.resume.Reset();
+                    }
+
+                    Trace.WriteLine("LogController: Resumed.");
+                    continue;
+                }
+                // Available
+                else
+                {
+                    if (this.DequeueWaitingLogEntry() is { } waitingLogEntry)
+                    {
+                        this.OnAvailableAsync(waitingLogEntry).
+                            GetAwaiter().
+                            GetResult();
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"LoggerCore: {ex.GetType().FullName}: {ex.Message}");
+                Trace.WriteLine(
+                    $"LogController: {ex.GetType().FullName}: {ex.Message}");
             }
         }
+
+        // Makes safer deadlocking when called Suspend() after shutdown.
+        this.suspended.Set();
     }
 
     //////////////////////////////////////////////////////////////////////
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     private void InternalWrite(WaitingLogEntry waitingLogEntry)
     {
         lock (this.queue)
@@ -167,6 +308,9 @@ public abstract class LogController : ILogController
         }
     }
 
+    /// <summary>
+    /// Raw level write log entry.
+    /// </summary>
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
@@ -176,7 +320,8 @@ public abstract class LogController : ILogController
         IFormattable message, Exception? ex, object? additionalData,
         string memberName, string filePath, int line)
     {
-        if (logLevel >= this.minimumOutputLogLevel)
+        if (logLevel >= this.minimumOutputLogLevel &&
+            !this.suspending.IsSet)
         {
             var waitingLogEntry = new WaitingLogEntry(
                 facility, logLevel, DateTimeOffset.Now, scopeId,
@@ -191,6 +336,9 @@ public abstract class LogController : ILogController
         }
     }
 
+    /// <summary>
+    /// Raw level write log entry.
+    /// </summary>
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
@@ -201,7 +349,8 @@ public abstract class LogController : ILogController
         string memberName, string filePath, int line,
         CancellationToken ct)
     {
-        if (logLevel >= this.minimumOutputLogLevel)
+        if (logLevel >= this.minimumOutputLogLevel &&
+            !this.suspending.IsSet)
         {
             var awaiter = new TaskCompletionSource<bool>();
 
@@ -226,13 +375,15 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Query log entries now.
+    /// </summary>
+    /// <param name="maximumLogEntries">Maximum result log entries.</param>
+    /// <param name="predicate">Query predicate.</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Result log entries.</returns>
     public abstract LoggerAwaitable<LogEntry[]> QueryLogEntriesAsync(
         int maximumLogEntries,
         Func<LogEntry, bool> predicate,
         CancellationToken ct);
-
-    //////////////////////////////////////////////////////////////////////
-
-    public ILogger CreateLogger(string facility = "Unknown") =>
-        new Logger(this, facility);
 }
