@@ -37,7 +37,7 @@ public abstract class LogController : ILogController
     private readonly ManualResetEventSlim resume = new();
 
     private Task worker;
-    internal int scopeIdCount;
+    private int scopeIdCount;
 
     //////////////////////////////////////////////////////////////////////
 
@@ -94,8 +94,19 @@ public abstract class LogController : ILogController
     /// </summary>
     /// <param name="facility">Facility name.</param>
     /// <returns>Logger interface</returns>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
     public ILogger CreateLogger(string facility) =>
         new Logger(this, facility);
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [DebuggerStepThrough]
+    internal int NewScopeId() =>
+        Interlocked.Increment(ref this.scopeIdCount);
 
     //////////////////////////////////////////////////////////////////////
 

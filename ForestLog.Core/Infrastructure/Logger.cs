@@ -30,8 +30,7 @@ internal sealed class Logger : ILogger
     {
         this.controller = controller;
         this.facility = facility;
-        this.scopeId = Interlocked.Increment(
-            ref this.controller.scopeIdCount);
+        this.scopeId = this.controller.NewScopeId();
     }
 
     //////////////////////////////////////////////////////////////////////
