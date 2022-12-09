@@ -9,11 +9,38 @@
 
 namespace ForestLog;
 
+/// <summary>
+/// ForestLog log level enumeration.
+/// </summary>
 public enum LogLevels
 {
+    /// <summary>
+    /// For debug.
+    /// </summary>
     Debug,
+
+    /// <summary>
+    /// For trace.
+    /// </summary>
     Trace,
+
+    /// <summary>
+    /// For information.
+    /// </summary>
     Information,
+
+    /// <summary>
+    /// For warning.
+    /// </summary>
     Warning,
-    Error
+
+    /// <summary>
+    /// For error (Fatal).
+    /// </summary>
+    Error,
+
+    /// <summary>
+    /// Ignore log entry, only using for log controller limitation.
+    /// </summary>
+    Ignore = int.MaxValue,
 }

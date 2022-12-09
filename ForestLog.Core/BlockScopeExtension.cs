@@ -27,22 +27,29 @@ public static class BlockScopeExtension
         int line)
     {
         var scopedLogger = logger.NewScope();
-
         scopedLogger.Log(
-            logLevel, $"Enter.", arguments, memberName, filePath, line);
+            logLevel, $"Enter: Parent={logger.ScopeId}",
+            arguments, memberName, filePath, line);
+
+        var sw = Stopwatch.StartNew();
         try
         {
             scopedAction(scopedLogger);
         }
         catch (Exception ex)
         {
+            var elasped = sw.Elapsed;
             scopedLogger.Log(
-                logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                logLevel, ex, $"Leave with exception: Elapsed={elasped}",
+                CoreUtilities.ToExceptionDetailObject(ex),
+                memberName, filePath, line);
             throw;
         }
 
+        var elasped2 = sw.Elapsed;
         scopedLogger.Log(
-            logLevel, $"Leave.", null, memberName, filePath, line);
+            logLevel, $"Leave: Elapsed={elasped2}",
+            null, memberName, filePath, line);
     }
 
     private static T Run<T>(
@@ -57,8 +64,10 @@ public static class BlockScopeExtension
         var scopedLogger = logger.NewScope();
 
         scopedLogger.Log(
-            logLevel, $"Enter.", arguments, memberName, filePath, line);
+            logLevel, $"Enter: Parent={logger.ScopeId}",
+            arguments, memberName, filePath, line);
 
+        var sw = Stopwatch.StartNew();
         T result;
         try
         {
@@ -66,13 +75,18 @@ public static class BlockScopeExtension
         }
         catch (Exception ex)
         {
+            var elasped = sw.Elapsed;
             scopedLogger.Log(
-                logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                logLevel, ex, $"Leave with exception: Elapsed={elasped}",
+                CoreUtilities.ToExceptionDetailObject(ex),
+                memberName, filePath, line);
             throw;
         }
 
+        var elasped2 = sw.Elapsed;
         scopedLogger.Log(
-            logLevel, $"Leave.", result, memberName, filePath, line);
+            logLevel, $"Leave: Elapsed={elasped2}",
+            result, memberName, filePath, line);
 
         return result;
     }

@@ -8,10 +8,15 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
+/// <summary>
+/// ForestLog log entry entity.
+/// </summary>
+/// <remarks>This is an immutable type of log entry information.</remarks>
 public class LogEntry
 {
     public Guid Id { get; }
@@ -20,8 +25,11 @@ public class LogEntry
     public DateTimeOffset Timestamp { get; }
     public int ScopeId { get; }
     public string Message { get; }
+    [DefaultValue(null)]
     public string? ExceptionType { get; }
+    [DefaultValue(null)]
     public string? ExceptionMessage { get; }
+    [DefaultValue(null)]
     public object? AdditionalData { get; }
     public string MemberName { get; }
     public string FilePath { get; }

@@ -46,7 +46,24 @@ public sealed class JsonLineLoggerTests
         }
     }
 
-    private JObject?[] LogTestBlock(Action<ILogger> action)
+    private JObject?[] LogTestBlock(
+        Action<ILogger> action,
+        LogLevels maximumOutputLogLevel = LogLevels.Debug,
+        long sizeToNextFile = 1 * 1024 * 1024,
+        int maximumLogFiles = 0) =>
+        this.LogTestBlock(
+            out var _,
+            action,
+            maximumOutputLogLevel,
+            sizeToNextFile,
+            maximumLogFiles);
+
+    private JObject?[] LogTestBlock(
+        out int files,
+        Action<ILogger> action,
+        LogLevels maximumOutputLogLevel = LogLevels.Debug,
+        long sizeToNextFile = 1 * 1024 * 1024,
+        int maximumLogFiles = 0)
     {
         var basePath = Path.Combine(
             Path.GetDirectoryName(this.GetType().Assembly.Location)!,
@@ -66,15 +83,18 @@ public sealed class JsonLineLoggerTests
         try
         {
             using (var logController = LoggerFactory.CreateJsonLineLogController(
-                basePath, LogLevels.Debug))
+                basePath, maximumOutputLogLevel, sizeToNextFile, maximumLogFiles))
             {
                 var logger = logController.CreateLogger();
 
                 action(logger);
             }
 
-            return Directory.EnumerateFiles(
-                basePath, "log.jsonl", SearchOption.AllDirectories).
+            var paths = Directory.GetFiles(
+                basePath, "log*.jsonl", SearchOption.AllDirectories);
+            files = paths.Length;
+
+            return paths.
                 SelectMany(path => LoadLines(path)).
                 ToArray();
         }
@@ -188,6 +208,81 @@ public sealed class JsonLineLoggerTests
 
         Assert.AreEqual("trace", lines.Single()?["logLevel"]?.ToString());
         Assert.AreEqual("System.ApplicationException: AAA", lines.Single()?["message"]?.ToString());
+    }
+
+    //////////////////////////////////////////////////////////
+
+    [TestCase(LogLevels.Debug)]
+    [TestCase(LogLevels.Trace)]
+    [TestCase(LogLevels.Information)]
+    [TestCase(LogLevels.Warning)]
+    [TestCase(LogLevels.Error)]
+    public void LogSingleMessage(LogLevels logLevel)
+    {
+        var lines = LogTestBlock(logger =>
+        {
+            var value = 123;
+            logger.Log(logLevel, $"AAA{value}BBB");
+        });
+
+        Assert.AreEqual("AAA123BBB", lines.Single()?["message"]?.ToString());
+        Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines.Single()?["logLevel"]?.ToString());
+    }
+
+    [Test]
+    public void LogIgnore1()
+    {
+        var lines = LogTestBlock(logger =>
+        {
+            var value = 123;
+            logger.Log(LogLevels.Ignore, $"AAA{value}BBB");
+        });
+
+        Assert.AreEqual(0, lines.Length);
+    }
+
+    [Test]
+    public void LimitOutputLogLevel()
+    {
+        for (var targetLogLevel = LogLevels.Debug;
+            targetLogLevel <= LogLevels.Error;
+            targetLogLevel++)
+        {
+            for (var minimumOutputLogLevel = LogLevels.Debug;
+                minimumOutputLogLevel <= LogLevels.Error;
+                minimumOutputLogLevel++)
+            {
+                var lines = LogTestBlock(logger =>
+                {
+                    var value = 123;
+                    logger.Log(targetLogLevel, $"AAA{value}BBB");
+                },
+                minimumOutputLogLevel);
+
+                if (targetLogLevel >= minimumOutputLogLevel)
+                {
+                    Assert.AreEqual("AAA123BBB", lines.Single()?["message"]?.ToString());
+                    Assert.AreEqual(targetLogLevel.ToString().ToLowerInvariant(), lines.Single()?["logLevel"]?.ToString());
+                }
+                else
+                {
+                    Assert.AreEqual(0, lines.Length);
+                }
+            }
+        }
+    }
+
+    [Test]
+    public void LogIgnore2()
+    {
+        var lines = LogTestBlock(logger =>
+        {
+            var value = 123;
+            logger.Log(LogLevels.Debug, $"AAA{value}BBB");
+        },
+        LogLevels.Ignore);
+
+        Assert.AreEqual(0, lines.Length);
     }
 
     //////////////////////////////////////////////////////////
@@ -321,5 +416,26 @@ public sealed class JsonLineLoggerTests
 
         Assert.AreEqual(Math.Min(max, 10), entries.Length);
         Assert.IsTrue(entries.All(e => e.Message.StartsWith("CCC")));
+    }
+
+    //////////////////////////////////////////////////////////
+
+    [TestCase(10, 1)]
+    [TestCase(10, 2)]
+    [TestCase(10, 5)]
+    public void RotateLogFiles(long sizeToNextFile, int maximumLogFiles)
+    {
+        var lines = LogTestBlock(logger =>
+        {
+            for (var index = 0; index < 100; index++)
+            {
+                logger.Debug($"AAA{index}BBB");
+            }
+        },
+        LogLevels.Debug,
+        sizeToNextFile,
+        maximumLogFiles);
+
+        Assert.AreEqual(maximumLogFiles, lines.Length);
     }
 }

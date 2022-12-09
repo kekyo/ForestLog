@@ -82,7 +82,7 @@ public readonly struct LoggerAwaiter<T> : ICriticalNotifyCompletion
 #endif
     [DebuggerStepThrough]
     public T GetResult() =>
-        this.task is { } task ? task.Result : this.value;
+        this.task is { } task ? task.GetAwaiter().GetResult() : this.value;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -149,5 +149,5 @@ public readonly struct LoggerAwaiter : ICriticalNotifyCompletion
 #endif
     [DebuggerStepThrough]
     public void GetResult() =>
-        this.task?.Wait();
+        this.task?.GetAwaiter().GetResult();
 }

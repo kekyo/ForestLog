@@ -35,42 +35,53 @@ public static class BlockScopeAsyncExtension
         if (ct.HasValue)
         {
             await scopedLogger.LogAsync(
-                logLevel, $"Enter.", arguments, ct.Value, memberName, filePath, line);
+                logLevel, $"Enter: Parent={logger.ScopeId}",
+                arguments, ct.Value, memberName, filePath, line);
         }
         else
         {
             scopedLogger.Log(
-                logLevel, $"Enter.", arguments, memberName, filePath, line);
+                logLevel, $"Enter: Parent={logger.ScopeId}",
+                arguments, memberName, filePath, line);
         }
 
+        var sw = Stopwatch.StartNew();
         try
         {
             await scopedAction(scopedLogger);
         }
         catch (Exception ex)
         {
+            var elapsed = sw.Elapsed;
             if (ct.HasValue)
             {
                 await scopedLogger.LogAsync(
-                    logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, ct.Value, memberName, filePath, line);
+                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
+                    CoreUtilities.ToExceptionDetailObject(ex),
+                    ct.Value, memberName, filePath, line);
             }
             else
             {
                 scopedLogger.Log(
-                    logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
+                    CoreUtilities.ToExceptionDetailObject(ex),
+                    memberName, filePath, line);
             }
             throw;
         }
 
+        var elapsed2 = sw.Elapsed;
         if (ct.HasValue)
         {
             await scopedLogger.LogAsync(
-                logLevel, $"Leave.", null, ct.Value, memberName, filePath, line);
+                logLevel, $"Leave: Elapsed={elapsed2}",
+                null, ct.Value, memberName, filePath, line);
         }
         else
         {
             scopedLogger.Log(
-                logLevel, $"Leave.", null, memberName, filePath, line);
+                logLevel, $"Leave: Elapsed={elapsed2}",
+                null, memberName, filePath, line);
         }
     }
 
@@ -89,14 +100,17 @@ public static class BlockScopeAsyncExtension
         if (ct.HasValue)
         {
             await scopedLogger.LogAsync(
-                logLevel, $"Enter.", arguments, ct.Value, memberName, filePath, line);
+                logLevel, $"Enter: Parent={logger.ScopeId}",
+                arguments, ct.Value, memberName, filePath, line);
         }
         else
         {
             scopedLogger.Log(
-                logLevel, $"Enter.", arguments, memberName, filePath, line);
+                logLevel, $"Enter: Parent={logger.ScopeId}",
+                arguments, memberName, filePath, line);
         }
 
+        var sw = Stopwatch.StartNew();
         T result;
         try
         {
@@ -104,28 +118,36 @@ public static class BlockScopeAsyncExtension
         }
         catch (Exception ex)
         {
+            var elapsed = sw.Elapsed;
             if (ct.HasValue)
             {
                 await scopedLogger.LogAsync(
-                    logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, ct.Value, memberName, filePath, line);
+                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
+                    CoreUtilities.ToExceptionDetailObject(ex),
+                    ct.Value, memberName, filePath, line);
             }
             else
             {
                 scopedLogger.Log(
-                    logLevel, ex, CoreUtilities.FormatLeaveWithException(ex), null, memberName, filePath, line);
+                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
+                    CoreUtilities.ToExceptionDetailObject(ex),
+                    memberName, filePath, line);
             }
             throw;
         }
 
+        var elapsed2 = sw.Elapsed;
         if (ct.HasValue)
         {
             await scopedLogger.LogAsync(
-                logLevel, $"Leave.", result, ct.Value, memberName, filePath, line);
+                logLevel, $"Leave: Elapsed={elapsed2}",
+                result, ct.Value, memberName, filePath, line);
         }
         else
         {
             scopedLogger.Log(
-                logLevel, $"Leave.", result, memberName, filePath, line);
+                logLevel, $"Leave: Elapsed={elapsed2}",
+                result, memberName, filePath, line);
         }
 
         return result;

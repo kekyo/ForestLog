@@ -82,6 +82,8 @@ public sealed class LoggerAwaitableMethodBuilderTests
     }
 #endif
 
+    //////////////////////////////////////////////////////////////////
+
     [Test]
     public void ReturnWithDelay1()
     {
@@ -252,4 +254,96 @@ public sealed class LoggerAwaitableMethodBuilderTests
 
         sc.Run(RunnerAsync());
     }
+
+    //////////////////////////////////////////////////////////////////
+
+    [Test]
+    public async Task ThrowImmediatelyAsTask()
+    {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        static async LoggerAwaitable ThrowAsync()
+        {
+            throw new ApplicationException();
+        }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+
+        var awaitable = (Task)ThrowAsync();
+
+        try
+        {
+            await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
+        }
+    }
+
+#if NETCOREAPP
+    [Test]
+    public async Task ThrowImmediatelyAsValueTask()
+    {
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        static async LoggerAwaitable ThrowAsync()
+        {
+            throw new ApplicationException();
+        }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+
+        var awaitable = (ValueTask)ThrowAsync();
+
+        try
+        {
+            await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
+        }
+    }
+#endif
+
+    [Test]
+    public async Task ThrowDelayedAsTask()
+    {
+        static async LoggerAwaitable ThrowAsync()
+        {
+            await Task.Delay(500);
+            throw new ApplicationException();
+        }
+
+        var awaitable = (Task)ThrowAsync();
+
+        try
+        {
+            await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
+        }
+    }
+
+#if NETCOREAPP
+    [Test]
+    public async Task ThrowDelayedAsValueTask()
+    {
+        static async LoggerAwaitable ThrowAsync()
+        {
+            await Task.Delay(500);
+            throw new ApplicationException();
+        }
+
+        var awaitable = (ValueTask)ThrowAsync();
+
+        try
+        {
+            await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
+        }
+    }
+#endif
 }

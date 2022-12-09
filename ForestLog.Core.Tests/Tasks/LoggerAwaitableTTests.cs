@@ -38,6 +38,8 @@ public sealed class LoggerAwaitableTTests
         Assert.AreEqual(expected, actual);
     }
 
+    //////////////////////////////////////////////////////////////////
+
     private static async Task<T> DelayByTask<T>(T value)
     {
         await Task.Delay(100);
@@ -51,6 +53,7 @@ public sealed class LoggerAwaitableTTests
         return value;
     }
 #endif
+
     [Test]
     public async Task SequentialAwaitings1()
     {
@@ -121,6 +124,69 @@ public sealed class LoggerAwaitableTTests
             var actual = await LoggerAwaitable.FromTask(DelayByValueTask(expected));
 
             Assert.AreEqual(expected, actual);
+        }
+    }
+#endif
+
+    //////////////////////////////////////////////////////////////////
+
+    [Test]
+    public async Task ExceptionThrowed()
+    {
+        var tcs = new TaskCompletionSource<int>();
+        tcs.SetException(new ApplicationException());
+        var awaitable = LoggerAwaitable.FromTask(tcs.Task);
+
+        try
+        {
+            var _ = await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
+        }
+    }
+
+    [Test]
+    public async Task ExceptionThrowedAfterAwaitedOnTask()
+    {
+        static async Task<int> ThrowAfterDelay()
+        {
+            await Task.Delay(500);
+            throw new ApplicationException();
+        }
+
+        var awaitable = LoggerAwaitable.FromTask(ThrowAfterDelay());
+
+        try
+        {
+            var _ = await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
+        }
+    }
+
+#if NETCOREAPP
+    [Test]
+    public async Task ExceptionThrowedAfterAwaitedOnValueTask()
+    {
+        static async ValueTask<int> ThrowAfterDelay()
+        {
+            await Task.Delay(500);
+            throw new ApplicationException();
+        }
+
+        var awaitable = LoggerAwaitable.FromTask(ThrowAfterDelay());
+
+        try
+        {
+            var _ = await awaitable;
+            Assert.Fail();
+        }
+        catch (ApplicationException)
+        {
         }
     }
 #endif

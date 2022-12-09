@@ -39,16 +39,22 @@ The following platforms are supported by the package.
 
 Install [ForestLog](https://www.nuget.org/packages/ForestLog) package.
 
+We need to create "Log controller" from the factory:
+
 ```csharp
 using ForestLog;
 
-// Construct controller:
+// Construct log controller:
 using var logController = LoggerFactory.CreateJsonLinesLogger(
     // Output base directory path.
     "logs",
     // Minimum output log level.
     LogLevels.Debug);
+```
 
+Then, create a logger interface and ready to output:
+
+```csharp
 // Create logger:
 ILogger logger = logController.CreateLogger();
 
@@ -66,6 +72,14 @@ catch (Exception ex)
 {
     logger.Error(ex);
 }
+
+// Write log entry with additional data:
+logger.Information($"See additional data below",
+    new {
+        Amount = 123,
+        Message = "ABC",
+        NameOfProduct = "PAC-MAN quarter",
+    });
 ```
 
 Output to (pseudo json formatted from jsonl):
@@ -78,16 +92,13 @@ Output to (pseudo json formatted from jsonl):
     "timestamp": "2022-12-06T09:27:04.5451256+09:00",
     "scopeId": 1,
     "message": "Always using string interpolation: 123",
-    "exceptionType": null,
-    "exceptionMessage": null,
-    "additionalData": null,
-    "memberName": "ReadMultipleMessage3",
-    "filePath": "D:\\Projects\\ForestLog\\ForestLog.Tests\\JsonLineLoggerTests.cs",
+    "memberName": "PurchaseProductAsync",
+    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
     "line": 229,
     "managedThreadId": 16,
     "nativeThreadId": 11048,
     "taskId": -1,
-    "processId": 55000
+    "processId": 43608
 }
 {
     "id": "31b4709f-f7f5-45b5-9381-75f64e23efce",
@@ -96,16 +107,13 @@ Output to (pseudo json formatted from jsonl):
     "timestamp": "2022-12-06T09:27:04.5473678+09:00",
     "scopeId": 1,
     "message": "Always using string interpolation: 456",
-    "exceptionType": null,
-    "exceptionMessage": null,
-    "additionalData": null,
-    "memberName": "ReadMultipleMessage3",
-    "filePath": "D:\\Projects\\ForestLog\\ForestLog.Tests\\JsonLineLoggerTests.cs",
-    "line": 231,
+    "memberName": "PurchaseProductAsync",
+    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
+    "line": 230,
     "managedThreadId": 16,
     "nativeThreadId": 11048,
     "taskId": -1,
-    "processId": 55000
+    "processId": 43608
 }
 {
     "id": "5848c701-0190-453a-83b7-271023306d4a",
@@ -116,19 +124,53 @@ Output to (pseudo json formatted from jsonl):
     "message": "System.ApplicationException: Failed a operation.",
     "exceptionType": "System.ApplicationException",
     "exceptionMessage": "Failed a operation.",
-    "additionalData": null,
-    "memberName": "TraceException",
-    "filePath": "D:\\Projects\\ForestLog\\ForestLog.Tests\\JsonLineLoggerTests.cs",
-    "line": 179,
+    "memberName": "PurchaseProductAsync",
+    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
+    "line": 238,
     "managedThreadId": 16,
     "nativeThreadId": 11048,
     "taskId": -1,
-    "processId": 55000
+    "processId": 43608
+}
+{
+    "id": "e453d20f-e1cb-4464-b189-833153237e5b",
+    "facility": "Unknown",
+    "logLevel": "information",
+    "timestamp": "2022-12-08T10:07:00.2802106+09:00",
+    "scopeId": 1,
+    "message": "See additional data below",
+    "additionalData": {
+        "amount": 123,
+        "message": "ABC",
+        "nameOfProduct": "PAC-MAN quarter"
+    },
+    "memberName": "PurchaseProductAsync",
+    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
+    "line": 242,
+    "managedThreadId": 16,
+    "nativeThreadId": 11048,
+    "taskId": -1,
+    "processId": 43608
+}
+```
+
+The log level values are:
+
+```csharp
+// The lower symbol name is the most important.
+// This order affects `MinimumOutputLogLevel` limitation.
+public enum LogLevels
+{
+    Debug,
+    Trace,
+    Information,
+    Warning,
+    Error,
+    Ignore,   // <-- Will ignore any log output.
 }
 ```
 
 ## Annotates facility name
-
 
 ```csharp
 // Create facility annoteted logger
@@ -138,7 +180,7 @@ var unitCount = 5;
 logger.Information($"Through the valid unit: Units={unitCount}");
 ```
 
-Causes:
+Result:
 
 ```json
 {
@@ -165,6 +207,7 @@ public async Task OutputAsync(ILogger logger)
 ## Scoped output
 
 The scoped output features will apply log entry relations with `scopeId` identity on log key.
+And the time between entering and exiting the scope is then measured.
 
 ```csharp
 public void Scope(ILogger parentLogger)
@@ -186,31 +229,85 @@ public Task ScopeAsync(ILogger parentLogger)
 }
 ```
 
-Causes:
+Result:
 
 ```json
 {
     "logLevel": "trace",
-    "scopeId": 123, 
-    "message": "Enter.",
+    "scopeId": 123,      // <-- Same scope id
+    "message": "Enter: Parent=42",   // <-- Parent logger scope id
     // ...
 }
 {
     "logLevel": "debug",
-    "scopeId": 123, 
+    "scopeId": 123,      // <-- Same scope id
     "message": "Output in child scope.",
     // ...
 }
 {
     "logLevel": "warning",
-    "scopeId": 123,
+    "scopeId": 123,      // <-- Same scope id
     "message": "Same child scope.",
     // ...
 }
 {
     "logLevel": "trace",
-    "scopeId": 123, 
-    "message": "Leave.",
+    "scopeId": 123,      // <-- Same scope id
+    "message": "Leave: Elapsed=00:00:00.00146248",
+    // ...
+}
+```
+
+The timestamp from `Enter` to `Leave` in the same `scopeId` can be used to calculate the time at tally time,
+but elapsed time indicated in `Leave` message is even more precise.
+
+Scope output can include arguments, return values and exception information:
+
+```csharp
+public string Scope(ILogger parentLogger, int a, double b, string c)
+{
+    // Using `new` operator with implicitly type `BlockScopeArguments`.
+    return parentLogger.TraceScope(new(a, b, c), logger =>
+    {
+        return (a + b) + c;
+    });
+}
+```
+
+Result:
+
+```json
+{
+    "logLevel": "trace",
+    "scopeId": 456, 
+    "message": "Enter: Parent=42",
+    "additionalData": [
+        111,
+        222.333,
+        "ABC"
+    ],
+    // ...
+}
+{
+    "logLevel": "trace",
+    "scopeId": 456, 
+    "message": "Leave: Elapsed=00:00:00.00146248",
+    "additionalData": "333.333ABC",
+    // ...
+}
+```
+
+Leave with exception:
+
+```json
+{
+    "logLevel": "trace",
+    "scopeId": 456, 
+    "message": "Leave with exception: Elapsed=00:00:00.00146248",
+    "additionalData": {
+        "name": "System.ApplicationException",
+        "message": "Application might has invalid state..."
+    },
     // ...
 }
 ```
@@ -232,7 +329,17 @@ Result:
 
 ![Applied log size configuration](Images/logs_directory.png)
 
-TODO: Rotation
+Enable log file rotation:
+
+```csharp
+using var logController = LoggerFactory.CreateJsonLinesLogger(
+    "logs",
+    LogLevels.Debug,
+    1 * 1024 * 1024,
+    // Maximum log files.
+    10
+    );
+```
 
 ## Suspend and resume
 
@@ -265,7 +372,86 @@ LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
 
 ## Uses builtin awaitable value task (Advanced topic)
 
-TODO:
+ForestLog has its own awaitable type, the `LoggerAwaitable` type.
+This structure is a value-type likes the `ValueTask` type and allowing low-cost asynchronous operations.
+It also defines an inter-conversion operator between the `Task` and `ValueTask` type,
+allowing seamless use as follows:
+
+```csharp
+// Implicitly conversion from `Task`
+async Task AsyncOperation()
+{
+    // ...
+}
+
+LoggerAwaitable awaitable = AsyncOperation();
+await awaitable;
+```
+
+```csharp
+// Implicitly conversion from `ValueTask`
+async ValueTask AsyncOperation()
+{
+    // ...
+}
+
+LoggerAwaitable awaitable = AsyncOperation();
+await awaitable;
+```
+
+```csharp
+// Implicitly conversion from `Task<T>`
+async Task<int> AsyncOperationWithResult()
+{
+    // ...
+}
+
+LoggerAwaitable<int> awaitable = AsyncOperationWithResult();
+var result = await awaitable;
+```
+
+```csharp
+// async-await operation
+async LoggerAwaitable AsyncOperation()
+{
+    await Task.Delay(100);
+}
+```
+
+```csharp
+// async-await operation with result
+async LoggerAwaitable<int> AsyncOperationWithResult()
+{
+    await Task.Delay(100);
+    return 123;
+}
+
+var result = await AsyncOperationWithResult();
+```
+
+These `LoggerAwaitable` types are defined for the following reasons:
+
+* Elimination of dependencies on assemblies containing `ValueTask` types.
+* Elimination of complications due to inter-conversion between `Task` and `ValueTask` types.
+
+For example, using the `LoggerAwaitable` type,
+you can easily (simply) write and reduce asynchronous operation cost the following:
+
+```csharp
+// `TraceScopeAsync` method receives `Func<ILogger, LoggerAwaitable<int>>` delegate type
+// and returns `LoggerAwaitable<int>` type.
+public Task<int> ComplextOperationAsync() =>
+    this.logger.TraceScopeAsync(async logger =>
+    {
+        // ...
+
+        return result;
+    });
+```
+
+Note: In `netcoreapp2.1` or later and `netstandard2.1`,
+the `ValueTask` is not required any external dependencies.
+So we can use `ValueTask` conversion naturally on these environments.
 
 ----
 
