@@ -560,4 +560,82 @@ public static class BlockScopeExtension
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Error, arguments.Arguments, scopedAction, memberName, filePath, line);
+
+    //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static void FatalScope(
+        this ILogger logger,
+        Action<ILogger> scopedAction,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        Run(logger, LogLevels.Fatal, null, scopedAction, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static T FatalScope<T>(
+        this ILogger logger,
+        Func<ILogger, T> scopedAction,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        Run(logger, LogLevels.Fatal, null, scopedAction, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static void FatalScope(
+        this ILogger logger,
+        BlockScopeArguments arguments,
+        Action<ILogger> scopedAction,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        Run(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static T FatalScope<T>(
+        this ILogger logger,
+        BlockScopeArguments arguments,
+        Func<ILogger, T> scopedAction,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        Run(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, memberName, filePath, line);
 }

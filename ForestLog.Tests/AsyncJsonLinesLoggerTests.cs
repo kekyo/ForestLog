@@ -161,6 +161,7 @@ public sealed class AsyncJsonLinesLoggerTests
     [TestCase(LogLevels.Information)]
     [TestCase(LogLevels.Warning)]
     [TestCase(LogLevels.Error)]
+    [TestCase(LogLevels.Fatal)]
     public async Task LogSingleMessage(LogLevels logLevel)
     {
         var lines = await LogTestBlockAsync(async logger =>
@@ -189,11 +190,11 @@ public sealed class AsyncJsonLinesLoggerTests
     public async Task LimitOutputLogLevel()
     {
         for (var targetLogLevel = LogLevels.Debug;
-            targetLogLevel <= LogLevels.Error;
+            targetLogLevel <= LogLevels.Fatal;
             targetLogLevel++)
         {
             for (var minimumOutputLogLevel = LogLevels.Debug;
-                minimumOutputLogLevel <= LogLevels.Error;
+                minimumOutputLogLevel <= LogLevels.Fatal;
                 minimumOutputLogLevel++)
             {
                 var lines = await LogTestBlockAsync(async logger =>

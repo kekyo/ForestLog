@@ -501,4 +501,83 @@ public static class LoggerAsyncExtension
             LogLevels.Error,
             message, ex, additionalData,
             memberName, filePath, line, ct);
+
+    //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Write a fatal log entry.
+    /// </summary>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    [DebuggerStepThrough]
+    public static LoggerAwaitable FatalAsync(
+        this ILogger logger,
+        IFormattable message,
+        object? additionalData = null,
+        CancellationToken ct = default,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.WriteAsync(
+            LogLevels.Fatal,
+            message, null, additionalData,
+            memberName, filePath, line, ct);
+
+    /// <summary>
+    /// Write a fatal log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    [DebuggerStepThrough]
+    public static LoggerAwaitable FatalAsync(
+        this ILogger logger,
+        Exception ex,
+        object? additionalData = null,
+        CancellationToken ct = default,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.WriteAsync(
+            LogLevels.Fatal,
+            CoreUtilities.FormatException(ex), ex, additionalData,
+            memberName, filePath, line, ct);
+
+    /// <summary>
+    /// Write a fatal log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+    /// <param name="additionalData">Additional data object when need to write</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    [DebuggerStepThrough]
+    public static LoggerAwaitable FatalAsync(
+        this ILogger logger,
+        Exception ex,
+        IFormattable message,
+        object? additionalData = null,
+        CancellationToken ct = default,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.WriteAsync(
+            LogLevels.Fatal,
+            message, ex, additionalData,
+            memberName, filePath, line, ct);
 }
