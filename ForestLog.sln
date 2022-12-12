@@ -22,6 +22,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.Core.Tests", "For
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.Tests", "ForestLog.Tests\ForestLog.Tests.csproj", "{CD5CCE4D-57A2-48DE-9DFA-15680DB839F9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.JsonLines", "ForestLog.JsonLines\ForestLog.JsonLines.csproj", "{478FB0B9-BDAD-4F40-A5EE-7F281FDE3D04}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{CD5CCE4D-57A2-48DE-9DFA-15680DB839F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD5CCE4D-57A2-48DE-9DFA-15680DB839F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD5CCE4D-57A2-48DE-9DFA-15680DB839F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{478FB0B9-BDAD-4F40-A5EE-7F281FDE3D04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{478FB0B9-BDAD-4F40-A5EE-7F281FDE3D04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{478FB0B9-BDAD-4F40-A5EE-7F281FDE3D04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{478FB0B9-BDAD-4F40-A5EE-7F281FDE3D04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

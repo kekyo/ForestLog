@@ -7,8 +7,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.CompilerServices;
+namespace ForestLog;
 
-[assembly: InternalsVisibleTo("ForestLog")]
-[assembly: InternalsVisibleTo("ForestLog.JsonLines")]
-[assembly: InternalsVisibleTo("FSharp.ForestLog")]
+public sealed class LogControllerFactory
+{
+    internal LogControllerFactory()
+    {
+    }
+}
+
+/// <summary>
+/// ForestLog controller factory base class.
+/// </summary>
+public static class LogController
+{
+    public static readonly LogControllerFactory Factory = new();
+}
