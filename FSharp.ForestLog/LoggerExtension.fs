@@ -40,7 +40,7 @@ module public LoggerExtension =
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(logLevel, message, null, additionalData, memberName, filePath, line);
+            logger.Write(logLevel, message, additionalData, memberName, filePath, line);
 
         /// <summary>
         /// Write a log entry.
@@ -54,11 +54,14 @@ module public LoggerExtension =
         member logger.log(
             logLevel: LogLevels,
             ex: Exception,
-            [<Optional; DefaultParameterValue(null)>] additionalData: obj,
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(logLevel, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+            logger.Write(
+                logLevel,
+                CoreUtilities.FormatException(ex),
+                CoreUtilities.ToExceptionDetailObject(ex),
+                memberName, filePath, line);
 
         /// <summary>
         /// Write a log entry.
@@ -74,10 +77,12 @@ module public LoggerExtension =
             logLevel: LogLevels,
             ex: Exception,
             message: IFormattable,
-            [<Optional; DefaultParameterValue(null)>] additionalData: obj,
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(logLevel, message, ex, additionalData, memberName, filePath, line);
+            logger.Write(
+                logLevel,
+                message, CoreUtilities.ToExceptionDetailObject(ex),
+                memberName, filePath, line);
 
         //////////////////////////////////////////////////////////////////////

@@ -36,58 +36,38 @@ public static class BlockScopeAsyncExtension
         string filePath,
         int line)
     {
-        var scopedLogger = logger.NewScope();
+        using var scopedLogger = new ScopedLogger(
+            logger, logLevel, memberName, filePath, line);
 
         if (ct.HasValue)
         {
-            await scopedLogger.LogAsync(
-                logLevel, $"Enter: Parent={logger.ScopeId}",
-                arguments, ct.Value, memberName, filePath, line);
+            await scopedLogger.EnterAsync(arguments, ct.Value);
         }
         else
         {
-            scopedLogger.Log(
-                logLevel, $"Enter: Parent={logger.ScopeId}",
-                arguments, memberName, filePath, line);
+            scopedLogger.Enter(arguments);
         }
 
-        var sw = Stopwatch.StartNew();
         try
         {
             await scopedAction(scopedLogger);
         }
         catch (Exception ex)
         {
-            var elapsed = sw.Elapsed;
             if (ct.HasValue)
             {
-                await scopedLogger.LogAsync(
-                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
-                    CoreUtilities.ToExceptionDetailObject(ex),
-                    ct.Value, memberName, filePath, line);
+                await scopedLogger.LeaveAsync(ex, ct.Value);
             }
             else
             {
-                scopedLogger.Log(
-                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
-                    CoreUtilities.ToExceptionDetailObject(ex),
-                    memberName, filePath, line);
+                scopedLogger.Leave(ex);
             }
             throw;
         }
 
-        var elapsed2 = sw.Elapsed;
         if (ct.HasValue)
         {
-            await scopedLogger.LogAsync(
-                logLevel, $"Leave: Elapsed={elapsed2}",
-                null, ct.Value, memberName, filePath, line);
-        }
-        else
-        {
-            scopedLogger.Log(
-                logLevel, $"Leave: Elapsed={elapsed2}",
-                null, memberName, filePath, line);
+            await scopedLogger.LeaveAsync(ct.Value);
         }
     }
 
@@ -101,22 +81,18 @@ public static class BlockScopeAsyncExtension
         string filePath,
         int line)
     {
-        var scopedLogger = logger.NewScope();
+        using var scopedLogger = new ScopedLogger(
+            logger, logLevel, memberName, filePath, line);
 
         if (ct.HasValue)
         {
-            await scopedLogger.LogAsync(
-                logLevel, $"Enter: Parent={logger.ScopeId}",
-                arguments, ct.Value, memberName, filePath, line);
+            await scopedLogger.EnterAsync(arguments, ct.Value);
         }
         else
         {
-            scopedLogger.Log(
-                logLevel, $"Enter: Parent={logger.ScopeId}",
-                arguments, memberName, filePath, line);
+            scopedLogger.Enter(arguments);
         }
 
-        var sw = Stopwatch.StartNew();
         T result;
         try
         {
@@ -124,36 +100,20 @@ public static class BlockScopeAsyncExtension
         }
         catch (Exception ex)
         {
-            var elapsed = sw.Elapsed;
             if (ct.HasValue)
             {
-                await scopedLogger.LogAsync(
-                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
-                    CoreUtilities.ToExceptionDetailObject(ex),
-                    ct.Value, memberName, filePath, line);
+                await scopedLogger.LeaveAsync(ex, ct.Value);
             }
             else
             {
-                scopedLogger.Log(
-                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
-                    CoreUtilities.ToExceptionDetailObject(ex),
-                    memberName, filePath, line);
+                scopedLogger.Leave(ex);
             }
             throw;
         }
 
-        var elapsed2 = sw.Elapsed;
         if (ct.HasValue)
         {
-            await scopedLogger.LogAsync(
-                logLevel, $"Leave: Elapsed={elapsed2}",
-                result, ct.Value, memberName, filePath, line);
-        }
-        else
-        {
-            scopedLogger.Log(
-                logLevel, $"Leave: Elapsed={elapsed2}",
-                result, memberName, filePath, line);
+            await scopedLogger.LeaveAsync(ct.Value);
         }
 
         return result;
@@ -223,7 +183,7 @@ public static class BlockScopeAsyncExtension
     public static LoggerAwaitable ScopeAsync(
         this ILogger logger,
         LogLevels logLevel,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -249,7 +209,7 @@ public static class BlockScopeAsyncExtension
     public static LoggerAwaitable<T> ScopeAsync<T>(
         this ILogger logger,
         LogLevels logLevel,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -312,7 +272,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -335,7 +295,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> DebugScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -398,7 +358,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -421,7 +381,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> TraceScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -484,7 +444,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -507,7 +467,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> InformationScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -573,7 +533,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -597,7 +557,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> WarningScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -663,7 +623,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -687,7 +647,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> ErrorScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -753,7 +713,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable FatalScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -777,7 +737,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> FatalScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,

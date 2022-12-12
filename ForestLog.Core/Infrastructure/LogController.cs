@@ -317,7 +317,7 @@ public abstract class LogController : ILogController
     [DebuggerStepThrough]
     public void Write(
         string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, Exception? ex, object? additionalData,
+        IFormattable message, object? additionalData,
         string memberName, string filePath, int line)
     {
         if (logLevel >= this.minimumOutputLogLevel &&
@@ -325,7 +325,7 @@ public abstract class LogController : ILogController
         {
             var waitingLogEntry = new WaitingLogEntry(
                 facility, logLevel, DateTimeOffset.Now, scopeId,
-                message, ex, additionalData,
+                message, additionalData,
                 memberName, filePath, line,
                 Thread.CurrentThread.ManagedThreadId,
                 CoreUtilities.NativeThreadId,
@@ -345,7 +345,7 @@ public abstract class LogController : ILogController
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
         string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, Exception? ex, object? additionalData,
+        IFormattable message, object? additionalData,
         string memberName, string filePath, int line,
         CancellationToken ct)
     {
@@ -356,7 +356,7 @@ public abstract class LogController : ILogController
 
             var waitingLogEntry = new WaitingLogEntry(
                 facility, logLevel, DateTimeOffset.Now, scopeId,
-                message, ex, additionalData,
+                message, additionalData,
                 memberName, filePath, line,
                 Thread.CurrentThread.ManagedThreadId,
                 CoreUtilities.NativeThreadId,

@@ -22,7 +22,6 @@ public sealed class WaitingLogEntry
     public readonly DateTimeOffset Timestamp;
     public readonly int ScopeId;
     public readonly IFormattable Message;
-    public readonly Exception? Exception;
     public readonly object? AdditionalData;
     public readonly string MemberName;
     public readonly string FilePath;
@@ -45,7 +44,6 @@ public sealed class WaitingLogEntry
         DateTimeOffset timestamp,
         int scopeId,
         IFormattable message,
-        Exception? exception,
         object? additionalData,
         string memberName,
         string filePath,
@@ -61,7 +59,6 @@ public sealed class WaitingLogEntry
         this.Timestamp = timestamp;
         this.ScopeId = scopeId;
         this.Message = message;
-        this.Exception = exception;
         this.AdditionalData = additionalData;
         this.MemberName = memberName;
         this.FilePath = filePath;

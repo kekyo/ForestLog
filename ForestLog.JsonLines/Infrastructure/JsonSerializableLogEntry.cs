@@ -27,8 +27,6 @@ internal sealed class JsonSerializableLogEntry : LogEntry
         DateTimeOffset timestamp,
         int scopeId,
         string message,
-        string? exceptionType,
-        string? exceptionMessage,
         JToken? additionalData,
         string memberName,
         string filePath,
@@ -39,7 +37,7 @@ internal sealed class JsonSerializableLogEntry : LogEntry
         int processId) :
         base(
             id, facility, logLevel, timestamp, scopeId,
-            message, exceptionType, exceptionMessage, additionalData,
+            message, additionalData,
             memberName, filePath, line,
             managedThreadId, nativeThreadId, taskId, processId)
     {

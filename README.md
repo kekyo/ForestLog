@@ -136,8 +136,10 @@ Output to (pseudo json formatted from jsonl):
     "timestamp": "2022-12-06T09:56:17.968195+09:00",
     "scopeId": 1,
     "message": "System.ApplicationException: Failed a operation.",
-    "exceptionType": "System.ApplicationException",
-    "exceptionMessage": "Failed a operation.",
+    "additionalData": {
+        "name": "System.ApplicationException",
+        "message": "Failed a operation."
+    },
     "memberName": "PurchaseProductAsync",
     "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
     "line": 238,
@@ -180,6 +182,7 @@ public enum LogLevels
     Information,
     Warning,
     Error,
+    Fatal,
     Ignore,   // <-- Will ignore any log output.
 }
 ```

@@ -16,7 +16,7 @@ namespace ForestLog;
 /// Contains method arguments of block logging.
 /// </summary>
 [DebuggerStepThrough]
-public readonly struct BlockScopeArguments
+public readonly struct LoggerScopeArguments
 {
     /// <summary>
     /// Method arguments.
@@ -30,6 +30,6 @@ public readonly struct BlockScopeArguments
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public BlockScopeArguments(params object?[] arguments) =>
+    public LoggerScopeArguments(params object?[] arguments) =>
         this.Arguments = arguments;
 }
