@@ -31,30 +31,15 @@ public sealed class ForestLogBridgeLoggerProvider :
         this.headName = headName;
     }
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
     public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) =>
-        loggers.GetOrAdd(categoryName, (System.Func<string, ForestLogBridgeLogger>)(categoryName =>
-
-/* Unmerged change from project 'ForestLog.Extensions.Logging (netstandard1.3)'
-Before:
-            new AspNetLogger(!string.IsNullOrWhiteSpace(headName) ?
-After:
-            new Logging.AspNetLogger(!string.IsNullOrWhiteSpace(headName) ?
-*/
-
-/* Unmerged change from project 'ForestLog.Extensions.Logging (netstandard1.6)'
-Before:
-            new AspNetLogger(!string.IsNullOrWhiteSpace(headName) ?
-After:
-            new Logging.AspNetLogger(!string.IsNullOrWhiteSpace(headName) ?
-*/
-            (ForestLogBridgeLogger)new ForestLogBridgeLogger(!string.IsNullOrWhiteSpace(headName) ?
-                logController.CreateLogger($"{headName}: {categoryName}") :
-                logController.CreateLogger(categoryName))));
+        loggers.GetOrAdd(categoryName, categoryName =>
+            new ForestLogBridgeLogger(!string.IsNullOrWhiteSpace(this.headName) ?
+                logController.CreateLogger($"{this.headName}: {categoryName}") :
+                logController.CreateLogger(categoryName)));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()

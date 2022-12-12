@@ -9,6 +9,7 @@
 
 using ForestLog.Internal;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -18,14 +19,16 @@ namespace ForestLog.Extensions.Logging;
 public sealed class ForestLogBridgeLogger :
     Microsoft.Extensions.Logging.ILogger
 {
-    private readonly ILogger logger;
+    private readonly Stack<ILogger> stack = new();
     private readonly Disposer disposer;
+
+    private ILogger logger;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ForestLogBridgeLogger(ILogger logger)
     {
         this.logger = logger;
-        disposer = new(logger);
+        this.disposer = new(this);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,9 +37,26 @@ public sealed class ForestLogBridgeLogger :
 #endif
     public IDisposable BeginScope<TState>(TState state)
     {
-        var childLogger = logger.NewScope();
+        var childLogger = this.logger.NewScope();
+        lock (this.stack)
+        {
+            this.stack.Push(this.logger);
+            this.logger = childLogger;
+        }
+
         childLogger.Trace($"Enter.", state);
-        return disposer;
+        return this.disposer;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void EndScope()
+    {
+        this.logger.Trace($"Leave.");
+
+        lock (this.stack)
+        {
+            this.logger = this.stack.Pop();
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,7 +64,7 @@ public sealed class ForestLogBridgeLogger :
     [DebuggerStepperBoundary]
 #endif
     public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) =>
-        Utilities.ToLogLevel(logLevel) >= logger.MinimumOutputLogLevel;
+        Utilities.ToLogLevel(logLevel) >= this.logger.MinimumOutputLogLevel;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
@@ -56,23 +76,23 @@ public sealed class ForestLogBridgeLogger :
         TState state,
         Exception? exception,
         Func<TState, Exception?, string> formatter) =>
-        logger.Log(
+        this.logger.Log(
             Utilities.ToLogLevel(logLevel),
             $"{eventId}: {formatter(state, exception)}", exception);
 
     [DebuggerStepThrough]
     private sealed class Disposer : IDisposable
     {
-        private readonly ILogger logger;
+        private readonly ForestLogBridgeLogger parent;
 
-        public Disposer(ILogger logger) =>
-            this.logger = logger;
+        public Disposer(ForestLogBridgeLogger parent) =>
+            this.parent = parent;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
         [DebuggerStepperBoundary]
 #endif
         public void Dispose() =>
-            logger.Trace($"Leave.");
+            this.parent.EndScope();
     }
 }
