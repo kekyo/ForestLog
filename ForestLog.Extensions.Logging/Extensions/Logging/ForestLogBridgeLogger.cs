@@ -12,20 +12,20 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace ForestLog.AspNet;
+namespace ForestLog.Extensions.Logging;
 
 [DebuggerStepThrough]
-public sealed class AspNetLogger :
+public sealed class ForestLogBridgeLogger :
     Microsoft.Extensions.Logging.ILogger
 {
     private readonly ILogger logger;
     private readonly Disposer disposer;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public AspNetLogger(ILogger logger)
+    public ForestLogBridgeLogger(ILogger logger)
     {
         this.logger = logger;
-        this.disposer = new(logger);
+        disposer = new(logger);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,9 +34,9 @@ public sealed class AspNetLogger :
 #endif
     public IDisposable BeginScope<TState>(TState state)
     {
-        var childLogger = this.logger.NewScope();
+        var childLogger = logger.NewScope();
         childLogger.Trace($"Enter.", state);
-        return this.disposer;
+        return disposer;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,7 +44,7 @@ public sealed class AspNetLogger :
     [DebuggerStepperBoundary]
 #endif
     public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) =>
-        Utilities.ToLogLevel(logLevel) >= this.logger.MinimumOutputLogLevel;
+        Utilities.ToLogLevel(logLevel) >= logger.MinimumOutputLogLevel;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
@@ -56,7 +56,7 @@ public sealed class AspNetLogger :
         TState state,
         Exception? exception,
         Func<TState, Exception?, string> formatter) =>
-        this.logger.Log(
+        logger.Log(
             Utilities.ToLogLevel(logLevel),
             $"{eventId}: {formatter(state, exception)}", exception);
 
@@ -73,6 +73,6 @@ public sealed class AspNetLogger :
         [DebuggerStepperBoundary]
 #endif
         public void Dispose() =>
-            this.logger.Trace($"Leave.");
+            logger.Trace($"Leave.");
     }
 }

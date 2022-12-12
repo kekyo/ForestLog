@@ -12,18 +12,18 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace ForestLog.AspNet;
+namespace ForestLog.Extensions.Logging;
 
 [DebuggerStepThrough]
-public sealed class AspNetLoggerProvider :
+public sealed class ForestLogBridgeLoggerProvider :
     ILoggerProvider
 {
     private readonly ILogController logController;
     private readonly string? headName;
-    private readonly ConcurrentDictionary<string, AspNetLogger> loggers = new();
+    private readonly ConcurrentDictionary<string, ForestLogBridgeLogger> loggers = new();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public AspNetLoggerProvider(
+    public ForestLogBridgeLoggerProvider(
         ILogController logController,
         string? headName = null)
     {
@@ -37,10 +37,24 @@ public sealed class AspNetLoggerProvider :
     [DebuggerStepperBoundary]
 #endif
     public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName) =>
-        this.loggers.GetOrAdd(categoryName, categoryName =>
-            new AspNetLogger(!string.IsNullOrWhiteSpace(this.headName) ?
-                this.logController.CreateLogger($"{this.headName}: {categoryName}") :
-                this.logController.CreateLogger(categoryName)));
+        loggers.GetOrAdd(categoryName, (System.Func<string, ForestLogBridgeLogger>)(categoryName =>
+
+/* Unmerged change from project 'ForestLog.Extensions.Logging (netstandard1.3)'
+Before:
+            new AspNetLogger(!string.IsNullOrWhiteSpace(headName) ?
+After:
+            new Logging.AspNetLogger(!string.IsNullOrWhiteSpace(headName) ?
+*/
+
+/* Unmerged change from project 'ForestLog.Extensions.Logging (netstandard1.6)'
+Before:
+            new AspNetLogger(!string.IsNullOrWhiteSpace(headName) ?
+After:
+            new Logging.AspNetLogger(!string.IsNullOrWhiteSpace(headName) ?
+*/
+            (ForestLogBridgeLogger)new ForestLogBridgeLogger(!string.IsNullOrWhiteSpace(headName) ?
+                logController.CreateLogger($"{headName}: {categoryName}") :
+                logController.CreateLogger(categoryName))));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()

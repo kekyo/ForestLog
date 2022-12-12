@@ -26,7 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.JsonLines", "Fore
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FSharp.ForestLog", "FSharp.ForestLog\FSharp.ForestLog.fsproj", "{72ED21B5-9F4A-47B6-82FE-185778CEFB50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.AspNet", "ForestLog.AspNet\ForestLog.AspNet.csproj", "{CF14533D-E064-4D91-82BA-507035D220DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.Extensions.Logging", "ForestLog.Extensions.Logging\ForestLog.Extensions.Logging.csproj", "{CF14533D-E064-4D91-82BA-507035D220DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

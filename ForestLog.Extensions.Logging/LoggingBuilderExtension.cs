@@ -7,7 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using ForestLog.AspNet;
+using ForestLog.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -20,12 +20,12 @@ public static class LoggingBuilderExtension
         this ILoggingBuilder builder,
         ILogController logController,
         string? headName = null) =>
-        builder.AddProvider(new AspNetLoggerProvider(logController, headName));
+        builder.AddProvider(new ForestLogBridgeLoggerProvider(logController, headName));
 #endif
 
     public static IServiceCollection AddForestLog(
         this IServiceCollection service,
         ILogController logController,
         string? headName = null) =>
-        service.AddSingleton(new AspNetLoggerProvider(logController, headName));
+        service.AddSingleton(new ForestLogBridgeLoggerProvider(logController, headName));
 }
