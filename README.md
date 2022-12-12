@@ -37,7 +37,7 @@ The following platforms are supported by the package.
 
 ## Basic usage
 
-Install [ForestLog](https://www.nuget.org/packages/ForestLog) package.
+Install [ForestLog](https://www.nuget.org/packages/ForestLog) and [ForestLog.JsonLines](https://www.nuget.org/packages/ForestLog.JsonLines) packages.
 
 We need to create "Log controller" from the factory:
 
@@ -45,7 +45,7 @@ We need to create "Log controller" from the factory:
 using ForestLog;
 
 // Construct log controller:
-using var logController = LogControllerFactory.CreateJsonLines(
+using var logController = LogController.Factory.CreateJsonLines(
     // Output base directory path.
     "logs",
     // Minimum output log level.
@@ -317,7 +317,7 @@ Leave with exception:
 Will switch log file when current log file size is exceed.
 
 ```csharp
-using var logController = LogControllerFactory.CreateJsonLines(
+using var logController = LogController.Factory.CreateJsonLines(
     "logs",
     LogLevels.Debug,
     // Size to next file.
@@ -332,7 +332,7 @@ Result:
 Enable log file rotation:
 
 ```csharp
-using var logController = LogControllerFactory.CreateJsonLines(
+using var logController = LogController.Factory.CreateJsonLines(
     "logs",
     LogLevels.Debug,
     1 * 1024 * 1024,
@@ -352,7 +352,7 @@ The following example will correspond to an application transition in Xamarin An
 public sealed class MainActivity
 {
     private readonly ILogController logController =
-        LogControllerFactory.CreateJsonLines(...);
+        LogController.Factory.CreateJsonLines(...);
 
     // ...
 
