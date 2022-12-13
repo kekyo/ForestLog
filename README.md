@@ -329,6 +329,30 @@ Leave with exception:
 }
 ```
 
+Alternatively, you can use `IDisposable` to define RAII-like scopes:
+
+```csharp
+public void Scope(ILogger parentLogger)
+{
+    using var logger = parentLogger.TraceScope();
+
+    logger.Debug($"Output in child scope.");
+    logger.Warinig($"Same child scope.");
+}
+
+public async Task ScopeAsync(ILogger parentLogger)
+{
+    using var logger = await parentLogger.TraceScopeAsync();
+
+    logger.Debug($"Output in child scope.");
+    logger.Warinig($"Same child scope.");
+}
+```
+
+If you are familiar with the C# language, you may find this method easier to write.
+However, that the logger does not record the contents of the exception details when it occurs.
+(the "Leave" message is recorded when the exception occurs and the scope is exited).
+
 ## Configure maximum log size and rotation
 
 Will switch log file when current log file size is exceed.
