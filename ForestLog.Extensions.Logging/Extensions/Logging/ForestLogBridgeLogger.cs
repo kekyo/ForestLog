@@ -37,21 +37,26 @@ public sealed class ForestLogBridgeLogger :
 #endif
     public IDisposable BeginScope<TState>(TState state)
     {
-        var childLogger = this.logger.NewScope();
+        IScopedLogger childLogger = this.logger.Scope(
+            LogLevels.Trace,
+            new LoggerScopeArguments(state));
+
         lock (this.stack)
         {
             this.stack.Push(this.logger);
             this.logger = childLogger;
         }
 
-        childLogger.Trace($"Enter.", state);
         return this.disposer;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void EndScope()
     {
-        this.logger.Trace($"Leave.");
+        if (this.logger is IScopedLogger scopedLogger)
+        {
+            scopedLogger.Dispose();
+        }
 
         lock (this.stack)
         {

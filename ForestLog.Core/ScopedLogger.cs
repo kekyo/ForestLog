@@ -21,8 +21,15 @@ namespace ForestLog;
 /// <summary>
 /// ForestLog nested scope logger interface.
 /// </summary>
+public interface IScopedLogger : ILogger, IDisposable
+{
+}
+
+/// <summary>
+/// ForestLog nested scope logger type.
+/// </summary>
 [DebuggerStepThrough]
-public readonly struct ScopedLogger : ILogger, IDisposable
+public readonly struct ScopedLogger : IScopedLogger
 {
     private readonly ILogger logger;
     private readonly LogLevels logLevel;
