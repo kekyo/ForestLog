@@ -77,7 +77,7 @@ public interface ILogController : IDisposable
     [EditorBrowsable(EditorBrowsableState.Never)]
     void Write(
         string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, Exception? ex, object? additionalData,
+        IFormattable message, object? additionalData,
         string memberName, string filePath, int line);
 
     /// <summary>
@@ -86,7 +86,7 @@ public interface ILogController : IDisposable
     [EditorBrowsable(EditorBrowsableState.Never)]
     LoggerAwaitable WriteAsync(
         string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, Exception? ex, object? additionalData,
+        IFormattable message, object? additionalData,
         string memberName, string filePath, int line,
         CancellationToken ct);
 

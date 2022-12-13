@@ -35,9 +35,14 @@ public enum LogLevels
     Warning,
 
     /// <summary>
-    /// For error (Fatal).
+    /// For error.
     /// </summary>
     Error,
+
+    /// <summary>
+    /// For fatal.
+    /// </summary>
+    Fatal,
 
     /// <summary>
     /// Ignore log entry, only using for log controller limitation.

@@ -8,11 +8,16 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Infrastructure;
-using System;
 
 namespace ForestLog;
 
-public static class LogControllerFactory
+// Parameter has no matching param tag in the XML comment (but other parameters do)
+#pragma warning disable CS1573
+
+/// <summary>
+/// ForestLog controller factory extension.
+/// </summary>
+public static class LogControllerFactoryExtension
 {
     /// <summary>
     /// Create Json Lines log controller.
@@ -24,6 +29,7 @@ public static class LogControllerFactory
     /// <returns>Log controller.</returns>
     /// <remarks>Enabled log rotation by size and files.</remarks>
     public static ILogController CreateJsonLines(
+        this LogControllerFactory _,
         string basePath, LogLevels minimumOutputLogLevel, long sizeToNextFile = 0, int maximumLogFiles = 0) =>
         new JsonLinesLogController(basePath, minimumOutputLogLevel, sizeToNextFile, maximumLogFiles);
 }

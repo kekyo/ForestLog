@@ -34,7 +34,6 @@ public interface ILogger
     /// </summary>
     /// <param name="logLevel">Log level</param>
     /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="ex">Exception when need to write</param>
     /// <param name="additionalData">Additional data object when need to write</param>
     /// <param name="memberName">Member name</param>
     /// <param name="filePath">File path</param>
@@ -44,7 +43,6 @@ public interface ILogger
     void Write(
         LogLevels logLevel,
         IFormattable message,
-        Exception? ex,
         object? additionalData,
         string memberName,
         string filePath,
@@ -55,7 +53,6 @@ public interface ILogger
     /// </summary>
     /// <param name="logLevel">Log level</param>
     /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="ex">Exception when need to write</param>
     /// <param name="additionalData">Additional data object when need to write</param>
     /// <param name="memberName">Member name</param>
     /// <param name="filePath">File path</param>
@@ -66,7 +63,6 @@ public interface ILogger
     LoggerAwaitable WriteAsync(
         LogLevels logLevel,
         IFormattable message,
-        Exception? ex,
         object? additionalData,
         string memberName,
         string filePath,

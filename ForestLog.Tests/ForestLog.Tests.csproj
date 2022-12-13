@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ForestLog\ForestLog.csproj" />
+    <ProjectReference Include="..\ForestLog.JsonLines\ForestLog.JsonLines.csproj" />
   </ItemGroup>
 
 </Project>

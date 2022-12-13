@@ -22,7 +22,7 @@ namespace ForestLog;
 
 public sealed class AsyncJsonLinesLoggerTests
 {
-    private IEnumerable<JObject?> LoadLines(string path)
+    public static IEnumerable<JObject?> LoadLines(string path)
     {
         using var fs = new FileStream(
             path, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -46,12 +46,12 @@ public sealed class AsyncJsonLinesLoggerTests
         }
     }
 
-    private async ValueTask<JObject?[]> LogTestBlockAsync(
+    public static async ValueTask<JObject?[]> LogTestBlockAsync(
         Func<ILogger, ValueTask> action,
         LogLevels maximumOutputLogLevel = LogLevels.Debug)
     {
         var basePath = Path.Combine(
-            Path.GetDirectoryName(this.GetType().Assembly.Location)!,
+            Path.GetDirectoryName(typeof(AsyncJsonLinesLoggerTests).Assembly.Location)!,
             $"logs_{Guid.NewGuid():N}");
 
         if (!Directory.Exists(basePath))
@@ -67,7 +67,7 @@ public sealed class AsyncJsonLinesLoggerTests
 
         try
         {
-            using (var logController = LogControllerFactory.CreateJsonLines(
+            using (var logController = LogController.Factory.CreateJsonLines(
                 basePath, maximumOutputLogLevel))
             {
                 var logger = logController.CreateLogger();
@@ -91,76 +91,12 @@ public sealed class AsyncJsonLinesLoggerTests
 
     //////////////////////////////////////////////////////////
 
-    [Test]
-    public async Task DebugSingleMessage()
-    {
-        var lines = await LogTestBlockAsync(async logger =>
-        {
-            var value = 123;
-            await logger.DebugAsync($"AAA{value}BBB");
-        });
-
-        Assert.AreEqual("AAA123BBB", lines.Single()?["message"]?.ToString());
-    }
-
-    [Test]
-    public async Task DebugMultipleMessage()
-    {
-        var lines = await LogTestBlockAsync(async logger =>
-        {
-            var value1 = 123;
-            await logger.DebugAsync($"AAA{value1}BBB");
-            var value2 = 456;
-            await logger.DebugAsync($"CCC{value2}DDD");
-        });
-
-        Assert.AreEqual(2, lines.Length);
-        Assert.AreEqual("debug", lines[0]?["logLevel"]?.ToString());
-        Assert.AreEqual("AAA123BBB", lines[0]?["message"]?.ToString());
-        Assert.AreEqual("debug", lines[1]?["logLevel"]?.ToString());
-        Assert.AreEqual("CCC456DDD", lines[1]?["message"]?.ToString());
-    }
-
-    //////////////////////////////////////////////////////////
-
-    [Test]
-    public async Task TraceSingleMessage()
-    {
-        var lines = await LogTestBlockAsync(async logger =>
-        {
-            var value = 123;
-            await logger.TraceAsync($"AAA{value}BBB");
-        });
-
-        Assert.AreEqual("trace", lines.Single()?["logLevel"]?.ToString());
-        Assert.AreEqual("AAA123BBB", lines.Single()?["message"]?.ToString());
-    }
-
-    [Test]
-    public async Task TraceMultipleMessage()
-    {
-        var lines = await LogTestBlockAsync(async logger =>
-        {
-            var value1 = 123;
-            await logger.TraceAsync($"AAA{value1}BBB");
-            var value2 = 456;
-            await logger.TraceAsync($"CCC{value2}DDD");
-        });
-
-        Assert.AreEqual(2, lines.Length);
-        Assert.AreEqual("trace", lines[0]?["logLevel"]?.ToString());
-        Assert.AreEqual("AAA123BBB", lines[0]?["message"]?.ToString());
-        Assert.AreEqual("trace", lines[1]?["logLevel"]?.ToString());
-        Assert.AreEqual("CCC456DDD", lines[1]?["message"]?.ToString());
-    }
-
-    //////////////////////////////////////////////////////////
-
     [TestCase(LogLevels.Debug)]
     [TestCase(LogLevels.Trace)]
     [TestCase(LogLevels.Information)]
     [TestCase(LogLevels.Warning)]
     [TestCase(LogLevels.Error)]
+    [TestCase(LogLevels.Fatal)]
     public async Task LogSingleMessage(LogLevels logLevel)
     {
         var lines = await LogTestBlockAsync(async logger =>
@@ -189,11 +125,11 @@ public sealed class AsyncJsonLinesLoggerTests
     public async Task LimitOutputLogLevel()
     {
         for (var targetLogLevel = LogLevels.Debug;
-            targetLogLevel <= LogLevels.Error;
+            targetLogLevel <= LogLevels.Fatal;
             targetLogLevel++)
         {
             for (var minimumOutputLogLevel = LogLevels.Debug;
-                minimumOutputLogLevel <= LogLevels.Error;
+                minimumOutputLogLevel <= LogLevels.Fatal;
                 minimumOutputLogLevel++)
             {
                 var lines = await LogTestBlockAsync(async logger =>
@@ -226,5 +162,35 @@ public sealed class AsyncJsonLinesLoggerTests
         }, LogLevels.Ignore);
 
         Assert.AreEqual(0, lines.Length);
+    }
+
+    //////////////////////////////////////////////////////////
+
+    [TestCase(LogLevels.Debug)]
+    [TestCase(LogLevels.Trace)]
+    [TestCase(LogLevels.Information)]
+    [TestCase(LogLevels.Warning)]
+    [TestCase(LogLevels.Error)]
+    [TestCase(LogLevels.Fatal)]
+    public async Task ScopedLogMessage(LogLevels logLevel)
+    {
+        var lines = await LogTestBlockAsync(async logger =>
+        {
+            using var childLogger = await logger.ScopeAsync(logLevel);
+
+            var value = 123;
+            childLogger.Log(LogLevels.Warning, $"AAA{value}BBB");
+        });
+
+        Assert.AreEqual(3, lines.Length);
+
+        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines[0]?["logLevel"]?.ToString());
+
+        Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
+        Assert.AreEqual(LogLevels.Warning.ToString().ToLowerInvariant(), lines[1]?["logLevel"]?.ToString());
+
+        Assert.IsTrue(lines[2]?["message"]?.ToString().StartsWith("Leave: Elapsed="));
+        Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines[2]?["logLevel"]?.ToString());
     }
 }

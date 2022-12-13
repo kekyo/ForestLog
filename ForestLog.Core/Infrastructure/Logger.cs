@@ -63,14 +63,13 @@ internal sealed class Logger : ILogger
     public void Write(
         LogLevels logLevel,
         IFormattable message,
-        Exception? ex,
         object? additionalData,
         string memberName,
         string filePath,
         int line) =>
         this.controller.Write(
             this.facility, logLevel, this.scopeId,
-            message, ex, additionalData,
+            message, additionalData,
             memberName, filePath, line);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -83,7 +82,6 @@ internal sealed class Logger : ILogger
     public LoggerAwaitable WriteAsync(
         LogLevels logLevel,
         IFormattable message,
-        Exception? ex,
         object? additionalData,
         string memberName,
         string filePath,
@@ -91,7 +89,7 @@ internal sealed class Logger : ILogger
         CancellationToken ct) =>
         this.controller.WriteAsync(
             this.facility, logLevel, this.scopeId,
-            message, ex, additionalData,
+            message, additionalData,
             memberName, filePath, line,
             ct);
 

@@ -7,11 +7,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using ForestLog.Internal;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using ForestLog.Internal;
+using ForestLog.Tasks;
 
 namespace ForestLog;
 
@@ -21,7 +22,7 @@ namespace ForestLog;
 /// <summary>
 /// ForestLog logger interface extension.
 /// </summary>
-public static class LoggerExtension
+public static class LoggerAsyncExtension
 {
     /// <summary>
     /// Write a log entry.
@@ -32,44 +33,48 @@ public static class LoggerExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Log(
+    public static LoggerAwaitable LogAsync(
         this ILogger logger,
         LogLevels logLevel,
         IFormattable message,
         object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(logLevel, message, null, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            logLevel,
+            message, additionalData,
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a log entry.
     /// </summary>
     /// <param name="logLevel">Log level</param>
     /// <param name="ex">Exception</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Log(
+    public static LoggerAwaitable LogAsync(
         this ILogger logger,
         LogLevels logLevel,
         Exception ex,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(logLevel, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            logLevel,
+            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a log entry.
@@ -77,25 +82,26 @@ public static class LoggerExtension
     /// <param name="logLevel">Log level</param>
     /// <param name="ex">Exception</param>
     /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    [EditorBrowsable(EditorBrowsableState.Advanced)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Log(
+    public static LoggerAwaitable LogAsync(
         this ILogger logger,
         LogLevels logLevel,
         Exception ex,
         IFormattable message,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(logLevel, message, ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            logLevel,
+            message, CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -111,20 +117,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Debug(
+    public static LoggerAwaitable DebugAsync(
         this ILogger logger,
         IFormattable message,
         object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Debug, message, null, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Debug,
+            message, additionalData,
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a debug log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -132,21 +141,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Debug(
+    public static LoggerAwaitable DebugAsync(
         this ILogger logger,
         Exception ex,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Debug, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Debug,
+            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a debug log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
     /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -154,15 +165,18 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Debug(
+    public static LoggerAwaitable DebugAsync(
         this ILogger logger,
         Exception ex,
         IFormattable message,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Debug, message, ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Debug,
+            message, CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -178,20 +192,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Trace(
+    public static LoggerAwaitable TraceAsync(
         this ILogger logger,
         IFormattable message,
         object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Trace, message, null, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Trace,
+            message, additionalData,
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a trace log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -199,21 +216,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Trace(
+    public static LoggerAwaitable TraceAsync(
         this ILogger logger,
         Exception ex,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Trace, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Trace,
+            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a trace log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
     /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -221,15 +240,18 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Trace(
+    public static LoggerAwaitable TraceAsync(
         this ILogger logger,
         Exception ex,
         IFormattable message,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Trace, message, ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Trace,
+            message, CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -245,20 +267,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Information(
+    public static LoggerAwaitable InformationAsync(
         this ILogger logger,
         IFormattable message,
         object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Information, message, null, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Information,
+            message, additionalData,
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a information log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -266,21 +291,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Information(
+    public static LoggerAwaitable InformationAsync(
         this ILogger logger,
         Exception ex,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Information, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Information,
+            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a information log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
     /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -288,15 +315,18 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Information(
+    public static LoggerAwaitable InformationAsync(
         this ILogger logger,
         Exception ex,
         IFormattable message,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Information, message, ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Information,
+            message, CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -312,20 +342,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Warning(
+    public static LoggerAwaitable WarningAsync(
         this ILogger logger,
         IFormattable message,
         object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Warning, message, null, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Warning,
+            message, additionalData,
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a warning log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -333,21 +366,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Warning(
+    public static LoggerAwaitable WarningAsync(
         this ILogger logger,
         Exception ex,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Warning, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Warning,
+            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a warning log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
     /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -355,15 +390,18 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Warning(
+    public static LoggerAwaitable WarningAsync(
         this ILogger logger,
         Exception ex,
         IFormattable message,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Warning, message, ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Warning,
+            message, CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -379,20 +417,23 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Error(
+    public static LoggerAwaitable ErrorAsync(
         this ILogger logger,
         IFormattable message,
         object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Error, message, null, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Error,
+            message, additionalData,
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a error log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -400,19 +441,48 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Error(
+    public static LoggerAwaitable ErrorAsync(
         this ILogger logger,
         Exception ex,
-        object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Error, CoreUtilities.FormatException(ex), ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Error,
+            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 
     /// <summary>
     /// Write a error log entry.
     /// </summary>
     /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    [DebuggerStepThrough]
+    public static LoggerAwaitable ErrorAsync(
+        this ILogger logger,
+        Exception ex,
+        IFormattable message,
+        CancellationToken ct = default,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.WriteAsync(
+            LogLevels.Error,
+            message, CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
+
+    //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Write a fatal log entry.
+    /// </summary>
     /// <param name="message">Message (Mostly string interpolation)</param>
     /// <param name="additionalData">Additional data object when need to write</param>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -422,13 +492,64 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     [DebuggerStepThrough]
-    public static void Error(
+    public static LoggerAwaitable FatalAsync(
         this ILogger logger,
-        Exception ex,
         IFormattable message,
         object? additionalData = null,
+        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(LogLevels.Error, message, ex, additionalData, memberName, filePath, line);
+        logger.WriteAsync(
+            LogLevels.Fatal,
+            message, additionalData,
+            memberName, filePath, line, ct);
+
+    /// <summary>
+    /// Write a fatal log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    [DebuggerStepThrough]
+    public static LoggerAwaitable FatalAsync(
+        this ILogger logger,
+        Exception ex,
+        CancellationToken ct = default,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.WriteAsync(
+            LogLevels.Fatal,
+            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
+
+    /// <summary>
+    /// Write a fatal log entry.
+    /// </summary>
+    /// <param name="ex">Exception</param>
+    /// <param name="message">Message (Mostly string interpolation)</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    [DebuggerStepThrough]
+    public static LoggerAwaitable FatalAsync(
+        this ILogger logger,
+        Exception ex,
+        IFormattable message,
+        CancellationToken ct = default,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        logger.WriteAsync(
+            LogLevels.Fatal,
+            message, CoreUtilities.ToExceptionDetailObject(ex),
+            memberName, filePath, line, ct);
 }

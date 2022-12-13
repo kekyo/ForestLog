@@ -8,10 +8,18 @@ ForestLog - A minimalist logger interface.
 
 ## NuGet
 
+Minimum packages:
+
 | Package  | NuGet                                                                                                                |
 |:---------|:---------------------------------------------------------------------------------------------------------------------|
 | ForestLog | [![NuGet ForestLog](https://img.shields.io/nuget/v/ForestLog.svg?style=flat)](https://www.nuget.org/packages/ForestLog) |
-| ForestLog.Core | [![NuGet ForestLog.Core](https://img.shields.io/nuget/v/ForestLog.Core.svg?style=flat)](https://www.nuget.org/packages/ForestLog.Core) |
+| ForestLog.JsonLines | [![NuGet ForestLog.JsonLines](https://img.shields.io/nuget/v/ForestLog.JsonLines.svg?style=flat)](https://www.nuget.org/packages/ForestLog.JsonLines) |
+
+ASP.NET Core bridge:
+
+| Package  | NuGet                                                                                                                |
+|:---------|:---------------------------------------------------------------------------------------------------------------------|
+| ForestLog.Extensions.Logging | [![NuGet ForestLog.Extensions.Logging](https://img.shields.io/nuget/v/ForestLog.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/ForestLog.Extensions.Logging) |
 
 ----
 
@@ -26,18 +34,24 @@ Eliminates complex configurations and maintenance labor.
 
 ### Operating Environment
 
-The following platforms are supported by the package.
+Core interface library:
 
-* NET 7, 6, 5
-* NET Core 3.1, 3.0, 2.2, 2.1, 2.0
-* NET Standard 2.1, 2.0, 1.6, 1.3
-* NET Framework 4.8, 4.6.1, 4.5, 4.0, 3.5
+* .NET 7, 6, 5
+* .NET Core 3.1, 3.0, 2.2, 2.1, 2.0
+* .NET Standard 2.1, 2.0, 1.6, 1.3
+* .NET Framework 4.8, 4.6.1, 4.5, 4.0, 3.5
+
+ASP.NET Core bridge:
+
+* .NET 7, 6, 5
+* .NET Core 3.1
+* ASP.NET Core 1.0 or upper
 
 ----
 
 ## Basic usage
 
-Install [ForestLog](https://www.nuget.org/packages/ForestLog) package.
+Install [ForestLog](https://www.nuget.org/packages/ForestLog) and [ForestLog.JsonLines](https://www.nuget.org/packages/ForestLog.JsonLines) packages.
 
 We need to create "Log controller" from the factory:
 
@@ -45,7 +59,7 @@ We need to create "Log controller" from the factory:
 using ForestLog;
 
 // Construct log controller:
-using var logController = LogControllerFactory.CreateJsonLines(
+using var logController = LogController.Factory.CreateJsonLines(
     // Output base directory path.
     "logs",
     // Minimum output log level.
@@ -122,8 +136,10 @@ Output to (pseudo json formatted from jsonl):
     "timestamp": "2022-12-06T09:56:17.968195+09:00",
     "scopeId": 1,
     "message": "System.ApplicationException: Failed a operation.",
-    "exceptionType": "System.ApplicationException",
-    "exceptionMessage": "Failed a operation.",
+    "additionalData": {
+        "name": "System.ApplicationException",
+        "message": "Failed a operation."
+    },
     "memberName": "PurchaseProductAsync",
     "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
     "line": 238,
@@ -166,6 +182,7 @@ public enum LogLevels
     Information,
     Warning,
     Error,
+    Fatal,
     Ignore,   // <-- Will ignore any log output.
 }
 ```
@@ -317,7 +334,7 @@ Leave with exception:
 Will switch log file when current log file size is exceed.
 
 ```csharp
-using var logController = LogControllerFactory.CreateJsonLines(
+using var logController = LogController.Factory.CreateJsonLines(
     "logs",
     LogLevels.Debug,
     // Size to next file.
@@ -332,7 +349,7 @@ Result:
 Enable log file rotation:
 
 ```csharp
-using var logController = LogControllerFactory.CreateJsonLines(
+using var logController = LogController.Factory.CreateJsonLines(
     "logs",
     LogLevels.Debug,
     1 * 1024 * 1024,
@@ -352,7 +369,7 @@ The following example will correspond to an application transition in Xamarin An
 public sealed class MainActivity
 {
     private readonly ILogController logController =
-        LogControllerFactory.CreateJsonLines(...);
+        LogController.Factory.CreateJsonLines(...);
 
     // ...
 
@@ -396,6 +413,30 @@ LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
     // Filter function.
     logEntry => logEntry.LogLevel >= LogLevels.Warning);
 ```
+
+## ASP.NET Core bridge configuration
+
+Install [ForestLog.Extensions.Logging](https://www.nuget.org/packages/ForestLog.Extensions.Logging) package,
+and configure using with `AddForestLog()` method extension:
+
+```csharp
+using var logController = LogController.Factory.CreateJsonLines(
+    /* ... */);
+
+var builder = WebApplication.CreateBuilder();
+
+builder.WebHost.
+    ConfigureLogging(builder => builder.AddForestLog(logController)).
+    UseUrls("http://localhost/");
+
+var webApplication = builder.Build();
+
+// ...
+```
+
+* Or, you can use `builder.Services.AddForestLog()` directly.
+* Yes, it is implemented for `Microsoft.Extensions.Logging` interfaces.
+  So you can apply this package to ASP.NET Core, Entity Framework Core and any other projects.
 
 ----
 

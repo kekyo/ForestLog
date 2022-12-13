@@ -26,10 +26,6 @@ public class LogEntry
     public int ScopeId { get; }
     public string Message { get; }
     [DefaultValue(null)]
-    public string? ExceptionType { get; }
-    [DefaultValue(null)]
-    public string? ExceptionMessage { get; }
-    [DefaultValue(null)]
     public object? AdditionalData { get; }
     public string MemberName { get; }
     public string FilePath { get; }
@@ -51,8 +47,6 @@ public class LogEntry
         DateTimeOffset timestamp,
         int scopeId,
         string message,
-        string? exceptionType,
-        string? exceptionMessage,
         object? additionalData,
         string memberName,
         string filePath,
@@ -68,8 +62,6 @@ public class LogEntry
         this.Timestamp = timestamp;
         this.ScopeId = scopeId;
         this.Message = message;
-        this.ExceptionType = exceptionType;
-        this.ExceptionMessage = exceptionMessage;
         this.AdditionalData = additionalData;
         this.MemberName = memberName;
         this.FilePath = filePath;

@@ -7,14 +7,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Tasks;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
-using ForestLog.Internal;
-using ForestLog.Tasks;
 
 namespace ForestLog;
 
@@ -22,9 +20,9 @@ namespace ForestLog;
 #pragma warning disable CS1573
 
 /// <summary>
-/// ForestLog logger interface extension.
+/// ForestLog logger scoping interface extension.
 /// </summary>
-public static class BlockScopeAsyncExtension
+public static class ScopingAsyncExtension
 {
     private static async LoggerAwaitable RunAsync(
         ILogger logger,
@@ -36,58 +34,42 @@ public static class BlockScopeAsyncExtension
         string filePath,
         int line)
     {
-        var scopedLogger = logger.NewScope();
+        var scopedLogger = new ScopedLogger(
+            logger, logLevel, memberName, filePath, line);
 
         if (ct.HasValue)
         {
-            await scopedLogger.LogAsync(
-                logLevel, $"Enter: Parent={logger.ScopeId}",
-                arguments, ct.Value, memberName, filePath, line);
+            await scopedLogger.EnterAsync(arguments, ct.Value);
         }
         else
         {
-            scopedLogger.Log(
-                logLevel, $"Enter: Parent={logger.ScopeId}",
-                arguments, memberName, filePath, line);
+            scopedLogger.Enter(arguments);
         }
 
-        var sw = Stopwatch.StartNew();
         try
         {
             await scopedAction(scopedLogger);
         }
         catch (Exception ex)
         {
-            var elapsed = sw.Elapsed;
             if (ct.HasValue)
             {
-                await scopedLogger.LogAsync(
-                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
-                    CoreUtilities.ToExceptionDetailObject(ex),
-                    ct.Value, memberName, filePath, line);
+                await scopedLogger.LeaveAsync(ex, ct.Value);
             }
             else
             {
-                scopedLogger.Log(
-                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
-                    CoreUtilities.ToExceptionDetailObject(ex),
-                    memberName, filePath, line);
+                scopedLogger.Leave(ex);
             }
             throw;
         }
 
-        var elapsed2 = sw.Elapsed;
         if (ct.HasValue)
         {
-            await scopedLogger.LogAsync(
-                logLevel, $"Leave: Elapsed={elapsed2}",
-                null, ct.Value, memberName, filePath, line);
+            await scopedLogger.LeaveAsync(null, ct.Value);
         }
         else
         {
-            scopedLogger.Log(
-                logLevel, $"Leave: Elapsed={elapsed2}",
-                null, memberName, filePath, line);
+            scopedLogger.Leave(null);
         }
     }
 
@@ -101,22 +83,18 @@ public static class BlockScopeAsyncExtension
         string filePath,
         int line)
     {
-        var scopedLogger = logger.NewScope();
+        var scopedLogger = new ScopedLogger(
+            logger, logLevel, memberName, filePath, line);
 
         if (ct.HasValue)
         {
-            await scopedLogger.LogAsync(
-                logLevel, $"Enter: Parent={logger.ScopeId}",
-                arguments, ct.Value, memberName, filePath, line);
+            await scopedLogger.EnterAsync(arguments, ct.Value);
         }
         else
         {
-            scopedLogger.Log(
-                logLevel, $"Enter: Parent={logger.ScopeId}",
-                arguments, memberName, filePath, line);
+            scopedLogger.Enter(arguments);
         }
 
-        var sw = Stopwatch.StartNew();
         T result;
         try
         {
@@ -124,36 +102,24 @@ public static class BlockScopeAsyncExtension
         }
         catch (Exception ex)
         {
-            var elapsed = sw.Elapsed;
             if (ct.HasValue)
             {
-                await scopedLogger.LogAsync(
-                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
-                    CoreUtilities.ToExceptionDetailObject(ex),
-                    ct.Value, memberName, filePath, line);
+                await scopedLogger.LeaveAsync(ex, ct.Value);
             }
             else
             {
-                scopedLogger.Log(
-                    logLevel, ex, $"Leave with exception: Elapsed={elapsed}",
-                    CoreUtilities.ToExceptionDetailObject(ex),
-                    memberName, filePath, line);
+                scopedLogger.Leave(ex);
             }
             throw;
         }
 
-        var elapsed2 = sw.Elapsed;
         if (ct.HasValue)
         {
-            await scopedLogger.LogAsync(
-                logLevel, $"Leave: Elapsed={elapsed2}",
-                result, ct.Value, memberName, filePath, line);
+            await scopedLogger.LeaveAsync(null, ct.Value);
         }
         else
         {
-            scopedLogger.Log(
-                logLevel, $"Leave: Elapsed={elapsed2}",
-                result, memberName, filePath, line);
+            scopedLogger.Leave(null);
         }
 
         return result;
@@ -223,7 +189,7 @@ public static class BlockScopeAsyncExtension
     public static LoggerAwaitable ScopeAsync(
         this ILogger logger,
         LogLevels logLevel,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -249,7 +215,7 @@ public static class BlockScopeAsyncExtension
     public static LoggerAwaitable<T> ScopeAsync<T>(
         this ILogger logger,
         LogLevels logLevel,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -312,7 +278,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -335,7 +301,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> DebugScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -398,7 +364,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -421,7 +387,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> TraceScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -484,7 +450,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -507,7 +473,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> InformationScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -573,7 +539,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -597,7 +563,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> WarningScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -663,7 +629,7 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorScopeAsync(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
@@ -687,11 +653,101 @@ public static class BlockScopeAsyncExtension
     [DebuggerStepThrough]
     public static LoggerAwaitable<T> ErrorScopeAsync<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, LoggerAwaitable<T>> scopedAction,
         CancellationToken? ct = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
         RunAsync(logger, LogLevels.Error, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+
+    //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static LoggerAwaitable FatalScopeAsync(
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable> scopedAction,
+        CancellationToken? ct = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        RunAsync(logger, LogLevels.Fatal, null, scopedAction, ct, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static LoggerAwaitable<T> FatalScopeAsync<T>(
+        this ILogger logger,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
+        CancellationToken? ct = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        RunAsync(logger, LogLevels.Fatal, null, scopedAction, ct, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static LoggerAwaitable FatalScopeAsync(
+        this ILogger logger,
+        LoggerScopeArguments arguments,
+        Func<ILogger, LoggerAwaitable> scopedAction,
+        CancellationToken? ct = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        RunAsync(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <returns>Return value from delegate execution</returns>
+    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static LoggerAwaitable<T> FatalScopeAsync<T>(
+        this ILogger logger,
+        LoggerScopeArguments arguments,
+        Func<ILogger, LoggerAwaitable<T>> scopedAction,
+        CancellationToken? ct = null,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        RunAsync(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
 }

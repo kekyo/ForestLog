@@ -19,9 +19,9 @@ namespace ForestLog;
 #pragma warning disable CS1573
 
 /// <summary>
-/// ForestLog logger interface extension.
+/// ForestLog logger scoping interface extension.
 /// </summary>
-public static class BlockScopeExtension
+public static class ScopingExtesion
 {
     private static void Run(
         ILogger logger,
@@ -32,30 +32,19 @@ public static class BlockScopeExtension
         string filePath,
         int line)
     {
-        var scopedLogger = logger.NewScope();
-        scopedLogger.Log(
-            logLevel, $"Enter: Parent={logger.ScopeId}",
-            arguments, memberName, filePath, line);
+        using var scopedLogger = new ScopedLogger(
+            logger, logLevel, memberName, filePath, line);
+        scopedLogger.Enter(arguments);
 
-        var sw = Stopwatch.StartNew();
         try
         {
             scopedAction(scopedLogger);
         }
         catch (Exception ex)
         {
-            var elasped = sw.Elapsed;
-            scopedLogger.Log(
-                logLevel, ex, $"Leave with exception: Elapsed={elasped}",
-                CoreUtilities.ToExceptionDetailObject(ex),
-                memberName, filePath, line);
+            scopedLogger.Leave(ex);
             throw;
         }
-
-        var elasped2 = sw.Elapsed;
-        scopedLogger.Log(
-            logLevel, $"Leave: Elapsed={elasped2}",
-            null, memberName, filePath, line);
     }
 
     private static T Run<T>(
@@ -67,13 +56,10 @@ public static class BlockScopeExtension
         string filePath,
         int line)
     {
-        var scopedLogger = logger.NewScope();
+        using var scopedLogger = new ScopedLogger(
+            logger, logLevel, memberName, filePath, line);
+        scopedLogger.Enter(arguments);
 
-        scopedLogger.Log(
-            logLevel, $"Enter: Parent={logger.ScopeId}",
-            arguments, memberName, filePath, line);
-
-        var sw = Stopwatch.StartNew();
         T result;
         try
         {
@@ -81,18 +67,9 @@ public static class BlockScopeExtension
         }
         catch (Exception ex)
         {
-            var elasped = sw.Elapsed;
-            scopedLogger.Log(
-                logLevel, ex, $"Leave with exception: Elapsed={elasped}",
-                CoreUtilities.ToExceptionDetailObject(ex),
-                memberName, filePath, line);
+            scopedLogger.Leave(ex);
             throw;
         }
-
-        var elasped2 = sw.Elapsed;
-        scopedLogger.Log(
-            logLevel, $"Leave: Elapsed={elasped2}",
-            result, memberName, filePath, line);
 
         return result;
     }
@@ -153,7 +130,7 @@ public static class BlockScopeExtension
     public static void Scope(
         this ILogger logger,
         LogLevels logLevel,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -176,7 +153,7 @@ public static class BlockScopeExtension
     public static T Scope<T>(
         this ILogger logger,
         LogLevels logLevel,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -230,7 +207,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static void DebugScope(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -250,7 +227,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static T DebugScope<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -304,7 +281,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static void TraceScope(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -324,7 +301,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static T TraceScope<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -378,7 +355,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static void InformationScope(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -398,7 +375,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static T InformationScope<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -455,7 +432,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static void WarningScope(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -476,7 +453,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static T WarningScope<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -533,7 +510,7 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static void ErrorScope(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -554,10 +531,88 @@ public static class BlockScopeExtension
     [DebuggerStepThrough]
     public static T ErrorScope<T>(
         this ILogger logger,
-        BlockScopeArguments arguments,
+        LoggerScopeArguments arguments,
         Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
         Run(logger, LogLevels.Error, arguments.Arguments, scopedAction, memberName, filePath, line);
+
+    //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <param name="scopedAction">Delegate to execute</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static void FatalScope(
+        this ILogger logger,
+        Action<ILogger> scopedAction,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        Run(logger, LogLevels.Fatal, null, scopedAction, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static T FatalScope<T>(
+        this ILogger logger,
+        Func<ILogger, T> scopedAction,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        Run(logger, LogLevels.Fatal, null, scopedAction, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static void FatalScope(
+        this ILogger logger,
+        LoggerScopeArguments arguments,
+        Action<ILogger> scopedAction,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        Run(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, memberName, filePath, line);
+
+    /// <summary>
+    /// Write enter and leave fatal log entries.
+    /// </summary>
+    /// <typeparam name="T">Return value type</typeparam>
+    /// <param name="arguments">Method arguments</param>
+    /// <param name="scopedAction">Delegate to execute</param>
+    /// <returns>Return value from delegate execution</returns>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    [DebuggerStepThrough]
+    public static T FatalScope<T>(
+        this ILogger logger,
+        LoggerScopeArguments arguments,
+        Func<ILogger, T> scopedAction,
+        [CallerMemberName] string memberName = null!,
+        [CallerFilePath] string filePath = null!,
+        [CallerLineNumber] int line = 0) =>
+        Run(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, memberName, filePath, line);
 }
