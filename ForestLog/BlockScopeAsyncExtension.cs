@@ -36,7 +36,7 @@ public static class BlockScopeAsyncExtension
         string filePath,
         int line)
     {
-        using var scopedLogger = new ScopedLogger(
+        var scopedLogger = new ScopedLogger(
             logger, logLevel, memberName, filePath, line);
 
         if (ct.HasValue)
@@ -67,7 +67,11 @@ public static class BlockScopeAsyncExtension
 
         if (ct.HasValue)
         {
-            await scopedLogger.LeaveAsync(ct.Value);
+            await scopedLogger.LeaveAsync(null, ct.Value);
+        }
+        else
+        {
+            scopedLogger.Leave(null);
         }
     }
 
@@ -81,7 +85,7 @@ public static class BlockScopeAsyncExtension
         string filePath,
         int line)
     {
-        using var scopedLogger = new ScopedLogger(
+        var scopedLogger = new ScopedLogger(
             logger, logLevel, memberName, filePath, line);
 
         if (ct.HasValue)
@@ -113,7 +117,11 @@ public static class BlockScopeAsyncExtension
 
         if (ct.HasValue)
         {
-            await scopedLogger.LeaveAsync(ct.Value);
+            await scopedLogger.LeaveAsync(null, ct.Value);
+        }
+        else
+        {
+            scopedLogger.Leave(null);
         }
 
         return result;

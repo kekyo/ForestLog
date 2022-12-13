@@ -19,13 +19,6 @@ using System.Threading.Tasks;
 namespace ForestLog;
 
 /// <summary>
-/// ForestLog nested scope logger interface.
-/// </summary>
-public interface IScopedLogger : ILogger, IDisposable
-{
-}
-
-/// <summary>
 /// ForestLog nested scope logger type.
 /// </summary>
 [DebuggerStepThrough]
@@ -51,7 +44,9 @@ public readonly struct ScopedLogger : IScopedLogger
     public ScopedLogger(
         ILogger logger,
         LogLevels logLevel,
-        string memberName, string filePath, int line)
+        string memberName,
+        string filePath,
+        int line)
     {
         this.logger = logger.NewScope();
         this.logLevel = logLevel;
@@ -60,8 +55,68 @@ public readonly struct ScopedLogger : IScopedLogger
         this.line = line;
     }
 
+    //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Dispose method.
+    /// </summary>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    public void Dispose() =>
+        this.Leave(null);
+
+    /// <summary>
+    /// Dispose method.
+    /// </summary>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    void IDisposable.Dispose() =>
+        this.Leave(null);
+
+#if NETCOREAPP3_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+    /// <summary>
+    /// Dispose method.
+    /// </summary>
+    /// <remarks>This is a low-level API interface.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [DebuggerStepperBoundary]
+    public ValueTask DisposeAsync() =>
+        this.LeaveAsync(null, default);
+
+    /// <summary>
+    /// Dispose method.
+    /// </summary>
+    /// <remarks>This is a low-level API interface.</remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [DebuggerStepperBoundary]
+    ValueTask IAsyncDisposable.DisposeAsync() =>
+        this.LeaveAsync(null, default);
+#endif
+
+    //////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Enter method.
+    /// </summary>
+    /// <param name="arguments">Arguments hint.</param>
+    /// <remarks>This is a low-level API interface.</remarks>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void Enter(object?[]? arguments)
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    public void Enter(
+        object?[]? arguments)
     {
         this.logger.Write(
             this.logLevel, $"Enter: Parent={logger.ScopeId}", arguments,
@@ -69,9 +124,22 @@ public readonly struct ScopedLogger : IScopedLogger
         this.sw.Start();
     }
 
+    /// <summary>
+    /// Enter method.
+    /// </summary>
+    /// <param name="arguments">Arguments hint.</param>
+    /// <param name="ct">CancellationToken</param>
+    /// <remarks>This is a low-level API interface.</remarks>
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     [EditorBrowsable(EditorBrowsableState.Never)]
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
     public async LoggerAwaitable EnterAsync(
-        object?[]? arguments, CancellationToken ct)
+        object?[]? arguments,
+        CancellationToken ct)
     {
         await this.logger.WriteAsync(
             this.logLevel, $"Enter: Parent={logger.ScopeId}", arguments,
@@ -80,54 +148,31 @@ public readonly struct ScopedLogger : IScopedLogger
     }
 
     /// <summary>
-    /// Dispose method.
-    /// </summary>
-    public void Dispose()
-    {
-        if (this.sw.IsRunning)
-        {
-            this.sw.Stop();
-            var elasped = this.sw.Elapsed;
-            this.logger.Write(
-                this.logLevel, $"Leave: Elapsed={elasped}", null,
-                this.memberName, this.filePath, this.line);
-        }
-    }
-
-    /// <summary>
-    /// Dispose method.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public LoggerAwaitable LeaveAsync(CancellationToken ct)
-    {
-        if (this.sw.IsRunning)
-        {
-            this.sw.Stop();
-            var elasped = this.sw.Elapsed;
-            return this.logger.WriteAsync(
-                this.logLevel, $"Leave: Elapsed={elasped}", null,
-                this.memberName, this.filePath, this.line, ct);
-        }
-        else
-        {
-            return default;
-        }
-    }
-
-    /// <summary>
     /// Leave with exception.
     /// </summary>
     /// <param name="ex">Exception</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void Leave(Exception ex)
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    public void Leave(Exception? ex)
     {
         if (this.sw.IsRunning)
         {
             this.sw.Stop();
             var elasped = this.sw.Elapsed;
-            this.logger.Write(
-                this.logLevel, $"Leave with exception: Elapsed={elasped}", CoreUtilities.ToExceptionDetailObject(ex),
-                this.memberName, this.filePath, this.line);
+            if (ex is { })
+            {
+                this.logger.Write(
+                    this.logLevel, $"Leave with exception: Elapsed={elasped}", CoreUtilities.ToExceptionDetailObject(ex),
+                    this.memberName, this.filePath, this.line);
+            }
+            else
+            {
+                this.logger.Write(
+                    this.logLevel, $"Leave: Elapsed={elasped}", null,
+                    this.memberName, this.filePath, this.line);
+            }
         }
     }
 
@@ -137,21 +182,35 @@ public readonly struct ScopedLogger : IScopedLogger
     /// <param name="ex">Exception</param>
     /// <param name="ct">CancellationToken</param>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public LoggerAwaitable LeaveAsync(Exception ex, CancellationToken ct)
+#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
+    [DebuggerStepperBoundary]
+#endif
+    public LoggerAwaitable LeaveAsync(Exception? ex, CancellationToken ct)
     {
         if (this.sw.IsRunning)
         {
             this.sw.Stop();
             var elasped = this.sw.Elapsed;
-            return this.logger.WriteAsync(
-                this.logLevel, $"Leave with exception: Elapsed={elasped}", CoreUtilities.ToExceptionDetailObject(ex),
-                this.memberName, this.filePath, this.line, ct);
+            if (ex is { })
+            {
+                return this.logger.WriteAsync(
+                    this.logLevel, $"Leave with exception: Elapsed={elasped}", CoreUtilities.ToExceptionDetailObject(ex),
+                    this.memberName, this.filePath, this.line, ct);
+            }
+            else
+            {
+                return this.logger.WriteAsync(
+                    this.logLevel, $"Leave: Elapsed={elasped}", null,
+                    this.memberName, this.filePath, this.line, ct);
+            }
         }
         else
         {
             return default;
         }
     }
+
+    //////////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// For reference use only minimum output log level.
@@ -174,6 +233,8 @@ public readonly struct ScopedLogger : IScopedLogger
 #endif
         get => this.logger.ScopeId;
     }
+
+    //////////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// Write a log entry.
