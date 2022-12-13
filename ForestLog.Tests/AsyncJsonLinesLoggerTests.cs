@@ -163,4 +163,34 @@ public sealed class AsyncJsonLinesLoggerTests
 
         Assert.AreEqual(0, lines.Length);
     }
+
+    //////////////////////////////////////////////////////////
+
+    [TestCase(LogLevels.Debug)]
+    [TestCase(LogLevels.Trace)]
+    [TestCase(LogLevels.Information)]
+    [TestCase(LogLevels.Warning)]
+    [TestCase(LogLevels.Error)]
+    [TestCase(LogLevels.Fatal)]
+    public async Task ScopedLogMessage(LogLevels logLevel)
+    {
+        var lines = await LogTestBlockAsync(async logger =>
+        {
+            using var childLogger = await logger.ScopeAsync(logLevel);
+
+            var value = 123;
+            childLogger.Log(LogLevels.Warning, $"AAA{value}BBB");
+        });
+
+        Assert.AreEqual(3, lines.Length);
+
+        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines[0]?["logLevel"]?.ToString());
+
+        Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
+        Assert.AreEqual(LogLevels.Warning.ToString().ToLowerInvariant(), lines[1]?["logLevel"]?.ToString());
+
+        Assert.IsTrue(lines[2]?["message"]?.ToString().StartsWith("Leave: Elapsed="));
+        Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines[2]?["logLevel"]?.ToString());
+    }
 }

@@ -7,14 +7,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using ForestLog.Internal;
-using ForestLog.Tasks;
 
 namespace ForestLog;
 
@@ -22,106 +19,56 @@ namespace ForestLog;
 #pragma warning disable CS1573
 
 /// <summary>
-/// ForestLog logger interface extension.
+/// ForestLog logger scoping interface extension.
 /// </summary>
-public static class BlockScopeAsyncExtension
+public static class ScopingExtesion
 {
-    private static async LoggerAwaitable RunAsync(
+    private static void Run(
         ILogger logger,
         LogLevels logLevel,
         object?[]? arguments,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct,
+        Action<ILogger> scopedAction,
         string memberName,
         string filePath,
         int line)
     {
-        var scopedLogger = new ScopedLogger(
+        using var scopedLogger = new ScopedLogger(
             logger, logLevel, memberName, filePath, line);
-
-        if (ct.HasValue)
-        {
-            await scopedLogger.EnterAsync(arguments, ct.Value);
-        }
-        else
-        {
-            scopedLogger.Enter(arguments);
-        }
+        scopedLogger.Enter(arguments);
 
         try
         {
-            await scopedAction(scopedLogger);
+            scopedAction(scopedLogger);
         }
         catch (Exception ex)
         {
-            if (ct.HasValue)
-            {
-                await scopedLogger.LeaveAsync(ex, ct.Value);
-            }
-            else
-            {
-                scopedLogger.Leave(ex);
-            }
+            scopedLogger.Leave(ex);
             throw;
-        }
-
-        if (ct.HasValue)
-        {
-            await scopedLogger.LeaveAsync(null, ct.Value);
-        }
-        else
-        {
-            scopedLogger.Leave(null);
         }
     }
 
-    private static async LoggerAwaitable<T> RunAsync<T>(
+    private static T Run<T>(
         ILogger logger,
         LogLevels logLevel,
         object?[]? arguments,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct,
+        Func<ILogger, T> scopedAction,
         string memberName,
         string filePath,
         int line)
     {
-        var scopedLogger = new ScopedLogger(
+        using var scopedLogger = new ScopedLogger(
             logger, logLevel, memberName, filePath, line);
-
-        if (ct.HasValue)
-        {
-            await scopedLogger.EnterAsync(arguments, ct.Value);
-        }
-        else
-        {
-            scopedLogger.Enter(arguments);
-        }
+        scopedLogger.Enter(arguments);
 
         T result;
         try
         {
-            result = await scopedAction(scopedLogger);
+            result = scopedAction(scopedLogger);
         }
         catch (Exception ex)
         {
-            if (ct.HasValue)
-            {
-                await scopedLogger.LeaveAsync(ex, ct.Value);
-            }
-            else
-            {
-                scopedLogger.Leave(ex);
-            }
+            scopedLogger.Leave(ex);
             throw;
-        }
-
-        if (ct.HasValue)
-        {
-            await scopedLogger.LeaveAsync(null, ct.Value);
-        }
-        else
-        {
-            scopedLogger.Leave(null);
         }
 
         return result;
@@ -134,22 +81,19 @@ public static class BlockScopeAsyncExtension
     /// </summary>
     /// <param name="logLevel">Log level</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable ScopeAsync(
+    public static void Scope(
         this ILogger logger,
         LogLevels logLevel,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, logLevel, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, logLevel, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave log entries.
@@ -157,23 +101,20 @@ public static class BlockScopeAsyncExtension
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="logLevel">Log level</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> ScopeAsync<T>(
+    public static T Scope<T>(
         this ILogger logger,
         LogLevels logLevel,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, logLevel, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, logLevel, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave log entries.
@@ -181,23 +122,20 @@ public static class BlockScopeAsyncExtension
     /// <param name="logLevel">Log level</param>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable ScopeAsync(
+    public static void Scope(
         this ILogger logger,
         LogLevels logLevel,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, logLevel, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, logLevel, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave log entries.
@@ -206,24 +144,21 @@ public static class BlockScopeAsyncExtension
     /// <param name="logLevel">Log level</param>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> ScopeAsync<T>(
+    public static T Scope<T>(
         this ILogger logger,
         LogLevels logLevel,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, logLevel, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, logLevel, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -231,62 +166,53 @@ public static class BlockScopeAsyncExtension
     /// Write enter and leave debug log entries.
     /// </summary>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable DebugScopeAsync(
+    public static void DebugScope(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Debug, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Debug, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave debug log entries.
     /// </summary>
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> DebugScopeAsync<T>(
+    public static T DebugScope<T>(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Debug, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Debug, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave debug log entries.
     /// </summary>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable DebugScopeAsync(
+    public static void DebugScope(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Debug, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Debug, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave debug log entries.
@@ -294,22 +220,19 @@ public static class BlockScopeAsyncExtension
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> DebugScopeAsync<T>(
+    public static T DebugScope<T>(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Debug, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Debug, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -317,62 +240,53 @@ public static class BlockScopeAsyncExtension
     /// Write enter and leave trace log entries.
     /// </summary>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable TraceScopeAsync(
+    public static void TraceScope(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Trace, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Trace, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave trace log entries.
     /// </summary>
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> TraceScopeAsync<T>(
+    public static T TraceScope<T>(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Trace, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Trace, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave trace log entries.
     /// </summary>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable TraceScopeAsync(
+    public static void TraceScope(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Trace, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Trace, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave trace log entries.
@@ -380,22 +294,19 @@ public static class BlockScopeAsyncExtension
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> TraceScopeAsync<T>(
+    public static T TraceScope<T>(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Trace, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Trace, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -403,62 +314,53 @@ public static class BlockScopeAsyncExtension
     /// Write enter and leave information log entries.
     /// </summary>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable InformationScopeAsync(
+    public static void InformationScope(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Information, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Information, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave information log entries.
     /// </summary>
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> InformationScopeAsync<T>(
+    public static T InformationScope<T>(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Information, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Information, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave information log entries.
     /// </summary>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable InformationScopeAsync(
+    public static void InformationScope(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Information, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Information, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave information log entries.
@@ -466,22 +368,19 @@ public static class BlockScopeAsyncExtension
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> InformationScopeAsync<T>(
+    public static T InformationScope<T>(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Information, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Information, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -489,65 +388,56 @@ public static class BlockScopeAsyncExtension
     /// Write enter and leave warning log entries.
     /// </summary>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable WarningScopeAsync(
+    public static void WarningScope(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Warning, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Warning, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave warning log entries.
     /// </summary>
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> WarningScopeAsync<T>(
+    public static T WarningScope<T>(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Warning, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Warning, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave warning log entries.
     /// </summary>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable WarningScopeAsync(
+    public static void WarningScope(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Warning, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Warning, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave warning log entries.
@@ -555,23 +445,20 @@ public static class BlockScopeAsyncExtension
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> WarningScopeAsync<T>(
+    public static T WarningScope<T>(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Warning, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Warning, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -579,65 +466,56 @@ public static class BlockScopeAsyncExtension
     /// Write enter and leave error log entries.
     /// </summary>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable ErrorScopeAsync(
+    public static void ErrorScope(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Error, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Error, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave error log entries.
     /// </summary>
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> ErrorScopeAsync<T>(
+    public static T ErrorScope<T>(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Error, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Error, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave error log entries.
     /// </summary>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable ErrorScopeAsync(
+    public static void ErrorScope(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Error, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Error, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave error log entries.
@@ -645,23 +523,20 @@ public static class BlockScopeAsyncExtension
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> ErrorScopeAsync<T>(
+    public static T ErrorScope<T>(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Error, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Error, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -669,65 +544,56 @@ public static class BlockScopeAsyncExtension
     /// Write enter and leave fatal log entries.
     /// </summary>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable FatalScopeAsync(
+    public static void FatalScope(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Fatal, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Fatal, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave fatal log entries.
     /// </summary>
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> FatalScopeAsync<T>(
+    public static T FatalScope<T>(
         this ILogger logger,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Fatal, null, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Fatal, null, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave fatal log entries.
     /// </summary>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable FatalScopeAsync(
+    public static void FatalScope(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable> scopedAction,
-        CancellationToken? ct = null,
+        Action<ILogger> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, memberName, filePath, line);
 
     /// <summary>
     /// Write enter and leave fatal log entries.
@@ -735,21 +601,18 @@ public static class BlockScopeAsyncExtension
     /// <typeparam name="T">Return value type</typeparam>
     /// <param name="arguments">Method arguments</param>
     /// <param name="scopedAction">Delegate to execute</param>
-    /// <param name="ct">CancellationToken</param>
     /// <returns>Return value from delegate execution</returns>
-    /// <remarks>Awaited each writing log entry when CancellationToken is provided.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     [DebuggerStepThrough]
-    public static LoggerAwaitable<T> FatalScopeAsync<T>(
+    public static T FatalScope<T>(
         this ILogger logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, LoggerAwaitable<T>> scopedAction,
-        CancellationToken? ct = null,
+        Func<ILogger, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        RunAsync(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, ct, memberName, filePath, line);
+        Run(logger, LogLevels.Fatal, arguments.Arguments, scopedAction, memberName, filePath, line);
 }
