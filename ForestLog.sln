@@ -28,7 +28,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FSharp.ForestLog", "FSharp.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.Extensions.Logging", "ForestLog.Extensions.Logging\ForestLog.Extensions.Logging.csproj", "{CF14533D-E064-4D91-82BA-507035D220DE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.MQTTnet31", "ForestLog.MQTTnet31\ForestLog.MQTTnet31.csproj", "{560E9934-CCCB-4EB0-B0B8-1469EA9FEB35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ForestLog.MQTTnet312", "ForestLog.MQTTnet312\ForestLog.MQTTnet312.csproj", "{560E9934-CCCB-4EB0-B0B8-1469EA9FEB35}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

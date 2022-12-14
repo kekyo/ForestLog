@@ -20,7 +20,7 @@ Minimum packages:
 | Package  | NuGet                                                                                                                |
 |:---------|:---------------------------------------------------------------------------------------------------------------------|
 | ForestLog.Extensions.Logging | [![NuGet ForestLog.Extensions.Logging](https://img.shields.io/nuget/v/ForestLog.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/ForestLog.Extensions.Logging) |
-| ForestLog.MQTTnet31 | [![NuGet ForestLog.MQTTnet31](https://img.shields.io/nuget/v/ForestLog.MQTTnet31.svg?style=flat)](https://www.nuget.org/packages/ForestLog.MQTTnet31) |
+| ForestLog.MQTTnet312 | [![NuGet ForestLog.MQTTnet312](https://img.shields.io/nuget/v/ForestLog.MQTTnet312.svg?style=flat)](https://www.nuget.org/packages/ForestLog.MQTTnet312) |
 
 ----
 
@@ -45,8 +45,8 @@ Core interface library:
 3rd party bridging interface:
 
 * ASP.NET Core 1.0 or upper
-* MQTTnet 3.1.x series
-  * Currently under 3.1 or 4.0.x is not supported, because these version contain breaking changes.
+* MQTTnet 3.1.2
+  * Currently other versions is not supported, because they are contained breaking changes.
 
 ----
 
@@ -481,9 +481,9 @@ var webApplication = builder.Build();
 * Yes, it is implemented for `Microsoft.Extensions.Logging` interfaces.
   So you can apply this package to ASP.NET Core, Entity Framework Core and any other projects.
 
-### MQTTnet 3.1 bridge configuration
+### MQTTnet 3.1.2 bridge configuration
 
-Install [ForestLog.MQTTnet31](https://www.nuget.org/packages/ForestLog.MQTTnet31) package,
+Install [ForestLog.MQTTnet312](https://www.nuget.org/packages/ForestLog.MQTTnet312) package,
 and uses `ForestLog.MqttNetLogger` class:
 
 ```csharp
