@@ -15,11 +15,12 @@ Minimum packages:
 | ForestLog | [![NuGet ForestLog](https://img.shields.io/nuget/v/ForestLog.svg?style=flat)](https://www.nuget.org/packages/ForestLog) |
 | ForestLog.JsonLines | [![NuGet ForestLog.JsonLines](https://img.shields.io/nuget/v/ForestLog.JsonLines.svg?style=flat)](https://www.nuget.org/packages/ForestLog.JsonLines) |
 
-ASP.NET Core bridge:
+3rd party bridging:
 
 | Package  | NuGet                                                                                                                |
 |:---------|:---------------------------------------------------------------------------------------------------------------------|
 | ForestLog.Extensions.Logging | [![NuGet ForestLog.Extensions.Logging](https://img.shields.io/nuget/v/ForestLog.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/ForestLog.Extensions.Logging) |
+| ForestLog.MQTTnet31 | [![NuGet ForestLog.MQTTnet31](https://img.shields.io/nuget/v/ForestLog.MQTTnet31.svg?style=flat)](https://www.nuget.org/packages/ForestLog.MQTTnet31) |
 
 ----
 
@@ -41,11 +42,11 @@ Core interface library:
 * .NET Standard 2.1, 2.0, 1.6, 1.3
 * .NET Framework 4.8, 4.6.1, 4.5, 4.0, 3.5
 
-ASP.NET Core bridge:
+3rd party bridging interface:
 
-* .NET 7, 6, 5
-* .NET Core 3.1
 * ASP.NET Core 1.0 or upper
+* MQTTnet 3.1.x series
+  * Currently under 3.1 or 4.0.x is not supported, because these version contain breaking changes.
 
 ----
 
@@ -187,6 +188,8 @@ public enum LogLevels
 }
 ```
 
+----
+
 ## Annotates facility name
 
 ```csharp
@@ -208,6 +211,8 @@ Result:
 }
 ```
 
+----
+
 ## Awaited for exactly output
 
 Normally, ForestLog outputs all log entries in the background context.
@@ -220,6 +225,8 @@ public async Task OutputAsync(ILogger logger)
     await logger.InformationAsync($"Awaited to exactly output.");
 }
 ```
+
+----
 
 ## Scoped output
 
@@ -353,6 +360,8 @@ If you are familiar with the C# language, you may find this method easier to wri
 However, that the logger does not record the contents of the exception details when it occurs.
 (the "Leave" message is recorded when the exception occurs and the scope is exited).
 
+----
+
 ## Configure maximum log size and rotation
 
 Will switch log file when current log file size is exceed.
@@ -381,6 +390,8 @@ using var logController = LogController.Factory.CreateJsonLines(
     10
     );
 ```
+
+----
 
 ## Suspend and resume
 
@@ -415,6 +426,8 @@ public sealed class MainActivity
   * After that, any logging request will be ignored when before `Resume()` is called.
 * `Resume()` method releases the above.
 
+----
+
 ## Programmatically retreive log entries
 
 Event to monitor log outputted in real time:
@@ -438,12 +451,18 @@ LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
     logEntry => logEntry.LogLevel >= LogLevels.Warning);
 ```
 
-## ASP.NET Core bridge configuration
+----
+
+## 3rd party logger bridging
+
+### ASP.NET Core bridge configuration
 
 Install [ForestLog.Extensions.Logging](https://www.nuget.org/packages/ForestLog.Extensions.Logging) package,
 and configure using with `AddForestLog()` method extension:
 
 ```csharp
+using ForestLog;
+
 using var logController = LogController.Factory.CreateJsonLines(
     /* ... */);
 
@@ -461,6 +480,21 @@ var webApplication = builder.Build();
 * Or, you can use `builder.Services.AddForestLog()` directly.
 * Yes, it is implemented for `Microsoft.Extensions.Logging` interfaces.
   So you can apply this package to ASP.NET Core, Entity Framework Core and any other projects.
+
+### MQTTnet 3.1 bridge configuration
+
+Install [ForestLog.MQTTnet31](https://www.nuget.org/packages/ForestLog.MQTTnet31) package,
+and uses `ForestLog.MqttNetLogger` class:
+
+```csharp
+using ForestLog;
+
+using var logController = LogController.Factory.CreateJsonLines(
+    /* ... */);
+
+var mqttClient = new MqttFactory().
+    CreateMqttClient(new MqttNetLogger(logController));
+```
 
 ----
 

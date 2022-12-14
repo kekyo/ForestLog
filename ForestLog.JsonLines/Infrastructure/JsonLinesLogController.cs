@@ -137,7 +137,7 @@ internal sealed class JsonLinesLogController : LogController
     {
         if (!Directory.Exists(this.basePath))
         {
-            return Utilities.Empty<LogEntry>();
+            return CoreUtilities.Empty<LogEntry>();
         }
 
         using var __ = this.rotationLocker.UnsafeLock();
@@ -212,7 +212,7 @@ internal sealed class JsonLinesLogController : LogController
 
         if (indices.Length == 0)
         {
-            return new(Path.Combine(basePath, "log1.jsonl"), Utilities.Empty<string>());
+            return new(Path.Combine(basePath, "log1.jsonl"), CoreUtilities.Empty<string>());
         }
 
         var backupPath = Path.Combine(basePath, $"log{indices.Last() + 1}.jsonl");
@@ -228,7 +228,7 @@ internal sealed class JsonLinesLogController : LogController
         }
         else
         {
-            return new(backupPath, Utilities.Empty<string>());
+            return new(backupPath, CoreUtilities.Empty<string>());
         }
     }
 

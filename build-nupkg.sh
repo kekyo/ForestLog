@@ -17,4 +17,5 @@ dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts ForestLog.C
 dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts ForestLog/ForestLog.csproj
 dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts ForestLog.JsonLines/ForestLog.JsonLines.csproj
 dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts ForestLog.Extensions.Logging/ForestLog.Extensions.Logging.csproj
+dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts ForestLog.MQTTnet31/ForestLog.MQTTnet31.csproj
 dotnet pack -p:Configuration=Release -p:Platform=AnyCPU -o artifacts FSharp.ForestLog/FSharp.ForestLog.fsproj

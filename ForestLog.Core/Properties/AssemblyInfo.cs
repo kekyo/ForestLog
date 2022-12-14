@@ -11,4 +11,5 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("ForestLog")]
 [assembly: InternalsVisibleTo("ForestLog.JsonLines")]
+[assembly: InternalsVisibleTo("ForestLog.MQTTnet31")]
 [assembly: InternalsVisibleTo("FSharp.ForestLog")]

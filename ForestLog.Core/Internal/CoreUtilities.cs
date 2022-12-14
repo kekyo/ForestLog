@@ -70,7 +70,7 @@ internal static class CoreUtilities
         get =>
 #if NET35 || NET40
             TaskEx.FromResult(true);
-#elif NET45
+#elif NET45 || NET452
             Task.FromResult(true);
 #else
             Task.CompletedTask;
@@ -94,4 +94,21 @@ internal static class CoreUtilities
         }, edi);
 #endif
     }
+
+#if NET35 || NET40 || NET45 || NET452
+    private static class EmptyArray<T>
+    {
+        public static readonly T[] Empty = new T[0];
+    }
+#endif
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    public static T[] Empty<T>() =>
+#if NET35 || NET40 || NET45 || NET452
+        EmptyArray<T>.Empty;
+#else
+        Array.Empty<T>();
+#endif
 }
