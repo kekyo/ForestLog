@@ -365,7 +365,7 @@ internal sealed class JsonLinesLogController : LogController
                     jw.Flush();
                     tw.WriteLine();
                 }
-                finally
+                catch
                 {
                     if (waitingLogEntry.IsAwaiting)
                     {
@@ -373,11 +373,30 @@ internal sealed class JsonLinesLogController : LogController
                         {
                             tw.Flush();
                         }
-                        finally
+                        catch
                         {
                             waitingLogEntry.SetCompleted();
+                            throw;
                         }
+                        // Avoid unwinding.
+                        waitingLogEntry.SetCompleted();
                     }
+                    throw;
+                }
+                // Avoid unwinding.
+                if (waitingLogEntry.IsAwaiting)
+                {
+                    try
+                    {
+                        tw.Flush();
+                    }
+                    catch
+                    {
+                        waitingLogEntry.SetCompleted();
+                        throw;
+                    }
+                    // Avoid unwinding.
+                    waitingLogEntry.SetCompleted();
                 }
 #else
                 static async LoggerAwaitable WriteLogAsync(
@@ -394,7 +413,7 @@ internal sealed class JsonLinesLogController : LogController
                         await jw.FlushAsync();
                         await tw.WriteLineAsync();
                     }
-                    finally
+                    catch
                     {
                         if (waitingLogEntry.IsAwaiting)
                         {
@@ -402,15 +421,42 @@ internal sealed class JsonLinesLogController : LogController
                             {
                                 await tw.FlushAsync();
                             }
-                            finally
+                            catch
                             {
                                 waitingLogEntry.SetCompleted();
+                                throw;
                             }
+                            // Avoid unwinding.
+                            waitingLogEntry.SetCompleted();
                         }
+                        throw;
+                    }
+                    // Avoid unwinding.
+                    if (waitingLogEntry.IsAwaiting)
+                    {
+                        try
+                        {
+                            await tw.FlushAsync();
+                        }
+                        catch
+                        {
+                            waitingLogEntry.SetCompleted();
+                            throw;
+                        }
+                        // Avoid unwinding.
+                        waitingLogEntry.SetCompleted();
                     }
                 }
 
-                await lastOffloadedTask;
+                try
+                {
+                    await lastOffloadedTask;
+                }
+                catch
+                {
+                    lastOffloadedTask = default;
+                    throw;
+                }
 
                 lastOffloadedTask = WriteLogAsync(
                     waitingLogEntry, jt, jw, tw);
