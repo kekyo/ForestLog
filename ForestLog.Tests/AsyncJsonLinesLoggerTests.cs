@@ -8,6 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Internal;
+using ForestLog.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -46,9 +47,25 @@ public sealed class AsyncJsonLinesLoggerTests
         }
     }
 
-    public static async ValueTask<JObject?[]> LogTestBlockAsync(
-        Func<ILogger, ValueTask> action,
-        LogLevels maximumOutputLogLevel = LogLevels.Debug)
+    public static async LoggerAwaitable<JObject?[]> LogTestBlockAsync(
+        Func<ILogger, LoggerAwaitable> action,
+        LogLevels maximumOutputLogLevel = LogLevels.Debug,
+        long sizeToNextFile = 1 * 1024 * 1024,
+        int maximumLogFiles = 0)
+    {
+        var (results, _) = await LogTestBlockAsync(
+            (_, logger) => action(logger),
+            maximumOutputLogLevel,
+            sizeToNextFile,
+            maximumLogFiles);
+        return results;
+    }
+
+    public static async LoggerAwaitable<(JObject?[] results, int files)> LogTestBlockAsync(
+        Func<ILogController, ILogger, LoggerAwaitable> action,
+        LogLevels maximumOutputLogLevel = LogLevels.Debug,
+        long sizeToNextFile = 1 * 1024 * 1024,
+        int maximumLogFiles = 0)
     {
         var basePath = Path.Combine(
             Path.GetDirectoryName(typeof(AsyncJsonLinesLoggerTests).Assembly.Location)!,
@@ -68,17 +85,19 @@ public sealed class AsyncJsonLinesLoggerTests
         try
         {
             using (var logController = LogController.Factory.CreateJsonLines(
-                basePath, maximumOutputLogLevel))
+                basePath, maximumOutputLogLevel, sizeToNextFile, maximumLogFiles))
             {
                 var logger = logController.CreateLogger();
 
-                await action(logger);
+                await action(logController, logger);
             }
 
-            return Directory.EnumerateFiles(
-                basePath, "log*.jsonl", SearchOption.AllDirectories).
+            var paths = Directory.GetFiles(
+                basePath, "log*.jsonl", SearchOption.AllDirectories);
+
+            return (paths.
                 SelectMany(path => LoadLines(path)).
-                ToArray();
+                ToArray(), paths.Length);
         }
         finally
         {
@@ -87,6 +106,32 @@ public sealed class AsyncJsonLinesLoggerTests
                 Directory.Delete(basePath, true);
             }
         }
+    }
+
+    //////////////////////////////////////////////////////////
+
+    [TestCase(10, 1)]
+    [TestCase(10, 2)]
+    [TestCase(10, 5)]
+    public async Task RotateLogFiles(long sizeToNextFile, int maximumLogFiles)
+    {
+        var (lines, files) = await LogTestBlockAsync(
+            async (_, logger) =>
+            {
+                for (var index = 0; index < 100; index++)
+                {
+                    // This test needs to asynchronously output.
+                    // Because will flush and rotate one entry each files.
+                    await logger.DebugAsync($"AAA{index}BBB");
+                }
+            },
+            LogLevels.Debug,
+            sizeToNextFile,
+            maximumLogFiles);
+
+        Assert.AreEqual(maximumLogFiles, files, "files");
+        Assert.Warn(string.Join(",", lines.Select(l => $"\"{l}\"")));
+        Assert.AreEqual(maximumLogFiles, lines.Length, "lines");
     }
 
     //////////////////////////////////////////////////////////

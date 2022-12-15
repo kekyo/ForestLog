@@ -317,6 +317,8 @@ internal sealed class JsonLinesLogController : LogController
         fs.Seek(0, SeekOrigin.End);
 
         var tw = new StreamWriter(fs, Utilities.UTF8);
+        // Force only LF.
+        tw.NewLine = "\n";
         var jw = new JsonTextWriter(tw);
 
         // Will make safer by adding a newline into jsonl file when last output was broken.
