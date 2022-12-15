@@ -60,7 +60,7 @@ We need to create "Log controller" from the factory:
 using ForestLog;
 
 // Construct log controller:
-using var logController = LogController.Factory.CreateJsonLines(
+using ILogController logController = LogController.Factory.CreateJsonLines(
     // Output base directory path.
     "logs",
     // Minimum output log level.
@@ -357,7 +357,7 @@ public async Task ScopeAsync(ILogger parentLogger)
 ```
 
 If you are familiar with the C# language, you may find this method easier to write.
-However, that the logger does not record the contents of the exception details when it occurs.
+However, that the logger does not record the contents of both the return value and exception details when it occurs.
 (the "Leave" message is recorded when the exception occurs and the scope is exited).
 
 ----
@@ -395,7 +395,7 @@ using var logController = LogController.Factory.CreateJsonLines(
 
 ## Suspend and resume
 
-In an environment such as a smartphone,
+In an environment such as smartphones and/or tablet devices,
 log output must be suspended and resumed as the application transitions between states.
 
 The following example will correspond to an application transition in Xamarin Android:
@@ -405,6 +405,11 @@ public sealed class MainActivity
 {
     private readonly ILogController logController =
         LogController.Factory.CreateJsonLines(...);
+
+    public MainActivity()
+    {
+        DependencyService.RegisterSingleton<ILogController>(this.logController);
+    }
 
     // ...
 
@@ -441,7 +446,7 @@ logController.Arrived += (s, e) =>
 };
 ```
 
-Or, filter by predicates from all logs recorded (including outputted to files):
+Or, perform quering and filtering by predicates from all logs recorded (including outputted to files):
 
 ```csharp
 LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
@@ -502,6 +507,8 @@ var mqttClient = new MqttFactory().
 
 ForestLog has its own awaitable type, the `LoggerAwaitable` type.
 This structure is a value-type likes the `ValueTask` type and allowing low-cost asynchronous operations.
+(Yes, we can use these types on both `net35`, `net40` and `net45` tfms :)
+
 It also defines an inter-conversion operator between the `Task` and `ValueTask` type,
 allowing seamless use as follows:
 
