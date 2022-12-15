@@ -43,7 +43,17 @@ public sealed class AsyncJsonLinesLoggerTests
             }
 
             var jr = new JsonTextReader(new StringReader(line));
-            yield return Utilities.JsonSerializer.Deserialize<JObject>(jr);
+
+            JObject? jo;
+            try
+            {
+                jo = Utilities.JsonSerializer.Deserialize<JObject>(jr);
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException(line, ex);
+            }
+            yield return jo;
         }
     }
 
