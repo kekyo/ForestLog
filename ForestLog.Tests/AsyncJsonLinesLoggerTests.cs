@@ -130,7 +130,6 @@ public sealed class AsyncJsonLinesLoggerTests
             maximumLogFiles);
 
         Assert.AreEqual(maximumLogFiles, files, "files");
-        Assert.Warn(string.Join(",", lines.Select(l => $"\"{l}\"")));
         Assert.AreEqual(maximumLogFiles, lines.Length, "lines");
     }
 
