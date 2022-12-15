@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace ForestLog;
@@ -42,7 +43,17 @@ public sealed class JsonLinesLoggerTests
             }
 
             var jr = new JsonTextReader(new StringReader(line));
-            yield return Utilities.JsonSerializer.Deserialize<JObject>(jr);
+
+            JObject? jo;
+            try
+            {
+                jo = Utilities.JsonSerializer.Deserialize<JObject>(jr);
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException(line, ex);
+            }
+            yield return jo;
         }
     }
 
@@ -314,30 +325,6 @@ public sealed class JsonLinesLoggerTests
 
         Assert.AreEqual(Math.Min(max, 10), entries.Length);
         Assert.IsTrue(entries.All(e => e.Message.StartsWith("CCC")));
-    }
-
-    //////////////////////////////////////////////////////////
-
-    [TestCase(10, 1)]
-    [TestCase(10, 2)]
-    [TestCase(10, 5)]
-    public void RotateLogFiles(long sizeToNextFile, int maximumLogFiles)
-    {
-        var lines = LogTestBlock(
-            out var files,
-            (_, logger) =>
-            {
-                for (var index = 0; index < 100; index++)
-                {
-                    logger.Debug($"AAA{index}BBB");
-                }
-            },
-            LogLevels.Debug,
-            sizeToNextFile,
-            maximumLogFiles);
-
-        Assert.AreEqual(maximumLogFiles, files);
-        Assert.AreEqual(maximumLogFiles, lines.Length);
     }
 
     //////////////////////////////////////////////////////////

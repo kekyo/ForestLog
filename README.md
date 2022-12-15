@@ -15,11 +15,12 @@ Minimum packages:
 | ForestLog | [![NuGet ForestLog](https://img.shields.io/nuget/v/ForestLog.svg?style=flat)](https://www.nuget.org/packages/ForestLog) |
 | ForestLog.JsonLines | [![NuGet ForestLog.JsonLines](https://img.shields.io/nuget/v/ForestLog.JsonLines.svg?style=flat)](https://www.nuget.org/packages/ForestLog.JsonLines) |
 
-ASP.NET Core bridge:
+3rd party bridging:
 
 | Package  | NuGet                                                                                                                |
 |:---------|:---------------------------------------------------------------------------------------------------------------------|
 | ForestLog.Extensions.Logging | [![NuGet ForestLog.Extensions.Logging](https://img.shields.io/nuget/v/ForestLog.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/ForestLog.Extensions.Logging) |
+| ForestLog.MQTTnet312 | [![NuGet ForestLog.MQTTnet312](https://img.shields.io/nuget/v/ForestLog.MQTTnet312.svg?style=flat)](https://www.nuget.org/packages/ForestLog.MQTTnet312) |
 
 ----
 
@@ -41,11 +42,11 @@ Core interface library:
 * .NET Standard 2.1, 2.0, 1.6, 1.3
 * .NET Framework 4.8, 4.6.1, 4.5, 4.0, 3.5
 
-ASP.NET Core bridge:
+3rd party bridging interface:
 
-* .NET 7, 6, 5
-* .NET Core 3.1
 * ASP.NET Core 1.0 or upper
+* MQTTnet 3.1.2
+  * Currently other versions is not supported, because they are contained breaking changes.
 
 ----
 
@@ -59,7 +60,7 @@ We need to create "Log controller" from the factory:
 using ForestLog;
 
 // Construct log controller:
-using var logController = LogController.Factory.CreateJsonLines(
+using ILogController logController = LogController.Factory.CreateJsonLines(
     // Output base directory path.
     "logs",
     // Minimum output log level.
@@ -187,6 +188,8 @@ public enum LogLevels
 }
 ```
 
+----
+
 ## Annotates facility name
 
 ```csharp
@@ -208,6 +211,8 @@ Result:
 }
 ```
 
+----
+
 ## Awaited for exactly output
 
 Normally, ForestLog outputs all log entries in the background context.
@@ -220,6 +225,8 @@ public async Task OutputAsync(ILogger logger)
     await logger.InformationAsync($"Awaited to exactly output.");
 }
 ```
+
+----
 
 ## Scoped output
 
@@ -350,8 +357,10 @@ public async Task ScopeAsync(ILogger parentLogger)
 ```
 
 If you are familiar with the C# language, you may find this method easier to write.
-However, that the logger does not record the contents of the exception details when it occurs.
+However, that the logger does not record the contents of both the return value and exception details when it occurs.
 (the "Leave" message is recorded when the exception occurs and the scope is exited).
+
+----
 
 ## Configure maximum log size and rotation
 
@@ -382,9 +391,11 @@ using var logController = LogController.Factory.CreateJsonLines(
     );
 ```
 
+----
+
 ## Suspend and resume
 
-In an environment such as a smartphone,
+In an environment such as smartphones and/or tablet devices,
 log output must be suspended and resumed as the application transitions between states.
 
 The following example will correspond to an application transition in Xamarin Android:
@@ -394,6 +405,11 @@ public sealed class MainActivity
 {
     private readonly ILogController logController =
         LogController.Factory.CreateJsonLines(...);
+
+    public MainActivity()
+    {
+        DependencyService.RegisterSingleton<ILogController>(this.logController);
+    }
 
     // ...
 
@@ -415,6 +431,8 @@ public sealed class MainActivity
   * After that, any logging request will be ignored when before `Resume()` is called.
 * `Resume()` method releases the above.
 
+----
+
 ## Programmatically retreive log entries
 
 Event to monitor log outputted in real time:
@@ -428,7 +446,7 @@ logController.Arrived += (s, e) =>
 };
 ```
 
-Or, filter by predicates from all logs recorded (including outputted to files):
+Or, perform quering and filtering by predicates from all logs recorded (including outputted to files):
 
 ```csharp
 LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
@@ -438,12 +456,18 @@ LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
     logEntry => logEntry.LogLevel >= LogLevels.Warning);
 ```
 
-## ASP.NET Core bridge configuration
+----
+
+## 3rd party logger bridging
+
+### ASP.NET Core bridge configuration
 
 Install [ForestLog.Extensions.Logging](https://www.nuget.org/packages/ForestLog.Extensions.Logging) package,
 and configure using with `AddForestLog()` method extension:
 
 ```csharp
+using ForestLog;
+
 using var logController = LogController.Factory.CreateJsonLines(
     /* ... */);
 
@@ -462,12 +486,29 @@ var webApplication = builder.Build();
 * Yes, it is implemented for `Microsoft.Extensions.Logging` interfaces.
   So you can apply this package to ASP.NET Core, Entity Framework Core and any other projects.
 
+### MQTTnet 3.1.2 bridge configuration
+
+Install [ForestLog.MQTTnet312](https://www.nuget.org/packages/ForestLog.MQTTnet312) package,
+and uses `ForestLog.MqttNetLogger` class:
+
+```csharp
+using ForestLog;
+
+using var logController = LogController.Factory.CreateJsonLines(
+    /* ... */);
+
+var mqttClient = new MqttFactory().
+    CreateMqttClient(new MqttNetLogger(logController));
+```
+
 ----
 
 ## Uses builtin awaitable value task (Advanced topic)
 
 ForestLog has its own awaitable type, the `LoggerAwaitable` type.
 This structure is a value-type likes the `ValueTask` type and allowing low-cost asynchronous operations.
+(Yes, we can use these types on both `net35`, `net40` and `net45` tfms :)
+
 It also defines an inter-conversion operator between the `Task` and `ValueTask` type,
 allowing seamless use as follows:
 
