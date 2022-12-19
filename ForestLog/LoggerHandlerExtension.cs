@@ -7,13 +7,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using ForestLog.Infrastructure;
 using ForestLog.Internal;
-using ForestLog.Tasks;
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace ForestLog;
 
@@ -23,7 +22,8 @@ namespace ForestLog;
 /// <summary>
 /// ForestLog logger interface extension.
 /// </summary>
-public static class LoggerAsyncExtension
+[DebuggerStepThrough]
+public static class LoggerHandlerExtension
 {
     /// <summary>
     /// Write a log entry.
@@ -34,48 +34,22 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable LogAsync(
+    public static void Log(
         this ILogger logger,
         LogLevels logLevel,
-        IFormattable message,
+        [InterpolatedStringHandlerArgument("logger", "logLevel")] LoggerInterpolatedStringHandler message,
         object? additionalData = null,
-        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             logLevel,
             message, additionalData,
-            memberName, filePath, line, ct);
-
-    /// <summary>
-    /// Write a log entry.
-    /// </summary>
-    /// <param name="logLevel">Log level</param>
-    /// <param name="ex">Exception</param>
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
-    [DebuggerStepperBoundary]
-#endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable LogAsync(
-        this ILogger logger,
-        LogLevels logLevel,
-        Exception ex,
-        CancellationToken ct = default,
-        [CallerMemberName] string memberName = null!,
-        [CallerFilePath] string filePath = null!,
-        [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
-            logLevel,
-            ex,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     /// <summary>
     /// Write a log entry.
@@ -86,23 +60,22 @@ public static class LoggerAsyncExtension
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable LogAsync(
+    public static void Log(
         this ILogger logger,
         LogLevels logLevel,
         Exception ex,
-        IFormattable message,
-        CancellationToken ct = default,
+        [InterpolatedStringHandlerArgument("logger", "logLevel")] LoggerInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             logLevel,
             ex, message,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -117,42 +90,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable DebugAsync(
+    public static void Debug(
         this ILogger logger,
-        IFormattable message,
+        [InterpolatedStringHandlerArgument("logger")] DebugInterpolatedStringHandler message,
         object? additionalData = null,
-        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Debug,
             message, additionalData,
-            memberName, filePath, line, ct);
-
-    /// <summary>
-    /// Write a debug log entry.
-    /// </summary>
-    /// <param name="ex">Exception</param>
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
-    [DebuggerStepperBoundary]
-#endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable DebugAsync(
-        this ILogger logger,
-        Exception ex,
-        CancellationToken ct = default,
-        [CallerMemberName] string memberName = null!,
-        [CallerFilePath] string filePath = null!,
-        [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
-            LogLevels.Debug,
-            ex,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     /// <summary>
     /// Write a debug log entry.
@@ -165,19 +113,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable DebugAsync(
+    public static void Debug(
         this ILogger logger,
         Exception ex,
-        IFormattable message,
-        CancellationToken ct = default,
+        [InterpolatedStringHandlerArgument("logger")] DebugInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Debug,
             ex, message,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -192,42 +138,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable TraceAsync(
+    public static void Trace(
         this ILogger logger,
-        IFormattable message,
+        [InterpolatedStringHandlerArgument("logger")] TraceInterpolatedStringHandler message,
         object? additionalData = null,
-        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Trace,
             message, additionalData,
-            memberName, filePath, line, ct);
-
-    /// <summary>
-    /// Write a trace log entry.
-    /// </summary>
-    /// <param name="ex">Exception</param>
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
-    [DebuggerStepperBoundary]
-#endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable TraceAsync(
-        this ILogger logger,
-        Exception ex,
-        CancellationToken ct = default,
-        [CallerMemberName] string memberName = null!,
-        [CallerFilePath] string filePath = null!,
-        [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
-            LogLevels.Trace,
-            ex,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     /// <summary>
     /// Write a trace log entry.
@@ -240,19 +161,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable TraceAsync(
+    public static void Trace(
         this ILogger logger,
         Exception ex,
-        IFormattable message,
-        CancellationToken ct = default,
+        [InterpolatedStringHandlerArgument("logger")] TraceInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Trace,
             ex, message,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -267,42 +186,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable InformationAsync(
+    public static void Information(
         this ILogger logger,
-        IFormattable message,
+        [InterpolatedStringHandlerArgument("logger")] InformationInterpolatedStringHandler message,
         object? additionalData = null,
-        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
-            LogLevels.Information,
+        logger.Write(
+            LogLevels.Information, 
             message, additionalData,
-            memberName, filePath, line, ct);
-
-    /// <summary>
-    /// Write a information log entry.
-    /// </summary>
-    /// <param name="ex">Exception</param>
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
-    [DebuggerStepperBoundary]
-#endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable InformationAsync(
-        this ILogger logger,
-        Exception ex,
-        CancellationToken ct = default,
-        [CallerMemberName] string memberName = null!,
-        [CallerFilePath] string filePath = null!,
-        [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
-            LogLevels.Information,
-            ex,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     /// <summary>
     /// Write a information log entry.
@@ -315,19 +209,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable InformationAsync(
+    public static void Information(
         this ILogger logger,
         Exception ex,
-        IFormattable message,
-        CancellationToken ct = default,
+        [InterpolatedStringHandlerArgument("logger")] InformationInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Information,
             ex, message,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -342,42 +234,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable WarningAsync(
+    public static void Warning(
         this ILogger logger,
-        IFormattable message,
+        [InterpolatedStringHandlerArgument("logger")] WarningInterpolatedStringHandler message,
         object? additionalData = null,
-        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Warning,
             message, additionalData,
-            memberName, filePath, line, ct);
-
-    /// <summary>
-    /// Write a warning log entry.
-    /// </summary>
-    /// <param name="ex">Exception</param>
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
-    [DebuggerStepperBoundary]
-#endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable WarningAsync(
-        this ILogger logger,
-        Exception ex,
-        CancellationToken ct = default,
-        [CallerMemberName] string memberName = null!,
-        [CallerFilePath] string filePath = null!,
-        [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
-            LogLevels.Warning,
-            ex,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     /// <summary>
     /// Write a warning log entry.
@@ -390,19 +257,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable WarningAsync(
+    public static void Warning(
         this ILogger logger,
         Exception ex,
-        IFormattable message,
-        CancellationToken ct = default,
+        [InterpolatedStringHandlerArgument("logger")] WarningInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Warning,
             ex, message,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -417,42 +282,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable ErrorAsync(
+    public static void Error(
         this ILogger logger,
-        IFormattable message,
+        [InterpolatedStringHandlerArgument("logger")] ErrorInterpolatedStringHandler message,
         object? additionalData = null,
-        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Error,
             message, additionalData,
-            memberName, filePath, line, ct);
-
-    /// <summary>
-    /// Write a error log entry.
-    /// </summary>
-    /// <param name="ex">Exception</param>
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
-    [DebuggerStepperBoundary]
-#endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable ErrorAsync(
-        this ILogger logger,
-        Exception ex,
-        CancellationToken ct = default,
-        [CallerMemberName] string memberName = null!,
-        [CallerFilePath] string filePath = null!,
-        [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
-            LogLevels.Error,
-            ex,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     /// <summary>
     /// Write a error log entry.
@@ -465,19 +305,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable ErrorAsync(
+    public static void Error(
         this ILogger logger,
         Exception ex,
-        IFormattable message,
-        CancellationToken ct = default,
+        [InterpolatedStringHandlerArgument("logger")] ErrorInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Error,
             ex, message,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
 
@@ -492,42 +330,17 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable FatalAsync(
+    public static void Fatal(
         this ILogger logger,
-        IFormattable message,
+        [InterpolatedStringHandlerArgument("logger")] FatalInterpolatedStringHandler message,
         object? additionalData = null,
-        CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Fatal,
             message, additionalData,
-            memberName, filePath, line, ct);
-
-    /// <summary>
-    /// Write a fatal log entry.
-    /// </summary>
-    /// <param name="ex">Exception</param>
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-#if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
-    [DebuggerStepperBoundary]
-#endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable FatalAsync(
-        this ILogger logger,
-        Exception ex,
-        CancellationToken ct = default,
-        [CallerMemberName] string memberName = null!,
-        [CallerFilePath] string filePath = null!,
-        [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
-            LogLevels.Fatal,
-            ex,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 
     /// <summary>
     /// Write a fatal log entry.
@@ -540,17 +353,15 @@ public static class LoggerAsyncExtension
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    [DebuggerStepThrough]
-    public static LoggerAwaitable FatalAsync(
+    public static void Fatal(
         this ILogger logger,
         Exception ex,
-        IFormattable message,
-        CancellationToken ct = default,
+        [InterpolatedStringHandlerArgument("logger")] FatalInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.WriteAsync(
+        logger.Write(
             LogLevels.Fatal,
             ex, message,
-            memberName, filePath, line, ct);
+            memberName, filePath, line);
 }

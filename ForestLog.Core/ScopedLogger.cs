@@ -118,10 +118,13 @@ public readonly struct ScopedLogger : IScopedLogger
     public void Enter(
         object?[]? arguments)
     {
-        this.logger.Write(
-            this.logLevel, $"Enter: Parent={logger.ScopeId}", arguments,
-            this.memberName, this.filePath, this.line);
-        this.sw.Start();
+        if (this.logLevel >= this.logger.MinimumOutputLogLevel)
+        {
+            this.logger.Write(
+                this.logLevel, $"Enter: Parent={logger.ScopeId}", arguments,
+                this.memberName, this.filePath, this.line);
+            this.sw.Start();
+        }
     }
 
     /// <summary>
@@ -141,10 +144,13 @@ public readonly struct ScopedLogger : IScopedLogger
         object?[]? arguments,
         CancellationToken ct)
     {
-        await this.logger.WriteAsync(
-            this.logLevel, $"Enter: Parent={logger.ScopeId}", arguments,
-            this.memberName, this.filePath, this.line, ct);
-        this.sw.Start();
+        if (this.logLevel >= this.logger.MinimumOutputLogLevel)
+        {
+            await this.logger.WriteAsync(
+                this.logLevel, $"Enter: Parent={logger.ScopeId}", arguments,
+                this.memberName, this.filePath, this.line, ct);
+            this.sw.Start();
+        }
     }
 
     /// <summary>

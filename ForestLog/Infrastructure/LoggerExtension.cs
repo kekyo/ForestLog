@@ -16,10 +16,9 @@ using System.Threading;
 
 namespace ForestLog.Infrastructure;
 
-// Because F# does not find any internal marked extension method.
 [EditorBrowsable(EditorBrowsableState.Never)]
 [DebuggerStepThrough]
-public static class LoggerExtension
+internal static class LoggerExtension
 {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -28,7 +27,7 @@ public static class LoggerExtension
     public static void Write(
         this ILogger logger,
         LogLevels logLevel,
-        IFormattable message,
+        LoggerInterpolatedStringHandler message,
         object? additionalData,
         string memberName,
         string filePath,
@@ -51,28 +50,7 @@ public static class LoggerExtension
         this ILogger logger,
         LogLevels logLevel,
         Exception ex,
-        string memberName,
-        string filePath,
-        int line)
-    {
-        if (logLevel >= logger.MinimumOutputLogLevel)
-        {
-            logger.Write(new(
-                logLevel,
-                null, null, ex,
-                memberName, filePath, line));
-        }
-    }
-
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static void Write(
-        this ILogger logger,
-        LogLevels logLevel,
-        Exception ex,
-        IFormattable message,
+        LoggerInterpolatedStringHandler message,
         string memberName,
         string filePath,
         int line)
@@ -95,7 +73,7 @@ public static class LoggerExtension
     public static LoggerAwaitable WriteAsync(
         this ILogger logger,
         LogLevels logLevel,
-        IFormattable message,
+        LoggerInterpolatedStringHandler message,
         object? additionalData,
         string memberName,
         string filePath,
@@ -116,26 +94,7 @@ public static class LoggerExtension
         this ILogger logger,
         LogLevels logLevel,
         Exception ex,
-        string memberName,
-        string filePath,
-        int line,
-        CancellationToken ct) =>
-        logLevel >= logger.MinimumOutputLogLevel ?
-            logger.WriteAsync(new(
-                logLevel,
-                null, null, ex,
-                memberName, filePath, line), ct) :
-            default;
-
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    public static LoggerAwaitable WriteAsync(
-        this ILogger logger,
-        LogLevels logLevel,
-        Exception ex,
-        IFormattable message,
+        LoggerInterpolatedStringHandler message,
         string memberName,
         string filePath,
         int line,
