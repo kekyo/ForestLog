@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -15,21 +16,26 @@ using System.Threading.Tasks;
 
 namespace ForestLog.Infrastructure;
 
+/// <summary>
+/// Waiting log entry.
+/// </summary>
 public sealed class WaitingLogEntry
 {
-    public readonly string Facility;
     public readonly LogLevels LogLevel;
-    public readonly DateTimeOffset Timestamp;
-    public readonly int ScopeId;
-    public readonly IFormattable Message;
-    public readonly object? AdditionalData;
     public readonly string MemberName;
     public readonly string FilePath;
     public readonly int Line;
-    public readonly int ManagedThreadId;
-    public readonly int NativeThreadId;
-    public readonly int TaskId;
 
+    public string Facility { get; private set; } = "Unknown";
+    public int ScopeId { get; private set; }
+    public DateTimeOffset Timestamp { get; private set; }
+    public IFormattable Message { get; private set; }
+    public object? AdditionalData { get; private set; }
+    public int ManagedThreadId { get; private set; }
+    public int NativeThreadId { get; private set; }
+    public int TaskId { get; private set; }
+
+    private Exception? exception;
     private TaskCompletionSource<bool>? awaiter;
     private CancellationTokenRegistration ctr;
 
@@ -38,40 +44,68 @@ public sealed class WaitingLogEntry
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal WaitingLogEntry(
-        string facility,
+    public WaitingLogEntry(
         LogLevels logLevel,
-        DateTimeOffset timestamp,
-        int scopeId,
-        IFormattable message,
+        IFormattable? message,
         object? additionalData,
+        Exception? exception,
         string memberName,
         string filePath,
-        int line,
-        int managedThreadId,
-        int nativeThreadId,
-        int taskId,
-        TaskCompletionSource<bool>? awaiter,
-        CancellationToken ct)
+        int line)
     {
-        this.Facility = facility;
         this.LogLevel = logLevel;
-        this.Timestamp = timestamp;
-        this.ScopeId = scopeId;
-        this.Message = message;
+        this.Message = message!;
         this.AdditionalData = additionalData;
+        this.exception = exception;
         this.MemberName = memberName;
         this.FilePath = filePath;
         this.Line = line;
-        this.ManagedThreadId = managedThreadId;
-        this.NativeThreadId = nativeThreadId;
-        this.TaskId = taskId;
+    }
 
-        if (awaiter is { })
+    internal void UpdateAdditionals(
+        string facility, int scopeId)
+    {
+        this.Facility = facility;
+        this.ScopeId = scopeId;
+        this.Timestamp = DateTimeOffset.Now;
+        this.ManagedThreadId = Thread.CurrentThread.ManagedThreadId;
+        this.NativeThreadId = CoreUtilities.NativeThreadId;
+        this.TaskId = Task.CurrentId ?? -1;
+
+        if (this.exception != null)
         {
-            this.awaiter = awaiter;
-            this.ctr = ct.Register(() => this.awaiter.TrySetCanceled());
+            this.AdditionalData = CoreUtilities.ToExceptionDetailObject(this.exception);
+            if (this.Message == null)
+            {
+                this.Message = CoreUtilities.FormatException(this.exception);
+            }
+            this.exception = null;
         }
+    }
+
+    internal Task UpdateAdditionalsAndGetTask(
+        string facility, int scopeId, CancellationToken ct)
+    {
+        this.Facility = facility;
+        this.ScopeId = scopeId;
+        this.Timestamp = DateTimeOffset.Now;
+        this.ManagedThreadId = Thread.CurrentThread.ManagedThreadId;
+        this.NativeThreadId = CoreUtilities.NativeThreadId;
+        this.TaskId = Task.CurrentId ?? -1;
+
+        if (this.exception != null)
+        {
+            this.AdditionalData = CoreUtilities.ToExceptionDetailObject(this.exception);
+            if (this.Message == null)
+            {
+                this.Message = CoreUtilities.FormatException(this.exception);
+            }
+            this.exception = null;
+        }
+
+        this.awaiter = new();
+        this.ctr = ct.Register(() => this.awaiter.TrySetCanceled());
+        return this.awaiter.Task;
     }
 
     public bool IsAwaiting

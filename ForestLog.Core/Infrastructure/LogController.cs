@@ -316,23 +316,15 @@ public abstract class LogController : ILogController
 #endif
     [DebuggerStepThrough]
     public void Write(
-        string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, object? additionalData,
-        string memberName, string filePath, int line)
+        WaitingLogEntry logEntry,
+        string facility,
+        int scopeId)
     {
-        if (logLevel >= this.minimumOutputLogLevel &&
+        if (logEntry.LogLevel >= this.minimumOutputLogLevel &&
             !this.suspending.IsSet)
         {
-            var waitingLogEntry = new WaitingLogEntry(
-                facility, logLevel, DateTimeOffset.Now, scopeId,
-                message, additionalData,
-                memberName, filePath, line,
-                Thread.CurrentThread.ManagedThreadId,
-                CoreUtilities.NativeThreadId,
-                Task.CurrentId ?? -1,
-                null, default);
-
-            this.InternalWrite(waitingLogEntry);
+            logEntry.UpdateAdditionals(facility, scopeId);
+            this.InternalWrite(logEntry);
         }
     }
 
@@ -344,28 +336,18 @@ public abstract class LogController : ILogController
 #endif
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
-        string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, object? additionalData,
-        string memberName, string filePath, int line,
+        WaitingLogEntry logEntry,
+        string facility,
+        int scopeId,
         CancellationToken ct)
     {
-        if (logLevel >= this.minimumOutputLogLevel &&
+        if (logEntry.LogLevel >= this.minimumOutputLogLevel &&
             !this.suspending.IsSet)
         {
-            var awaiter = new TaskCompletionSource<bool>();
+            var task = logEntry.UpdateAdditionalsAndGetTask(facility, scopeId, ct);
+            this.InternalWrite(logEntry);
 
-            var waitingLogEntry = new WaitingLogEntry(
-                facility, logLevel, DateTimeOffset.Now, scopeId,
-                message, additionalData,
-                memberName, filePath, line,
-                Thread.CurrentThread.ManagedThreadId,
-                CoreUtilities.NativeThreadId,
-                Task.CurrentId ?? -1,
-                awaiter, ct);
-
-            this.InternalWrite(waitingLogEntry);
-
-            return awaiter.Task;
+            return task;
         }
         else
         {

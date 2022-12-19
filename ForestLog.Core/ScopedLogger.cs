@@ -7,7 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using ForestLog.Internal;
+using ForestLog.Infrastructure;
 using ForestLog.Tasks;
 using System;
 using System.ComponentModel;
@@ -159,19 +159,31 @@ public readonly struct ScopedLogger : IScopedLogger
     {
         if (this.sw.IsRunning)
         {
-            this.sw.Stop();
-            var elasped = this.sw.Elapsed;
-            if (ex is { })
+            bool isRunning;
+            lock (this.sw)
             {
-                this.logger.Write(
-                    this.logLevel, $"Leave with exception: Elapsed={elasped}", CoreUtilities.ToExceptionDetailObject(ex),
-                    this.memberName, this.filePath, this.line);
+                isRunning = this.sw.IsRunning;
+                if (isRunning)
+                {
+                    this.sw.Stop();
+                }
             }
-            else
+
+            if (isRunning)
             {
-                this.logger.Write(
-                    this.logLevel, $"Leave: Elapsed={elasped}", null,
-                    this.memberName, this.filePath, this.line);
+                var elasped = this.sw.Elapsed;
+                if (ex is { })
+                {
+                    this.logger.Write(
+                        this.logLevel, ex, $"Leave with exception: Elapsed={elasped}",
+                        this.memberName, this.filePath, this.line);
+                }
+                else
+                {
+                    this.logger.Write(
+                        this.logLevel, $"Leave: Elapsed={elasped}", null,
+                        this.memberName, this.filePath, this.line);
+                }
             }
         }
     }
@@ -189,25 +201,34 @@ public readonly struct ScopedLogger : IScopedLogger
     {
         if (this.sw.IsRunning)
         {
-            this.sw.Stop();
-            var elasped = this.sw.Elapsed;
-            if (ex is { })
+            bool isRunning;
+            lock (this.sw)
             {
-                return this.logger.WriteAsync(
-                    this.logLevel, $"Leave with exception: Elapsed={elasped}", CoreUtilities.ToExceptionDetailObject(ex),
-                    this.memberName, this.filePath, this.line, ct);
+                isRunning = this.sw.IsRunning;
+                if (isRunning)
+                {
+                    this.sw.Stop();
+                }
             }
-            else
+
+            if (isRunning)
             {
-                return this.logger.WriteAsync(
-                    this.logLevel, $"Leave: Elapsed={elasped}", null,
-                    this.memberName, this.filePath, this.line, ct);
+                var elasped = this.sw.Elapsed;
+                if (ex is { })
+                {
+                    return this.logger.WriteAsync(
+                        this.logLevel, ex, $"Leave with exception: Elapsed={elasped}",
+                        this.memberName, this.filePath, this.line, ct);
+                }
+                else
+                {
+                    return this.logger.WriteAsync(
+                        this.logLevel, $"Leave: Elapsed={elasped}", null,
+                        this.memberName, this.filePath, this.line, ct);
+                }
             }
         }
-        else
-        {
-            return default;
-        }
+        return default;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -239,12 +260,7 @@ public readonly struct ScopedLogger : IScopedLogger
     /// <summary>
     /// Write a log entry.
     /// </summary>
-    /// <param name="logLevel">Log level</param>
-    /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
-    /// <param name="memberName">Member name</param>
-    /// <param name="filePath">File path</param>
-    /// <param name="line">File line number</param>
+    /// <param name="logEntry">Log entry</param>
     /// <remarks>This is a low-level API interface.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -254,23 +270,13 @@ public readonly struct ScopedLogger : IScopedLogger
     [DebuggerStepperBoundary]
 #endif
     public void Write(
-        LogLevels logLevel,
-        IFormattable message,
-        object? additionalData,
-        string memberName,
-        string filePath,
-        int line) =>
-        this.logger.Write(logLevel, message, additionalData, memberName, filePath, line);
+        WaitingLogEntry logEntry) =>
+        this.logger.Write(logEntry);
 
     /// <summary>
     /// Write a log entry.
     /// </summary>
-    /// <param name="logLevel">Log level</param>
-    /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
-    /// <param name="memberName">Member name</param>
-    /// <param name="filePath">File path</param>
-    /// <param name="line">File line number</param>
+    /// <param name="logEntry">Log entry</param>
     /// <param name="ct">CancellationToken</param>
     /// <remarks>This is a low-level API interface.</remarks>
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -281,14 +287,9 @@ public readonly struct ScopedLogger : IScopedLogger
     [DebuggerStepperBoundary]
 #endif
     public LoggerAwaitable WriteAsync(
-        LogLevels logLevel,
-        IFormattable message,
-        object? additionalData,
-        string memberName,
-        string filePath,
-        int line,
+        WaitingLogEntry logEntry,
         CancellationToken ct) =>
-        this.logger.WriteAsync(logLevel, message, additionalData, memberName, filePath, line, ct);
+        this.logger.WriteAsync(logEntry, ct);
 
     /// <summary>
     /// Create new scope logger interface.

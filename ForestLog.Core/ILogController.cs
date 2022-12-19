@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Infrastructure;
 using ForestLog.Tasks;
 using System;
 using System.ComponentModel;
@@ -76,18 +77,14 @@ public interface ILogController : IDisposable
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     void Write(
-        string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, object? additionalData,
-        string memberName, string filePath, int line);
+        WaitingLogEntry logEntry, string facility, int scopeId);
 
     /// <summary>
     /// Raw level write log entry.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     LoggerAwaitable WriteAsync(
-        string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, object? additionalData,
-        string memberName, string filePath, int line,
+        WaitingLogEntry logEntry, string facility, int scopeId,
         CancellationToken ct);
 
     /// <summary>

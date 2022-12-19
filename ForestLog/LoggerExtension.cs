@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Infrastructure;
 using ForestLog.Internal;
 using System;
 using System.ComponentModel;
@@ -71,7 +72,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             logLevel,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line);
 
     /// <summary>
@@ -97,7 +98,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             logLevel,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
@@ -143,7 +144,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Debug,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line);
 
     /// <summary>
@@ -166,7 +167,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Debug,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
@@ -212,7 +213,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Trace,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line);
 
     /// <summary>
@@ -235,7 +236,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Trace,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
@@ -281,7 +282,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Information,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line);
 
     /// <summary>
@@ -304,7 +305,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Information,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
@@ -350,7 +351,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Warning,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line);
 
     /// <summary>
@@ -373,7 +374,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Warning,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
@@ -419,7 +420,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Error,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line);
 
     /// <summary>
@@ -442,7 +443,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Error,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line);
 
     //////////////////////////////////////////////////////////////////////
@@ -488,7 +489,7 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Fatal,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line);
 
     /// <summary>
@@ -511,6 +512,6 @@ public static class LoggerExtension
         [CallerLineNumber] int line = 0) =>
         logger.Write(
             LogLevels.Fatal,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line);
 }

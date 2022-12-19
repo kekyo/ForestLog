@@ -9,6 +9,7 @@
 
 namespace ForestLog
 
+open ForestLog.Infrastructure
 open ForestLog.Internal
 open System
 open System.ComponentModel

@@ -61,16 +61,8 @@ internal sealed class Logger : ILogger
 #endif
     [DebuggerStepThrough]
     public void Write(
-        LogLevels logLevel,
-        IFormattable message,
-        object? additionalData,
-        string memberName,
-        string filePath,
-        int line) =>
-        this.controller.Write(
-            this.facility, logLevel, this.scopeId,
-            message, additionalData,
-            memberName, filePath, line);
+        WaitingLogEntry logEntry) =>
+        this.controller.Write(logEntry, this.facility, this.scopeId);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,18 +72,9 @@ internal sealed class Logger : ILogger
 #endif
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
-        LogLevels logLevel,
-        IFormattable message,
-        object? additionalData,
-        string memberName,
-        string filePath,
-        int line,
+        WaitingLogEntry logEntry,
         CancellationToken ct) =>
-        this.controller.WriteAsync(
-            this.facility, logLevel, this.scopeId,
-            message, additionalData,
-            memberName, filePath, line,
-            ct);
+        this.controller.WriteAsync(logEntry, this.facility, this.scopeId, ct);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
