@@ -45,7 +45,7 @@ public sealed class LoggerAwaitableTests
         var actual = sw.Elapsed;
 
         // HACK: because accuracy depends on the environment and did not pass under Linux.
-        var eps = TimeSpan.FromMilliseconds(expected.TotalMilliseconds / 100);
+        var eps = TimeSpan.FromMilliseconds(250);
         Assert.GreaterOrEqual(actual, expected - eps);
     }
 
