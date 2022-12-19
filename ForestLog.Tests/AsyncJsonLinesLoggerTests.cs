@@ -47,7 +47,7 @@ public sealed class AsyncJsonLinesLoggerTests
             JObject? jo;
             try
             {
-                jo = Utilities.JsonSerializer.Deserialize<JObject>(jr);
+                jo = Utilities.JsonSerializer.Deserialize<JToken>(jr) as JObject;
             }
             catch (Exception ex)
             {
