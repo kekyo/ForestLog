@@ -70,7 +70,7 @@ jobs:
     # Test
 
     - name: Test
-      run: dotnet test --no-restore --verbosity normal -p:CITest=True ForestLog.sln
+      run: dotnet test --no-restore -f net6.0 --verbosity normal -p:CITest=True ForestLog.sln
       timeout-minutes: 10
 
     #-----------------------------------------------------------------------
