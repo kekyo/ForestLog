@@ -33,6 +33,8 @@ internal sealed class JsonLinesLogController : LogController
     private readonly LoggerAsyncLock locker = new();
     private readonly LoggerAsyncLock rotationLocker = new();
 
+    private bool requiredMakesSafer = true;
+
     //////////////////////////////////////////////////////////////////////
 
     public JsonLinesLogController(
@@ -280,6 +282,9 @@ internal sealed class JsonLinesLogController : LogController
                 {
                     fi.Delete();
                 }
+
+                // (Will create new file)
+                this.requiredMakesSafer = false;
             }
             catch (Exception ex)
             {
@@ -321,19 +326,35 @@ internal sealed class JsonLinesLogController : LogController
         tw.NewLine = "\n";
         var jw = new JsonTextWriter(tw);
 
-        // Will make safer by adding a newline into jsonl file when last output was broken.
-#if NET35 || NET40
-        tw.WriteLine();
-        tw.Flush();
-#else
-        static async LoggerAwaitable MakeSaferByAddingNewLineAsync(TextWriter tw)
-        {
-            await tw.WriteLineAsync();
-            await tw.FlushAsync();
-        }
-
-        var lastOffloadedTask = MakeSaferByAddingNewLineAsync(tw);
+#if !(NET35 || NET40)
+        LoggerAwaitable lastOffloadedTask;
 #endif
+
+        if (this.requiredMakesSafer)
+        {
+            this.requiredMakesSafer = false;
+
+            // Will make safer by adding a newline into jsonl file when last output was broken.
+#if NET35 || NET40
+            tw.WriteLine();
+            tw.Flush();
+#else
+            static async LoggerAwaitable MakeSaferByAddingNewLineAsync(TextWriter tw)
+            {
+                await tw.WriteLineAsync();
+                await tw.FlushAsync();
+            }
+
+            lastOffloadedTask = MakeSaferByAddingNewLineAsync(tw);
+#endif
+        }
+#if !(NET35 || NET40)
+        else
+        {
+            lastOffloadedTask = default;
+        }
+#endif
+
         do
         {
             JsonSerializableLogEntry? logEntry = null;
@@ -466,6 +487,9 @@ internal sealed class JsonLinesLogController : LogController
             }
             catch (Exception ex)
             {
+                // (Will recover error line)
+                this.requiredMakesSafer = true;
+
                 Trace.WriteLine(
                     $"JsonLineLoggerCore: {ex.GetType().FullName}: {ex.Message}");
             }
