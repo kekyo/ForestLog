@@ -228,6 +228,22 @@ public async Task OutputAsync(ILogger logger)
 
 ----
 
+## Delayed evaluation
+
+We can use the `Func<T>` to delay the evaluation of the values to be included in the log:
+
+```csharp
+// If it needs a large cost to calculate:
+logger.Information(
+    $"Calculated total density: {() => this.CalculateDensity(123, 456)}");
+```
+
+* This expression is actually called when the log is output on worker thread context.
+  It isn't evaluate when the log level is less than the output.
+* This feature availables only C# 10 or upper compiler.
+
+----
+
 ## Scoped output
 
 The scoped output features will apply log entry relations with `scopeId` identity on log key.

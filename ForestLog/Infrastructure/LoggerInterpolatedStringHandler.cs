@@ -35,7 +35,12 @@ public struct LoggerInterpolatedStringHandler : IFormattable
         if (logLevel >= logger.MinimumOutputLogLevel)
         {
             cont = true;
-            this.arguments = new(formattedCount * 2);
+
+            // formattedCount: 0, 1,  1,  1,   2
+            // capacity:       1, 3,  3,  3,   5
+            // items:          L, LF, FL, LFL, FLF
+            var capacity = formattedCount * 2 + 1;
+            this.arguments = new(capacity);
         }
         else
         {
@@ -44,6 +49,8 @@ public struct LoggerInterpolatedStringHandler : IFormattable
         }
     }
 
+    //////////////////////////////////////////////////////////////////////
+
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -51,6 +58,8 @@ public struct LoggerInterpolatedStringHandler : IFormattable
     public void AppendLiteral(string literal) =>
         this.arguments!.Add(
             new LoggerInterpolatedStringArgument<string>(literal, null));
+
+    //////////////////////////////////////////////////////////////////////
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,6 +76,26 @@ public struct LoggerInterpolatedStringHandler : IFormattable
     public void AppendFormatted<T>(T value, string format) =>
         this.arguments!.Add(
             (format == null && value is IFormattable f) ? f : new LoggerInterpolatedStringArgument<T>(value, format));
+
+    //////////////////////////////////////////////////////////////////////
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void AppendFormatted<T>(Func<T> delayed) =>
+        this.arguments!.Add(
+            new LoggerDelayedInterpolatedStringArgument<T>(delayed, null));
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void AppendFormatted<T>(Func<T> delayed, string format) =>
+        this.arguments!.Add(
+            new LoggerDelayedInterpolatedStringArgument<T>(delayed, format));
+
+    //////////////////////////////////////////////////////////////////////
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override string ToString()

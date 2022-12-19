@@ -14,36 +14,24 @@ using System.Runtime.CompilerServices;
 namespace ForestLog.Infrastructure;
 
 [DebuggerStepThrough]
-internal sealed class LoggerInterpolatedStringArgument<T> : IFormattable
+internal sealed class LoggerDelayedInterpolatedStringArgument<T> : IFormattable
 {
-    public readonly T Value;
+    public readonly Func<T> Delayed;
     public readonly string? Format;
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public LoggerInterpolatedStringArgument(
-        T value, string? format)
+    public LoggerDelayedInterpolatedStringArgument(Func<T> delayed, string? format)
     {
-        this.Value = value;
+        this.Delayed = delayed;
         this.Format = format;
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    internal static string ToString(
-        T value, string? format, IFormatProvider? formatProvider) =>
-        value switch
-        {
-            IFormattable f => f.ToString(format, formatProvider),
-            _ => value?.ToString() ?? string.Empty,
-        };
-
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
     public string ToString(
         string? format, IFormatProvider? formatProvider) =>
-        ToString(this.Value, this.Format, formatProvider);
+        LoggerInterpolatedStringArgument<T>.ToString(this.Delayed(), this.Format, formatProvider);
 }
