@@ -37,7 +37,7 @@ public sealed class AsyncJsonLinesLoggerTests
                 break;
             }
 
-            if (string.IsNullOrWhiteSpace(line))
+            if (CoreUtilities.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
@@ -71,7 +71,25 @@ public sealed class AsyncJsonLinesLoggerTests
         return results;
     }
 
-    public static async LoggerAwaitable<(JObject?[] results, int files)> LogTestBlockAsync(
+    public readonly struct LogTestBlockAsyncResult
+    {
+        public readonly JObject?[] results;
+        public readonly int files;
+
+        public LogTestBlockAsyncResult(JObject?[] results, int files)
+        {
+            this.results = results;
+            this.files = files;
+        }
+
+        public void Deconstruct(out JObject?[] results, out int files)
+        {
+            results = this.results;
+            files = this.files;
+        }
+    }
+
+    public static async LoggerAwaitable<LogTestBlockAsyncResult> LogTestBlockAsync(
         Func<ILogController, ILogger, LoggerAwaitable> action,
         LogLevels maximumOutputLogLevel = LogLevels.Debug,
         long sizeToNextFile = 1 * 1024 * 1024,
@@ -105,7 +123,7 @@ public sealed class AsyncJsonLinesLoggerTests
             var paths = Directory.GetFiles(
                 basePath, "log*.jsonl", SearchOption.AllDirectories);
 
-            return (paths.
+            return new(paths.
                 SelectMany(path => LoadLines(path)).
                 ToArray(), paths.Length);
         }

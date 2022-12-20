@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
@@ -31,7 +32,7 @@ public sealed class LoggerAwaitableTTests
     public async Task WrappedFromTaskValue()
     {
         var expected = 123;
-        var awaitable = LoggerAwaitable.FromTask(Task.FromResult(expected));
+        var awaitable = LoggerAwaitable.FromTask(CoreUtilities.FromResult(expected));
 
         var actual = await awaitable;
 
@@ -42,7 +43,7 @@ public sealed class LoggerAwaitableTTests
 
     private static async Task<T> DelayByTask<T>(T value)
     {
-        await Task.Delay(100);
+        await CoreUtilities.Delay(100);
         return value;
     }
 
@@ -73,7 +74,7 @@ public sealed class LoggerAwaitableTTests
         Assert.AreEqual(expected3, actual3);
 
         var expected4 = 456;
-        var actual4 = await LoggerAwaitable.FromTask(Task.FromResult(expected4));
+        var actual4 = await LoggerAwaitable.FromTask(CoreUtilities.FromResult(expected4));
 
         Assert.AreEqual(expected4, actual4);
     }
@@ -152,7 +153,7 @@ public sealed class LoggerAwaitableTTests
     {
         static async Task<int> ThrowAfterDelay()
         {
-            await Task.Delay(500);
+            await CoreUtilities.Delay(500);
             throw new ApplicationException();
         }
 
@@ -174,7 +175,7 @@ public sealed class LoggerAwaitableTTests
     {
         static async ValueTask<int> ThrowAfterDelay()
         {
-            await Task.Delay(500);
+            await CoreUtilities.Delay(500);
             throw new ApplicationException();
         }
 

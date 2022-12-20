@@ -88,7 +88,7 @@ internal sealed class JsonLinesLogController : LogController
             {
                 break;
             }
-            if (Utilities.IsNullOrWhiteSpace(line))
+            if (CoreUtilities.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
@@ -145,12 +145,12 @@ internal sealed class JsonLinesLogController : LogController
         using var __ = this.rotationLocker.UnsafeLock();
 
         var preloadPathList =
-            Utilities.EnumerateFiles(
+            CoreUtilities.EnumerateFiles(
                 this.basePath, "log*.jsonl", SearchOption.AllDirectories).
             Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
             ToArray();
 
-        var preloadResultsNotOrdered = (await Utilities.WhenAll(preloadPathList.
+        var preloadResultsNotOrdered = (await CoreUtilities.WhenAll(preloadPathList.
             Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
             SelectMany(results => results).
             ToArray();
@@ -168,13 +168,13 @@ internal sealed class JsonLinesLogController : LogController
         {
             var remainsPathList = new[] { Path.Combine(this.basePath, "log.jsonl") }.
                 Concat(
-                    Utilities.EnumerateFiles(
+                    CoreUtilities.EnumerateFiles(
                         this.basePath, "log*.jsonl", SearchOption.AllDirectories).
                     Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
                     Except(preloadPathList)).
                 ToArray();
 
-            remainsResultsNotOrdered = (await Utilities.WhenAll(remainsPathList.
+            remainsResultsNotOrdered = (await CoreUtilities.WhenAll(remainsPathList.
                 Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
                 SelectMany(results => results).
                 ToArray();
@@ -204,7 +204,7 @@ internal sealed class JsonLinesLogController : LogController
     private static CandidatePaths GetCandidatePaths(
         string basePath, int maximumLogFiles)
     {
-        var indices = Utilities.EnumerateFiles(
+        var indices = CoreUtilities.EnumerateFiles(
             basePath, "log*.jsonl", SearchOption.AllDirectories).
             Select(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var index) ? (int?)index : null).
             Where(index => index.HasValue).
@@ -235,8 +235,11 @@ internal sealed class JsonLinesLogController : LogController
     }
 
 #if NET35 || NET40
-    protected override LoggerAwaitable OnAvailableAsync(WaitingLogEntry waitingLogEntry) =>
-        Task.Factory.StartNew(() => this.OnAvailable(waitingLogEntry));
+    protected override LoggerAwaitable OnAvailableAsync(WaitingLogEntry waitingLogEntry)
+    {
+        this.OnAvailable(waitingLogEntry);
+        return default;
+    }
 
     private void OnAvailable(WaitingLogEntry waitingLogEntry)
 #else

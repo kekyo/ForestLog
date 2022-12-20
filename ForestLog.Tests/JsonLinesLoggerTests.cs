@@ -37,7 +37,7 @@ public sealed class JsonLinesLoggerTests
                 break;
             }
 
-            if (string.IsNullOrWhiteSpace(line))
+            if (CoreUtilities.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
@@ -224,7 +224,7 @@ public sealed class JsonLinesLoggerTests
                 action(logger);
 
                 // Wait for flushing.
-                await Task.Delay(500);
+                await CoreUtilities.Delay(1000);
 
                 return await logController.QueryLogEntriesAsync(
                     maximumLogEntries, predicate, default);
