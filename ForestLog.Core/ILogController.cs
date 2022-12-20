@@ -56,7 +56,7 @@ public interface ILogController : IDisposable
     /// <summary>
     /// Suspend log controller.
     /// </summary>
-    /// <remarks>Will writes queued log entries in log files and transition to susupend.</remarks>
+    /// <remarks>Will flush queued log entries in log files and transition to susupend.</remarks>
     void Suspend();
 
     /// <summary>
@@ -70,22 +70,7 @@ public interface ILogController : IDisposable
     /// </summary>
     /// <param name="facility">Facility name.</param>
     /// <returns>Logger interface</returns>
-    ILogger CreateLogger(string facility = "Unknown");
-
-    /// <summary>
-    /// Raw level write log entry.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    void Write(
-        WaitingLogEntry logEntry, string facility, int scopeId);
-
-    /// <summary>
-    /// Raw level write log entry.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    LoggerAwaitable WriteAsync(
-        WaitingLogEntry logEntry, string facility, int scopeId,
-        CancellationToken ct);
+    ILogger CreateLogger(string facility = "Default");
 
     /// <summary>
     /// Query log entries now.

@@ -7,7 +7,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using ForestLog.Internal;
 using ForestLog.Tasks;
 using System;
 using System.Collections.Generic;
@@ -190,7 +189,7 @@ public abstract class LogController : ILogController
     /// <summary>
     /// Suspend log controller.
     /// </summary>
-    /// <remarks>Will writes queued log entries in log files and transition to susupend.</remarks>
+    /// <remarks>Will flush queued log entries in log files and transition to susupend.</remarks>
     public void Suspend()
     {
         Trace.WriteLine("LogController: Suspending...");
@@ -320,9 +319,13 @@ public abstract class LogController : ILogController
         string facility,
         int scopeId)
     {
-        if (logEntry.LogLevel >= this.minimumOutputLogLevel &&
-            !this.suspending.IsSet)
+        if (!this.suspending.IsSet)
         {
+            if (logEntry.LogLevel < this.minimumOutputLogLevel)
+            {
+                throw new ArgumentException($"Invalid log level: {logEntry.LogLevel}");
+            }
+
             logEntry.UpdateAdditionals(facility, scopeId);
             this.InternalWrite(logEntry);
         }
@@ -341,9 +344,13 @@ public abstract class LogController : ILogController
         int scopeId,
         CancellationToken ct)
     {
-        if (logEntry.LogLevel >= this.minimumOutputLogLevel &&
-            !this.suspending.IsSet)
+        if (!this.suspending.IsSet)
         {
+            if (logEntry.LogLevel < this.minimumOutputLogLevel)
+            {
+                throw new ArgumentException($"Invalid log level: {logEntry.LogLevel}");
+            }
+
             var task = logEntry.UpdateAdditionalsAndGetTask(facility, scopeId, ct);
             this.InternalWrite(logEntry);
 

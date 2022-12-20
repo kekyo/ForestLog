@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace ForestLog.Infrastructure;
 
-// Because F# does not find any internal marked extension method.
+// Because F# could not find any internal marked extension method.
 [EditorBrowsable(EditorBrowsableState.Never)]
 [DebuggerStepThrough]
 public static class LoggerExtension
