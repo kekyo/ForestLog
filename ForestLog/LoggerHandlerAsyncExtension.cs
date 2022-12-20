@@ -7,13 +7,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Handlers;
+using ForestLog.Infrastructure;
+using ForestLog.Tasks;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using ForestLog.Infrastructure;
-using ForestLog.Internal;
-using ForestLog.Tasks;
 
 namespace ForestLog;
 

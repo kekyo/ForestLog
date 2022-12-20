@@ -12,12 +12,12 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace ForestLog.Infrastructure;
+namespace ForestLog.Handlers;
 
 [InterpolatedStringHandler]
 [DebuggerStepThrough]
 [EditorBrowsable(EditorBrowsableState.Never)]
-public struct InformationInterpolatedStringHandler : IFormattable
+public struct WarningInterpolatedStringHandler : IFormattable
 {
     private readonly LoggerInterpolatedStringHandler handler;
 
@@ -25,11 +25,11 @@ public struct InformationInterpolatedStringHandler : IFormattable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public InformationInterpolatedStringHandler(
+    public WarningInterpolatedStringHandler(
         int literalLength, int formattedCount,
         ILogger logger,
         out bool cont) =>
-        this.handler = new(literalLength, formattedCount, logger, LogLevels.Information, out cont);
+        this.handler = new(literalLength, formattedCount, logger, LogLevels.Warning, out cont);
 
     //////////////////////////////////////////////////////////////////////
 

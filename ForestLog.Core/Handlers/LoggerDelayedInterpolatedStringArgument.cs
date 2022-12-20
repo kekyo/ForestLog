@@ -11,7 +11,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace ForestLog.Infrastructure;
+namespace ForestLog.Handlers;
 
 [DebuggerStepThrough]
 internal sealed class LoggerDelayedInterpolatedStringArgument<T> : IFormattable
