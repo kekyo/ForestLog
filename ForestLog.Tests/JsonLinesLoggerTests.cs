@@ -21,6 +21,9 @@ using System.Threading.Tasks;
 
 namespace ForestLog;
 
+// Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CS1998
+
 public sealed class JsonLinesLoggerTests
 {
     public static IEnumerable<JObject?> LoadLines(string path)
@@ -325,6 +328,64 @@ public sealed class JsonLinesLoggerTests
 
         Assert.AreEqual(Math.Min(max, 10), entries.Length);
         Assert.IsTrue(entries.All(e => e.Message.StartsWith("CCC")));
+    }
+
+    [Test]
+    public async Task ReadConcurrent()
+    {
+        var basePath = Path.Combine(
+            Path.GetDirectoryName(typeof(JsonLinesLoggerTests).Assembly.Location)!,
+            $"logs_{Guid.NewGuid():N}");
+
+        if (!Directory.Exists(basePath))
+        {
+            try
+            {
+                Directory.CreateDirectory(basePath);
+            }
+            catch
+            {
+            }
+        }
+
+        try
+        {
+            using (var logController = LogController.Factory.CreateJsonLines(
+                basePath, LogLevels.Debug, 10 * 1024, 10))
+            {
+                async Task ProduceLogsAsync()
+                {
+                    var logger = logController.CreateLogger();
+                    for (var index = 0; index < 2000; index++)
+                    {
+                        logger.Debug($"AAA{index}BBB");
+                        await CoreUtilities.Delay(1);
+                    }
+                }
+
+                async Task QueryLogsAsync(Task targetTask)
+                {
+                    while (!targetTask.IsCompleted)
+                    {
+                        var result = await logController.QueryLogEntriesAsync(
+                            logEntry => true);
+                        Assert.IsTrue(result.Length >= 1);
+                        await CoreUtilities.Delay(1000);
+                    }
+                }
+
+                var task = ProduceLogsAsync();
+
+                await CoreUtilities.WhenAll(new[] { task, QueryLogsAsync(task) });
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(basePath))
+            {
+                Directory.Delete(basePath, true);
+            }
+        }
     }
 
     //////////////////////////////////////////////////////////

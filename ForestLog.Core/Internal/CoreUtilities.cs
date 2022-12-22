@@ -116,6 +116,16 @@ internal static class CoreUtilities
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+    public static Task WhenAll(IEnumerable<Task> enumerable) =>
+#if NET35 || NET40
+        TaskEx.WhenAll(enumerable);
+#else
+        Task.WhenAll(enumerable);
+#endif
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
     public static Task<T[]> WhenAll<T>(IEnumerable<Task<T>> enumerable) =>
 #if NET35 || NET40
         TaskEx.WhenAll(enumerable);
