@@ -28,12 +28,6 @@ internal static class CoreUtilities
     public static IFormattable FormatException(Exception ex) =>
         $"{ex.GetType().FullName}: {ex.Message}";
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public static object ToExceptionDetailObject(Exception ex) =>
-        new { Name = ex.GetType().FullName, Message = ex.Message };
-
     [DllImport("kernel32")]
     private static extern int GetCurrentThreadId();
 

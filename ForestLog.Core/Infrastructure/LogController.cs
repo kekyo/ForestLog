@@ -35,6 +35,8 @@ public abstract class LogController : ILogController
     private readonly ManualResetEventSlim suspended = new();
     private readonly ManualResetEventSlim resume = new();
 
+    private readonly Func<Exception, object> toExceptionObject;
+
     private Task worker;
     private int scopeIdCount;
 
@@ -47,6 +49,7 @@ public abstract class LogController : ILogController
     protected LogController(LogLevels minimumOutputLogLevel)
     {
         this.minimumOutputLogLevel = minimumOutputLogLevel;
+        this.toExceptionObject = this.ToExceptionObject;
         this.worker = Task.Factory.StartNew(
             this.WorkerEntry,
             TaskCreationOptions.LongRunning);
@@ -292,6 +295,8 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
+    protected abstract object ToExceptionObject(Exception ex);
+
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -327,7 +332,9 @@ public abstract class LogController : ILogController
                 throw new ArgumentException($"Invalid log level: {logEntry.LogLevel}");
             }
 
-            logEntry.UpdateAdditionals(facility, scopeId, parentScopeId);
+            logEntry.UpdateAdditionals(
+                facility, scopeId, parentScopeId,
+                this.toExceptionObject);
             this.InternalWrite(logEntry);
         }
     }
@@ -353,7 +360,10 @@ public abstract class LogController : ILogController
                 throw new ArgumentException($"Invalid log level: {logEntry.LogLevel}");
             }
 
-            var task = logEntry.UpdateAdditionalsAndGetTask(facility, scopeId, parentScopeId, ct);
+            var task = logEntry.UpdateAdditionalsAndGetTask(
+                facility, scopeId, parentScopeId,
+                this.toExceptionObject,
+                ct);
             this.InternalWrite(logEntry);
 
             return task;

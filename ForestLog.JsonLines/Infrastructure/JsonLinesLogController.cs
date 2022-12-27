@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -174,11 +175,20 @@ internal sealed class JsonLinesLogController : LogController
 
     //////////////////////////////////////////////////////////////////////
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    protected override object ToExceptionObject(Exception ex) =>
+        Utilities.CreateExceptionObject(ex, new());
+
     private readonly struct CandidatePaths
     {
         public readonly string BackupPath;
         public readonly string[] RemovePaths;
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public CandidatePaths(string backupPath, string[] removePaths)
         {
             this.BackupPath = backupPath;

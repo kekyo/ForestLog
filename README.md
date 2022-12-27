@@ -2,7 +2,7 @@
 
 ![ForestLog](Images/ForestLog.100.png)
 
-ForestLog - A minimalist logger interface.
+ForestLog - A minimalist structuring logger interface binds on Json Lines.
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
@@ -15,11 +15,11 @@ Minimum packages:
 | ForestLog | [![NuGet ForestLog](https://img.shields.io/nuget/v/ForestLog.svg?style=flat)](https://www.nuget.org/packages/ForestLog) |
 | ForestLog.JsonLines | [![NuGet ForestLog.JsonLines](https://img.shields.io/nuget/v/ForestLog.JsonLines.svg?style=flat)](https://www.nuget.org/packages/ForestLog.JsonLines) |
 
-3rd party bridging:
+3rd party logger binding:
 
 | Package  | NuGet                                                                                                                |
 |:---------|:---------------------------------------------------------------------------------------------------------------------|
-| ForestLog.Extensions.Logging | [![NuGet ForestLog.Extensions.Logging](https://img.shields.io/nuget/v/ForestLog.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/ForestLog.Extensions.Logging) |
+| ForestLog.Extensions.Logging (ASP.NET Core) | [![NuGet ForestLog.Extensions.Logging](https://img.shields.io/nuget/v/ForestLog.Extensions.Logging.svg?style=flat)](https://www.nuget.org/packages/ForestLog.Extensions.Logging) |
 | ForestLog.MQTTnet312 | [![NuGet ForestLog.MQTTnet312](https://img.shields.io/nuget/v/ForestLog.MQTTnet312.svg?style=flat)](https://www.nuget.org/packages/ForestLog.MQTTnet312) |
 
 ----
@@ -28,10 +28,10 @@ Minimum packages:
 
 * TODO: Still under construction...
 
-A minimalist logger interface, formatted as [Json Lines (`*.jsonl`).](https://jsonlines.org/)
+A minimalist structuring logger interface, binds on [Json Lines (`*.jsonl`).](https://jsonlines.org/)
 
 It provides the information required for logging with a simple interface and minimal configuration.
-Eliminates complex configurations and maintenance labor.
+Flexible and eliminates complex configurations and maintenance labor.
 
 ### Operating Environment
 
@@ -78,31 +78,14 @@ var arg1 = 123;
 var arg2 = 456;
 logger.Debug($"Always using string interpolation: {arg1}");
 logger.Trace($"Always using string interpolation: {arg2}");
-
-try
-{
-    throw new ApplicationException("Failed a operation.");
-}
-catch (Exception ex)
-{
-    logger.Error(ex);
-}
-
-// Write log entry with additional data:
-logger.Information($"See additional data below",
-    new {
-        Amount = 123,
-        Message = "ABC",
-        NameOfProduct = "PAC-MAN quarter",
-    });
 ```
 
-Output to (pseudo json formatted from jsonl):
+Result in base directory `log.jsonl` (Json Lines format):
 
 ```json
 {
     "id": "0a913e2e-4ba7-4606-b703-2c9eccc9d217",
-    "facility": "Unknown",
+    "facility": "default",
     "logLevel": "debug",
     "timestamp": "2022-12-06T09:27:04.5451256+09:00",
     "scopeId": 1,
@@ -117,7 +100,7 @@ Output to (pseudo json formatted from jsonl):
 }
 {
     "id": "31b4709f-f7f5-45b5-9381-75f64e23efce",
-    "facility": "Unknown",
+    "facility": "default",
     "logLevel": "trace",
     "timestamp": "2022-12-06T09:27:04.5473678+09:00",
     "scopeId": 1,
@@ -130,46 +113,11 @@ Output to (pseudo json formatted from jsonl):
     "taskId": -1,
     "processId": 43608
 }
-{
-    "id": "5848c701-0190-453a-83b7-271023306d4a",
-    "facility": "Unknown",
-    "logLevel": "error",
-    "timestamp": "2022-12-06T09:56:17.968195+09:00",
-    "scopeId": 1,
-    "message": "System.ApplicationException: Failed a operation.",
-    "additionalData": {
-        "name": "System.ApplicationException",
-        "message": "Failed a operation."
-    },
-    "memberName": "PurchaseProductAsync",
-    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
-    "line": 238,
-    "managedThreadId": 16,
-    "nativeThreadId": 11048,
-    "taskId": -1,
-    "processId": 43608
-}
-{
-    "id": "e453d20f-e1cb-4464-b189-833153237e5b",
-    "facility": "Unknown",
-    "logLevel": "information",
-    "timestamp": "2022-12-08T10:07:00.2802106+09:00",
-    "scopeId": 1,
-    "message": "See additional data below",
-    "additionalData": {
-        "amount": 123,
-        "message": "ABC",
-        "nameOfProduct": "PAC-MAN quarter"
-    },
-    "memberName": "PurchaseProductAsync",
-    "filePath": "D:\\Projects\\AwsomeItemSite\\AwsomeItemSite.cs",
-    "line": 242,
-    "managedThreadId": 16,
-    "nativeThreadId": 11048,
-    "taskId": -1,
-    "processId": 43608
-}
 ```
+
+----
+
+## Indicate explicit log level
 
 The log level values are:
 
@@ -178,15 +126,91 @@ The log level values are:
 // This order affects `MinimumOutputLogLevel` limitation.
 public enum LogLevels
 {
-    Debug,
-    Trace,
-    Information,
-    Warning,
-    Error,
-    Fatal,
-    Ignore,   // <-- Will ignore any log output.
+    Debug,       // |
+    Trace,       // |
+    Information, // |
+    Warning,     // |
+    Error,       // |
+    Fatal,       // v Most important
+    Ignore,      // <-- Will ignore any log output.
+}
+
+// Write log with log level variables:
+var level1 = LogLevels.Debug;
+logger.Log(level1, $"Debugging enabled.");
+
+var level2 = LogLevels.Warning;
+logger.Log(level2, $"Failed the transaction.");
+```
+
+----
+
+## Attach any exceptions
+
+The interfaces have feature for exception attachable:
+
+```csharp
+try
+{
+    throw new ApplicationException("Failed a operation.");
+}
+catch (Exception ex)
+{
+    // (There are also overloads that specify separate messages.)
+    logger.Error(ex);
 }
 ```
+
+Result:
+
+```json
+{
+    "logLevel": "error",
+    "message": "System.ApplicationException: Failed a operation.",
+    "additionalData": {
+        "name": "System.ApplicationException",
+        "message": "Failed a operation.",
+        "stackFrames": [
+            "at AwsomeItemSite.Transaction.TransactAsync() at D:\\Projects\\AwsomeItemSite\\Transaction.cs:line 55"
+        ],
+        "innerExceptions": []
+    },
+    // ...
+}
+```
+
+----
+
+## Attach additional structured data
+
+You can output with any additional instances:
+
+```csharp
+// Write log entry with additional data:
+logger.Information($"See additional data below",
+    new {
+        Amount = 123,
+        Message = "ABC",
+        NameOfProduct = "PAC-MAN quarter",
+    });
+```
+
+Result:
+
+```json
+{
+    "message": "See additional data below",
+    "additionalData": {
+        "amount": 123,
+        "message": "ABC",
+        "nameOfProduct": "PAC-MAN quarter"
+    },
+    // ...
+}
+```
+
+The instance will be serialized by [NewtonSoft.Json](https://json.net/),
+so you can use your existing knowledge to customize the Json representation.
 
 ----
 
@@ -255,7 +279,7 @@ public void Scope(ILogger parentLogger)
     parentLogger.TraceScope(logger =>
     {
         logger.Debug($"Output in child scope.");
-        logger.Warinig($"Same child scope.");
+        logger.Warning($"Same child scope.");
     });
 }
 
@@ -264,7 +288,7 @@ public Task ScopeAsync(ILogger parentLogger)
     return parentLogger.TraceScopeAsync(async logger =>
     {
         logger.Debug($"Output in child scope.");
-        logger.Warinig($"Same child scope.");
+        logger.Warning($"Same child scope.");
     });
 }
 ```
@@ -343,7 +367,7 @@ Result:
 }
 ```
 
-Leave with exception:
+When leave with exception:
 
 ```json
 {
@@ -354,6 +378,10 @@ Leave with exception:
     "additionalData": {
         "name": "System.ApplicationException",
         "message": "Application might has invalid state..."
+        "stackFrames": [
+            "at AwsomeItemSite.Transaction.TransactAsync() at D:\\Projects\\AwsomeItemSite\\Transaction.cs:line 55"
+        ],
+        "innerExceptions": []
     },
     // ...
 }
@@ -364,24 +392,26 @@ Alternatively, you can use `IDisposable` to define RAII-like scopes:
 ```csharp
 public void Scope(ILogger parentLogger)
 {
-    using var logger = parentLogger.TraceScope();
-
-    logger.Debug($"Output in child scope.");
-    logger.Warinig($"Same child scope.");
+    using (var logger = parentLogger.TraceScope())
+    {
+        logger.Debug($"Output in child scope.");
+        logger.Warning($"Same child scope.");
+    }
 }
 
 public async Task ScopeAsync(ILogger parentLogger)
 {
-    using var logger = await parentLogger.TraceScopeAsync();
-
-    logger.Debug($"Output in child scope.");
-    logger.Warinig($"Same child scope.");
+    using (var logger = await parentLogger.TraceScopeAsync())
+    {
+        logger.Debug($"Output in child scope.");
+        logger.Warning($"Same child scope.");
+    }
 }
 ```
 
 If you are familiar with the C# language, you may find this method easier to write.
 However, that the logger does not record the contents of both the return value and exception details when it occurs.
-(the "Leave" message is recorded when the exception occurs and the scope is exited).
+(the "Leave" only message is recorded when the exception occurs and the scope is exited).
 
 ----
 
@@ -401,6 +431,9 @@ using var logController = LogController.Factory.CreateJsonLines(
 Result:
 
 ![Applied log size configuration](Images/logs_directory.png)
+
+The current log file to be appended is always `log.jsonl`.
+When the file size is exceeded, it is renamed to a numbered file and a new `log.json` file is generated.
 
 Enable log file rotation:
 
@@ -438,21 +471,24 @@ public sealed class MainActivity
 
     protected override void OnPause()
     {
+        // Suspend log controller.
         this.logController.Suspend();
+
         base.OnPause();
     }
 
     protected override void OnResume()
     {
         base.OnResume();
+
+        // Resume log controller.
         this.logController.Resume();
     }
 }
 ```
 
-* `Suspend()` method writes all queued log entries into the log files (will block while completed).
-  * After that, any logging request will be ignored when before `Resume()` is called.
-* `Resume()` method releases the above.
+`Suspend()` method writes all queued log entries into the log files (will block while completed).
+After that, any logging request will be ignored when before `Resume()` is called.
 
 ----
 
@@ -481,9 +517,9 @@ LogEntry[] importantLogs = await logController.QueryLogEntriesAsync(
 
 ----
 
-## 3rd party logger bridging
+## 3rd party logger binding
 
-### ASP.NET Core bridge configuration
+### ASP.NET Core binding configuration
 
 Install [ForestLog.Extensions.Logging](https://www.nuget.org/packages/ForestLog.Extensions.Logging) package,
 and configure using with `AddForestLog()` method extension:
@@ -509,7 +545,7 @@ var webApplication = builder.Build();
 * Yes, it is implemented for `Microsoft.Extensions.Logging` interfaces.
   So you can apply this package to ASP.NET Core, Entity Framework Core and any other projects.
 
-### MQTTnet 3.1.2 bridge configuration
+### MQTTnet 3.1.2 binding configuration
 
 Install [ForestLog.MQTTnet312](https://www.nuget.org/packages/ForestLog.MQTTnet312) package,
 and uses `ForestLog.MqttNetLogger` class:

@@ -55,7 +55,7 @@ internal sealed class JsonSerializableLogEntry : LogEntry
         base(
             waitingLogEntry,
             waitingLogEntry.Message.ToString(null, CultureInfo.InvariantCulture),
-            waitingLogEntry.AdditionalData is { } ad ? JToken.FromObject(ad) : null,
+            waitingLogEntry.AdditionalData is { } ad ? JToken.FromObject(ad, Utilities.JsonSerializer) : null,
             Utilities.ProcessId)
     {
     }

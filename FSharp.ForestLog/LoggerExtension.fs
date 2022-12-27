@@ -41,7 +41,12 @@ module public LoggerExtension =
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(logLevel, message, additionalData, memberName, filePath, line);
+            logger.Write(new WaitingLogEntry(
+                logLevel,
+                message,
+                additionalData,
+                null,
+                memberName, filePath, line));
 
         /// <summary>
         /// Write a log entry.
@@ -58,11 +63,12 @@ module public LoggerExtension =
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(
+            logger.Write(new WaitingLogEntry(
                 logLevel,
-                CoreUtilities.FormatException(ex),
-                CoreUtilities.ToExceptionDetailObject(ex),
-                memberName, filePath, line);
+                null,
+                null,
+                ex,
+                memberName, filePath, line));
 
         /// <summary>
         /// Write a log entry.
@@ -81,9 +87,11 @@ module public LoggerExtension =
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(
+            logger.Write(new WaitingLogEntry(
                 logLevel,
-                message, CoreUtilities.ToExceptionDetailObject(ex),
-                memberName, filePath, line);
+                message,
+                null,
+                ex,
+                memberName, filePath, line));
 
         //////////////////////////////////////////////////////////////////////

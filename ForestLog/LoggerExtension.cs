@@ -8,7 +8,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using ForestLog.Infrastructure;
-using ForestLog.Internal;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;

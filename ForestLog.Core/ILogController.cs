@@ -70,7 +70,7 @@ public interface ILogController : IDisposable
     /// </summary>
     /// <param name="facility">Facility name.</param>
     /// <returns>Logger interface</returns>
-    ILogger CreateLogger(string facility = "Default");
+    ILogger CreateLogger(string facility = "default");
 
     /// <summary>
     /// Query log entries now.

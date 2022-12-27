@@ -26,7 +26,7 @@ public sealed class WaitingLogEntry
     public readonly string FilePath;
     public readonly int Line;
 
-    public string Facility { get; private set; } = "Unknown";
+    public string Facility { get; private set; } = "unknown";
     public int ScopeId { get; private set; }
     public int ParentScopeId { get; private set; }
     public DateTimeOffset Timestamp { get; private set; }
@@ -64,7 +64,8 @@ public sealed class WaitingLogEntry
     }
 
     internal void UpdateAdditionals(
-        string facility, int scopeId, int parentScopeId)
+        string facility, int scopeId, int parentScopeId,
+        Func<Exception, object> eobuilder)
     {
         this.Facility = facility;
         this.ScopeId = scopeId;
@@ -76,17 +77,19 @@ public sealed class WaitingLogEntry
 
         if (this.exception != null)
         {
-            this.AdditionalData = CoreUtilities.ToExceptionDetailObject(this.exception);
             if (this.Message == null)
             {
                 this.Message = CoreUtilities.FormatException(this.exception);
             }
+            this.AdditionalData = eobuilder(this.exception);
             this.exception = null;
         }
     }
 
     internal Task UpdateAdditionalsAndGetTask(
-        string facility, int scopeId, int parentScopeId, CancellationToken ct)
+        string facility, int scopeId, int parentScopeId,
+        Func<Exception, object> eobuilder,
+        CancellationToken ct)
     {
         this.Facility = facility;
         this.ScopeId = scopeId;
@@ -98,11 +101,11 @@ public sealed class WaitingLogEntry
 
         if (this.exception != null)
         {
-            this.AdditionalData = CoreUtilities.ToExceptionDetailObject(this.exception);
             if (this.Message == null)
             {
                 this.Message = CoreUtilities.FormatException(this.exception);
             }
+            this.AdditionalData = eobuilder(this.exception);
             this.exception = null;
         }
 
