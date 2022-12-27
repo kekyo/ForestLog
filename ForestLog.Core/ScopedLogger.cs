@@ -34,7 +34,7 @@ public readonly struct ScopedLogger : IScopedLogger
     /// <summary>
     /// Constructor.
     /// </summary>
-    /// <param name="logger">ILogger</param>
+    /// <param name="parentLogger">ILogger</param>
     /// <param name="logLevel">Log level</param>
     /// <param name="memberName">Method name</param>
     /// <param name="filePath">File path</param>
@@ -42,13 +42,13 @@ public readonly struct ScopedLogger : IScopedLogger
     /// <remarks>This is a low-level API interface.</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ScopedLogger(
-        ILogger logger,
+        ILogger parentLogger,
         LogLevels logLevel,
         string memberName,
         string filePath,
         int line)
     {
-        this.logger = logger.NewScope();
+        this.logger = parentLogger.NewScope();
         this.logLevel = logLevel;
         this.memberName = memberName;
         this.filePath = filePath;
@@ -121,7 +121,7 @@ public readonly struct ScopedLogger : IScopedLogger
         if (this.logLevel >= this.logger.MinimumOutputLogLevel)
         {
             this.logger.Write(
-                this.logLevel, $"Enter: Parent={logger.ScopeId}", arguments,
+                this.logLevel, $"Enter: Parent={this.logger.ParentScopeId}", arguments,
                 this.memberName, this.filePath, this.line);
             this.sw.Start();
         }
@@ -147,7 +147,7 @@ public readonly struct ScopedLogger : IScopedLogger
         if (this.logLevel >= this.logger.MinimumOutputLogLevel)
         {
             await this.logger.WriteAsync(
-                this.logLevel, $"Enter: Parent={logger.ScopeId}", arguments,
+                this.logLevel, $"Enter: Parent={this.logger.ParentScopeId}", arguments,
                 this.memberName, this.filePath, this.line, ct);
             this.sw.Start();
         }
@@ -240,6 +240,17 @@ public readonly struct ScopedLogger : IScopedLogger
     //////////////////////////////////////////////////////////////////////
 
     /// <summary>
+    /// Get facility.
+    /// </summary>
+    public string Facility
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        get => this.logger.Facility;
+    }
+
+    /// <summary>
     /// For reference use only minimum output log level.
     /// </summary>
     public LogLevels MinimumOutputLogLevel
@@ -259,6 +270,17 @@ public readonly struct ScopedLogger : IScopedLogger
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         get => this.logger.ScopeId;
+    }
+
+    /// <summary>
+    /// For reference use only parent scope id.
+    /// </summary>
+    public int ParentScopeId
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        get => this.logger.ParentScopeId;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -311,4 +333,9 @@ public readonly struct ScopedLogger : IScopedLogger
 #endif
     public ILogger NewScope() =>
         this.logger.NewScope();
+
+    //////////////////////////////////////////////////////////////////////
+
+    public override string ToString() =>
+        $"Scoped: Facility={this.logger.Facility}, Id={this.ScopeId}, ParentId={this.logger.ParentScopeId}";
 }

@@ -110,7 +110,7 @@ public abstract class LogController : ILogController
 #endif
     [DebuggerStepThrough]
     public ILogger CreateLogger(string facility) =>
-        new Logger(this, facility);
+        new Logger(this, facility, 0);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -20,6 +20,11 @@ namespace ForestLog;
 public interface ILogger
 {
     /// <summary>
+    /// Get facility.
+    /// </summary>
+    string Facility { get; }
+
+    /// <summary>
     /// For reference use only minimum output log level.
     /// </summary>
     LogLevels MinimumOutputLogLevel { get; }
@@ -28,6 +33,13 @@ public interface ILogger
     /// For reference use only current scope id.
     /// </summary>
     int ScopeId { get; }
+
+    /// <summary>
+    /// For reference use only parent scope id.
+    /// </summary>
+    int ParentScopeId { get; }
+
+    //////////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// Write a log entry.
@@ -48,6 +60,8 @@ public interface ILogger
     LoggerAwaitable WriteAsync(
         WaitingLogEntry logEntry,
         CancellationToken ct);
+
+    //////////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// Create new scope logger interface.

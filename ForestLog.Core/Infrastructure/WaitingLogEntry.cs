@@ -117,7 +117,7 @@ public sealed class WaitingLogEntry
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public void SetCompleted()
     {
