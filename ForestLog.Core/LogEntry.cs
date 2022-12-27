@@ -25,6 +25,7 @@ public class LogEntry
     public LogLevels LogLevel { get; }
     public DateTimeOffset Timestamp { get; }
     public int ScopeId { get; }
+    [DefaultValue(0)]
     public int ParentScopeId { get; }
     public string Message { get; }
     [DefaultValue(null)]
@@ -80,7 +81,7 @@ public class LogEntry
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
-    public LogEntry(
+    protected LogEntry(
         WaitingLogEntry waitingLogEntry,
         string message, object? additionalData, int processId)
     {

@@ -274,25 +274,29 @@ Result:
 ```json
 {
     "logLevel": "trace",
-    "scopeId": 123,      // <-- Same scope id
-    "message": "Enter: Parent=42",   // <-- Parent logger scope id
+    "scopeId": 123,          // <-- Same scope id
+    "parentScopeId": 42,     // <-- Parent logger scope id
+    "message": "Enter.",
     // ...
 }
 {
     "logLevel": "debug",
-    "scopeId": 123,      // <-- Same scope id
+    "scopeId": 123,          // <-- Same scope id
+    "parentScopeId": 42,
     "message": "Output in child scope.",
     // ...
 }
 {
     "logLevel": "warning",
-    "scopeId": 123,      // <-- Same scope id
+    "scopeId": 123,          // <-- Same scope id
+    "parentScopeId": 42,
     "message": "Same child scope.",
     // ...
 }
 {
     "logLevel": "trace",
-    "scopeId": 123,      // <-- Same scope id
+    "scopeId": 123,          // <-- Same scope id
+    "parentScopeId": 42,
     "message": "Leave: Elapsed=00:00:00.00146248",
     // ...
 }
@@ -320,7 +324,8 @@ Result:
 {
     "logLevel": "trace",
     "scopeId": 456, 
-    "message": "Enter: Parent=42",
+    "parentScopeId": 42, 
+    "message": "Enter.",
     "additionalData": [
         111,
         222.333,
@@ -331,6 +336,7 @@ Result:
 {
     "logLevel": "trace",
     "scopeId": 456, 
+    "parentScopeId": 42, 
     "message": "Leave: Elapsed=00:00:00.00146248",
     "additionalData": "333.333ABC",
     // ...
@@ -343,6 +349,7 @@ Leave with exception:
 {
     "logLevel": "trace",
     "scopeId": 456, 
+    "parentScopeId": 42, 
     "message": "Leave with exception: Elapsed=00:00:00.00146248",
     "additionalData": {
         "name": "System.ApplicationException",
