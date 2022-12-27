@@ -2,7 +2,7 @@
 
 ![ForestLog](Images/ForestLog.100.png)
 
-ForestLog - A minimalist structuring logger interface binds on Json Lines.
+ForestLog - A minimalist structuring logger interface, binds on Json Lines.
 
 [![Project Status: WIP – Initial development is in progress, but there has not yet been a stable, usable release suitable for the public.](https://www.repostatus.org/badges/latest/wip.svg)](https://www.repostatus.org/#wip)
 
@@ -26,12 +26,27 @@ Minimum packages:
 
 ## What is this?
 
-* TODO: Still under construction...
+ForestLog is a log controller that outputs [Json Lines (`*.jsonl`).](https://jsonlines.org/) format files
+with an easy-to-use and sufficient log output interface.
 
-A minimalist structuring logger interface, binds on [Json Lines (`*.jsonl`).](https://jsonlines.org/)
+Json Lines are line-separated Json format files that are easy to parse and suitable for recording continuous data.
+Since the data is same as Json, it can handle structured data sets.
+This means that arbitrary data can be added to the log output, and the log can be mechanically processed later.
 
-It provides the information required for logging with a simple interface and minimal configuration.
-Flexible and eliminates complex configurations and maintenance labor.
+```json
+{ "id": "12345", ... } [LF]
+{ "id": "12346", ... } [LF]
+{ "id": "12347", ... } [LF]
+{ "id": "12348", ... } [LF]
+// ...
+```
+
+ForestLog has taken into account that logs containing arbitrary data can be output very easily.
+And we took care not to make log file configuration management too complicated to handle (Everything is programmable.)
+
+It is also suitable for self-hosted applications,
+and the 3rd party binding makes it easy to connect to ASP.NET Core and MQTTnet.
+It would also be easy to combine with logging systems not included in the binding packages.
 
 ### Operating Environment
 
@@ -48,9 +63,7 @@ Core interface library:
 * MQTTnet 3.1.2
   * Currently other versions is not supported, because they are contained breaking changes.
 
-----
-
-## Basic usage
+### Basic usage
 
 Install [ForestLog](https://www.nuget.org/packages/ForestLog) and [ForestLog.JsonLines](https://www.nuget.org/packages/ForestLog.JsonLines) packages.
 
@@ -117,31 +130,36 @@ Result in base directory `log.jsonl` (Json Lines format):
 
 ----
 
-## Indicate explicit log level
+## Attach additional structured data
 
-The log level values are:
+You can output with any additional instances:
 
 ```csharp
-// The lower symbol name is the most important.
-// This order affects `MinimumOutputLogLevel` limitation.
-public enum LogLevels
-{
-    Debug,       // |
-    Trace,       // |
-    Information, // |
-    Warning,     // |
-    Error,       // |
-    Fatal,       // v Most important
-    Ignore,      // <-- Will ignore any log output.
-}
-
-// Write log with log level variables:
-var level1 = LogLevels.Debug;
-logger.Log(level1, $"Debugging enabled.");
-
-var level2 = LogLevels.Warning;
-logger.Log(level2, $"Failed the transaction.");
+// Write log entry with additional data:
+logger.Information($"See additional data below",
+    new {
+        Amount = 123,
+        Message = "ABC",
+        NameOfProduct = "PAC-MAN quarter",
+    });
 ```
+
+Result:
+
+```json
+{
+    "message": "See additional data below",
+    "additionalData": {
+        "amount": 123,
+        "message": "ABC",
+        "nameOfProduct": "PAC-MAN quarter"
+    },
+    // ...
+}
+```
+
+The instance will be serialized by [NewtonSoft.Json](https://json.net/),
+so you can use your existing knowledge to customize the Json representation.
 
 ----
 
@@ -181,36 +199,35 @@ Result:
 
 ----
 
-## Attach additional structured data
+## Indicate explicit log level
 
-You can output with any additional instances:
+The log level values are:
 
 ```csharp
-// Write log entry with additional data:
-logger.Information($"See additional data below",
-    new {
-        Amount = 123,
-        Message = "ABC",
-        NameOfProduct = "PAC-MAN quarter",
-    });
-```
-
-Result:
-
-```json
+// The lower symbol name is the most important.
+// This order affects `MinimumOutputLogLevel` limitation.
+public enum LogLevels
 {
-    "message": "See additional data below",
-    "additionalData": {
-        "amount": 123,
-        "message": "ABC",
-        "nameOfProduct": "PAC-MAN quarter"
-    },
-    // ...
+    Debug,       // |
+    Trace,       // |
+    Information, // |
+    Warning,     // |
+    Error,       // |
+    Fatal,       // v Most important
+    Ignore,      // <-- Will ignore any log output.
 }
 ```
 
-The instance will be serialized by [NewtonSoft.Json](https://json.net/),
-so you can use your existing knowledge to customize the Json representation.
+These values can be used to vary the log level:
+
+```csharp
+// Write log with log level variables:
+var level1 = LogLevels.Debug;
+logger.Log(level1, $"Debugging enabled.");
+
+var level2 = LogLevels.Warning;
+logger.Log(level2, $"Failed the transaction.");
+```
 
 ----
 
@@ -648,6 +665,22 @@ public Task<int> ComplextOperationAsync() =>
 Note: In `netcoreapp2.1` or later and `netstandard2.1`,
 the `ValueTask` is not required any external dependencies.
 So we can use `ValueTask` conversion naturally on these environments.
+
+----
+
+## Addendum
+
+* Log file output is executed by worker thread,
+  so synchronous versions of log output methods (such as `logger.Trace()`) always will not block.
+  And the serialization process to Json is also performed within the worker thread.
+  Care is taken to affect the thread that requested the log output as little as possible.
+* In `net45` and higher environments, Json generation and output to file are performed in an asynchronous overlapping manner.
+  Even if complex `Additional Data` structures are specified, the output to the file is less affected.
+* Of course, there is no problem with reading logs (`logController.QueryLogEntriesAsync()`) during log output.
+* ForestLog does not have any static log output methods.
+  For example, methods like `StaticLogger.StaticTrace(...)`.
+  We have seen many times that such static log output methods have disastrous results in application development iterations and integration projects.
+  We recommend that instances of the `ILogger` interface be brought around in each implementation.
 
 ----
 
