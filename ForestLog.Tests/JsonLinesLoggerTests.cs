@@ -139,6 +139,7 @@ public sealed class JsonLinesLoggerTests
 
         Assert.AreEqual("AAA123BBB", lines.Single()?["message"]?.ToString());
         Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines.Single()?["logLevel"]?.ToString());
+        Assert.AreEqual("1", lines[0]?["scopeId"]?.ToString());
     }
 
     [Test]
@@ -445,6 +446,7 @@ public sealed class JsonLinesLoggerTests
 
         Assert.AreEqual("Enter.", lines[0]?["message"]?.ToString());
         Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines[0]?["logLevel"]?.ToString());
+        Assert.AreEqual("2", lines[0]?["scopeId"]?.ToString());
 
         Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
         Assert.AreEqual(LogLevels.Warning.ToString().ToLowerInvariant(), lines[1]?["logLevel"]?.ToString());
