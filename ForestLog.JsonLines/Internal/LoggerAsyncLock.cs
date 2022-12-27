@@ -17,82 +17,128 @@ using ForestLog.Tasks;
 
 namespace ForestLog.Internal;
 
+[DebuggerStepThrough]
 internal sealed class LoggerAsyncLock
 {
+    [DebuggerStepThrough]
+    private sealed class Waiter : IDisposable
+    {
+        private readonly TaskCompletionSource<AsyncLockDisposer> tcs = new();
+        private readonly CancellationTokenRegistration ctr;
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public Waiter()
+        {
+        }
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public Waiter(CancellationToken ct) =>
+            this.ctr = ct.Register(() => tcs.TrySetCanceled());
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public void Dispose() =>
+            this.ctr.Dispose();
+
+        public Task<AsyncLockDisposer> Task =>
+            this.tcs.Task;
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public bool TrySetResult(AsyncLockDisposer disposer) =>
+            this.tcs.TrySetResult(disposer);
+    }
+
     private readonly AsyncLockDisposer disposer;
-    private readonly Queue<TaskCompletionSource<AsyncLockDisposer>> queue = new();
-    private int count;
+    private readonly Queue<Waiter> queue = new();
+    private bool isRunning;
 
     public LoggerAsyncLock() =>
-        disposer = new(this);
+        this.disposer = new(this);
 
     public LoggerAwaitable<AsyncLockDisposer> LockAsync(CancellationToken ct)
     {
-        var count = Interlocked.Increment(ref this.count);
-        Debug.Assert(count >= 1);
-
-        if (count == 1)
+        lock (this.queue)
         {
-            return disposer;
+            if (!this.isRunning)
+            {
+                this.isRunning = true;
+                return this.disposer;
+            }
         }
 
-        var tcs = new TaskCompletionSource<AsyncLockDisposer>();
-        ct.Register(() => tcs.TrySetCanceled());
+        var waiter = new Waiter(ct);
 
-        lock (queue)
+        lock (this.queue)
         {
-            queue.Enqueue(tcs);
+            if (!this.isRunning)
+            {
+                this.isRunning = true;
+                waiter.Dispose();
+                return this.disposer;
+            }
+
+            this.queue.Enqueue(waiter);
         }
 
-        return tcs.Task;
+        return waiter.Task;
     }
 
     public AsyncLockDisposer UnsafeLock()
     {
-        var count = Interlocked.Increment(ref this.count);
-        Debug.Assert(count >= 1);
-
-        if (count == 1)
+        lock (this.queue)
         {
-            return disposer;
+            if (!this.isRunning)
+            {
+                this.isRunning = true;
+                return this.disposer;
+            }
         }
 
-        var tcs = new TaskCompletionSource<AsyncLockDisposer>();
+        var waiter = new Waiter();
 
-        lock (queue)
+        lock (this.queue)
         {
-            queue.Enqueue(tcs);
+            if (!this.isRunning)
+            {
+                this.isRunning = true;
+                return this.disposer;
+            }
+
+            this.queue.Enqueue(waiter);
         }
 
-        return tcs.Task.Result;
+        return waiter.Task.GetAwaiter().GetResult();
     }
 
     private void Unlock()
     {
         while (true)
         {
-            var count = Interlocked.Decrement(ref this.count);
-            Debug.Assert(count >= 0);
-
-            if (count == 0)
+            lock (this.queue)
             {
-                break;
-            }
-            else if (count >= 1)
-            {
-                lock (queue)
+                if (this.queue.Count == 0)
                 {
-                    Debug.Assert(queue.Count >= 1);
-                    var tcs = queue.Dequeue();
-                    if (tcs.TrySetResult(disposer))
-                    {
-                        break;
-                    }
+                    this.isRunning = false;
+                    break;
+                }
+
+                using var waiter = this.queue.Dequeue();
+                if (waiter.TrySetResult(this.disposer))
+                {
+                    break;
                 }
             }
         }
     }
 
+    [DebuggerStepThrough]
     public readonly struct AsyncLockDisposer : IDisposable
     {
         private readonly LoggerAsyncLock parent;
@@ -107,12 +153,12 @@ internal sealed class LoggerAsyncLock
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public void Dispose() =>
-            parent.Unlock();
+            this.parent.Unlock();
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         void IDisposable.Dispose() =>
-            parent.Unlock();
+            this.parent.Unlock();
     }
 }

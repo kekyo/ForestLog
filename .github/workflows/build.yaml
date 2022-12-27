@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
 
     #-----------------------------------------------------------------------
@@ -19,14 +19,14 @@ jobs:
 
     - name: Extract branch name
       id: extract_branch_name
-    #  run: |
-    #    $branch_name=$(git name-rev --name-only --exclude=tags/* HEAD)
-    #    echo "Detected current branch: ${branch_name}"
-    #    echo "branch_name=${branch_name}" >> $GITHUB_OUTPUT
       run: |
-        export branch_name=`git name-rev --name-only --exclude=tags/* HEAD`
+        $branch_name=$(git name-rev --name-only --exclude=tags/* HEAD)
         echo "Detected current branch: ${branch_name}"
         echo "branch_name=${branch_name}" >> $GITHUB_OUTPUT
+    #  run: |
+    #    export branch_name=`git name-rev --name-only --exclude=tags/* HEAD`
+    #    echo "Detected current branch: ${branch_name}"
+    #    echo "branch_name=${branch_name}" >> $GITHUB_OUTPUT
 
     #-----------------------------------------------------------------------
     # Setup environments

@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using NUnit.Framework;
 using System;
 using System.Diagnostics;
@@ -27,7 +28,7 @@ public sealed class LoggerAwaitableTests
     [Test]
     public async Task WrappedFromTaskValue()
     {
-        var awaitable = LoggerAwaitable.FromTask(Task.CompletedTask);
+        var awaitable = LoggerAwaitable.FromTask(CoreUtilities.CompletedTask);
 
         await awaitable;
     }
@@ -35,17 +36,17 @@ public sealed class LoggerAwaitableTests
     [Test]
     public async Task WrappedFromDelayedTask()
     {
-        var expected = TimeSpan.FromMilliseconds(500);
+        var expected = TimeSpan.FromMilliseconds(1000);
 
         var sw = new Stopwatch();
         sw.Start();
 
-        await LoggerAwaitable.FromTask(Task.Delay(expected));
+        await LoggerAwaitable.FromTask(CoreUtilities.Delay(expected));
 
         var actual = sw.Elapsed;
 
         // HACK: because accuracy depends on the environment and did not pass under Linux.
-        var eps = TimeSpan.FromMilliseconds(expected.TotalMilliseconds / 100);
+        var eps = TimeSpan.FromMilliseconds(250);
         Assert.GreaterOrEqual(actual, expected - eps);
     }
 
@@ -54,17 +55,17 @@ public sealed class LoggerAwaitableTests
     [Test]
     public async Task SequentialAwaitings1()
     {
-        await LoggerAwaitable.FromTask(Task.Delay(100));
+        await LoggerAwaitable.FromTask(CoreUtilities.Delay(100));
 
         var expected1 = 123;
         var actual1 = await LoggerAwaitable.FromResult(expected1);
 
         Assert.AreEqual(expected1, actual1);
 
-        await LoggerAwaitable.FromTask(Task.Delay(100));
+        await LoggerAwaitable.FromTask(CoreUtilities.Delay(100));
 
         var expected2 = 234;
-        var actual2 = await LoggerAwaitable.FromTask(Task.FromResult(expected2));
+        var actual2 = await LoggerAwaitable.FromTask(CoreUtilities.FromResult(expected2));
 
         Assert.AreEqual(expected2, actual2);
     }
@@ -74,7 +75,7 @@ public sealed class LoggerAwaitableTests
     {
         for (var index = 0; index < 10; index++)
         {
-            await LoggerAwaitable.FromTask(Task.Delay(100));
+            await LoggerAwaitable.FromTask(CoreUtilities.Delay(100));
         }
     }
 
@@ -82,17 +83,17 @@ public sealed class LoggerAwaitableTests
     [Test]
     public async Task SequentialAwaitings3()
     {
-        await LoggerAwaitable.FromTask(new ValueTask(Task.Delay(100)));
+        await LoggerAwaitable.FromTask(new ValueTask(CoreUtilities.Delay(100)));
 
         var expected1 = 123;
         var actual1 = await LoggerAwaitable.FromResult(expected1);
 
         Assert.AreEqual(expected1, actual1);
 
-        await LoggerAwaitable.FromTask(new ValueTask(Task.Delay(100)));
+        await LoggerAwaitable.FromTask(new ValueTask(CoreUtilities.Delay(100)));
 
         var expected2 = 234;
-        var actual2 = await LoggerAwaitable.FromTask(new ValueTask<int>(Task.FromResult(expected2)));
+        var actual2 = await LoggerAwaitable.FromTask(new ValueTask<int>(CoreUtilities.FromResult(expected2)));
 
         Assert.AreEqual(expected2, actual2);
     }
@@ -102,7 +103,7 @@ public sealed class LoggerAwaitableTests
     {
         for (var index = 0; index < 10; index++)
         {
-            await LoggerAwaitable.FromTask(new ValueTask(Task.Delay(100)));
+            await LoggerAwaitable.FromTask(new ValueTask(CoreUtilities.Delay(100)));
         }
     }
 #endif
@@ -112,7 +113,7 @@ public sealed class LoggerAwaitableTests
     [Test]
     public async Task ExceptionThrowed()
     {
-        var awaitable = LoggerAwaitable.FromTask(Task.FromException(new ApplicationException()));
+        var awaitable = LoggerAwaitable.FromTask(CoreUtilities.FromException(new ApplicationException()));
 
         try
         {
@@ -129,7 +130,7 @@ public sealed class LoggerAwaitableTests
     {
         static async Task ThrowAfterDelay()
         {
-            await Task.Delay(500);
+            await CoreUtilities.Delay(500);
             throw new ApplicationException();
         }
 
@@ -151,7 +152,7 @@ public sealed class LoggerAwaitableTests
     {
         static async ValueTask ThrowAfterDelay()
         {
-            await Task.Delay(500);
+            await CoreUtilities.Delay(500);
             throw new ApplicationException();
         }
 

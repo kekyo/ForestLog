@@ -39,7 +39,7 @@ internal static class FormattableStringFactory
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        public string ToString(string format, IFormatProvider formatProvider) =>
+        public string ToString(string? format, IFormatProvider? formatProvider) =>
             string.Format(formatProvider, this.format, this.arguments);
     }
 }

@@ -7,11 +7,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Internal;
 using Lepracaun;
 using NUnit.Framework;
 using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,7 +26,7 @@ public sealed class LoggerAwaitableMethodBuilderTTests
         }
         else
         {
-            await Task.Delay(delay);
+            await CoreUtilities.Delay(delay);
             return value;
         }
     }
@@ -188,7 +187,7 @@ public sealed class LoggerAwaitableMethodBuilderTTests
         }
         else
         {
-            await Task.Delay(delay);
+            await CoreUtilities.Delay(delay);
         }
 
         throw new ApplicationException();
@@ -326,7 +325,7 @@ public sealed class LoggerAwaitableMethodBuilderTTests
     {
         static async LoggerAwaitable<int> ThrowAsync()
         {
-            await Task.Delay(500);
+            await CoreUtilities.Delay(500);
             throw new ApplicationException();
         }
 
@@ -348,7 +347,7 @@ public sealed class LoggerAwaitableMethodBuilderTTests
     {
         static async LoggerAwaitable<int> ThrowAsync()
         {
-            await Task.Delay(500);
+            await CoreUtilities.Delay(500);
             throw new ApplicationException();
         }
 

@@ -340,7 +340,7 @@ public sealed class AsyncJsonLinesLoggerLogLeveledTests
 
         Assert.AreEqual(3, lines.Length);
 
-        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual("Enter.", lines[0]?["message"]?.ToString());
         Assert.AreEqual("debug", lines[0]?["logLevel"]?.ToString());
 
         Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
@@ -365,7 +365,7 @@ public sealed class AsyncJsonLinesLoggerLogLeveledTests
 
         Assert.AreEqual(3, lines.Length);
 
-        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual("Enter.", lines[0]?["message"]?.ToString());
         Assert.AreEqual("trace", lines[0]?["logLevel"]?.ToString());
 
         Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
@@ -390,7 +390,7 @@ public sealed class AsyncJsonLinesLoggerLogLeveledTests
 
         Assert.AreEqual(3, lines.Length);
 
-        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual("Enter.", lines[0]?["message"]?.ToString());
         Assert.AreEqual("information", lines[0]?["logLevel"]?.ToString());
 
         Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
@@ -415,7 +415,7 @@ public sealed class AsyncJsonLinesLoggerLogLeveledTests
 
         Assert.AreEqual(3, lines.Length);
 
-        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual("Enter.", lines[0]?["message"]?.ToString());
         Assert.AreEqual("warning", lines[0]?["logLevel"]?.ToString());
 
         Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
@@ -440,7 +440,7 @@ public sealed class AsyncJsonLinesLoggerLogLeveledTests
 
         Assert.AreEqual(3, lines.Length);
 
-        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual("Enter.", lines[0]?["message"]?.ToString());
         Assert.AreEqual("error", lines[0]?["logLevel"]?.ToString());
 
         Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
@@ -465,7 +465,7 @@ public sealed class AsyncJsonLinesLoggerLogLeveledTests
 
         Assert.AreEqual(3, lines.Length);
 
-        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual("Enter.", lines[0]?["message"]?.ToString());
         Assert.AreEqual("fatal", lines[0]?["logLevel"]?.ToString());
 
         Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());

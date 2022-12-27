@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Infrastructure;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -24,6 +25,8 @@ public class LogEntry
     public LogLevels LogLevel { get; }
     public DateTimeOffset Timestamp { get; }
     public int ScopeId { get; }
+    [DefaultValue(0)]
+    public int ParentScopeId { get; }
     public string Message { get; }
     [DefaultValue(null)]
     public object? AdditionalData { get; }
@@ -46,6 +49,7 @@ public class LogEntry
         LogLevels logLevel,
         DateTimeOffset timestamp,
         int scopeId,
+        int parentScopeId,
         string message,
         object? additionalData,
         string memberName,
@@ -61,6 +65,7 @@ public class LogEntry
         this.LogLevel = logLevel;
         this.Timestamp = timestamp;
         this.ScopeId = scopeId;
+        this.ParentScopeId = parentScopeId;
         this.Message = message;
         this.AdditionalData = additionalData;
         this.MemberName = memberName;
@@ -69,6 +74,31 @@ public class LogEntry
         this.ManagedThreadId = managedThreadId;
         this.NativeThreadId = nativeThreadId;
         this.TaskId = taskId;
+        this.ProcessId = processId;
+    }
+
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    [EditorBrowsable(EditorBrowsableState.Advanced)]
+    protected LogEntry(
+        WaitingLogEntry waitingLogEntry,
+        string message, object? additionalData, int processId)
+    {
+        this.Id = Guid.NewGuid();
+        this.Facility = waitingLogEntry.Facility;
+        this.LogLevel = waitingLogEntry.LogLevel;
+        this.Timestamp = waitingLogEntry.Timestamp;
+        this.ScopeId = waitingLogEntry.ScopeId;
+        this.ParentScopeId = waitingLogEntry.ParentScopeId;
+        this.Message = message;
+        this.AdditionalData = additionalData;
+        this.MemberName = waitingLogEntry.MemberName;
+        this.FilePath = waitingLogEntry.FilePath;
+        this.Line = waitingLogEntry.Line;
+        this.ManagedThreadId = waitingLogEntry.ManagedThreadId;
+        this.NativeThreadId = waitingLogEntry.NativeThreadId;
+        this.TaskId = waitingLogEntry.TaskId;
         this.ProcessId = processId;
     }
 

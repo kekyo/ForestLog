@@ -7,7 +7,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using ForestLog.Internal;
 using ForestLog.Tasks;
 using System;
 using System.Collections.Generic;
@@ -36,6 +35,8 @@ public abstract class LogController : ILogController
     private readonly ManualResetEventSlim suspended = new();
     private readonly ManualResetEventSlim resume = new();
 
+    private readonly Func<Exception, object> toExceptionObject;
+
     private Task worker;
     private int scopeIdCount;
 
@@ -48,6 +49,7 @@ public abstract class LogController : ILogController
     protected LogController(LogLevels minimumOutputLogLevel)
     {
         this.minimumOutputLogLevel = minimumOutputLogLevel;
+        this.toExceptionObject = this.ToExceptionObject;
         this.worker = Task.Factory.StartNew(
             this.WorkerEntry,
             TaskCreationOptions.LongRunning);
@@ -111,7 +113,7 @@ public abstract class LogController : ILogController
 #endif
     [DebuggerStepThrough]
     public ILogger CreateLogger(string facility) =>
-        new Logger(this, facility);
+        new Logger(this, facility, 0);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -190,7 +192,7 @@ public abstract class LogController : ILogController
     /// <summary>
     /// Suspend log controller.
     /// </summary>
-    /// <remarks>Will writes queued log entries in log files and transition to susupend.</remarks>
+    /// <remarks>Will flush queued log entries in log files and transition to susupend.</remarks>
     public void Suspend()
     {
         Trace.WriteLine("LogController: Suspending...");
@@ -293,6 +295,8 @@ public abstract class LogController : ILogController
 
     //////////////////////////////////////////////////////////////////////
 
+    protected abstract object ToExceptionObject(Exception ex);
+
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -316,23 +320,22 @@ public abstract class LogController : ILogController
 #endif
     [DebuggerStepThrough]
     public void Write(
-        string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, object? additionalData,
-        string memberName, string filePath, int line)
+        WaitingLogEntry logEntry,
+        string facility,
+        int scopeId,
+        int parentScopeId)
     {
-        if (logLevel >= this.minimumOutputLogLevel &&
-            !this.suspending.IsSet)
+        if (!this.suspending.IsSet)
         {
-            var waitingLogEntry = new WaitingLogEntry(
-                facility, logLevel, DateTimeOffset.Now, scopeId,
-                message, additionalData,
-                memberName, filePath, line,
-                Thread.CurrentThread.ManagedThreadId,
-                CoreUtilities.NativeThreadId,
-                Task.CurrentId ?? -1,
-                null, default);
+            if (logEntry.LogLevel < this.minimumOutputLogLevel)
+            {
+                throw new ArgumentException($"Invalid log level: {logEntry.LogLevel}");
+            }
 
-            this.InternalWrite(waitingLogEntry);
+            logEntry.UpdateAdditionals(
+                facility, scopeId, parentScopeId,
+                this.toExceptionObject);
+            this.InternalWrite(logEntry);
         }
     }
 
@@ -344,28 +347,26 @@ public abstract class LogController : ILogController
 #endif
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
-        string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, object? additionalData,
-        string memberName, string filePath, int line,
+        WaitingLogEntry logEntry,
+        string facility,
+        int scopeId,
+        int parentScopeId,
         CancellationToken ct)
     {
-        if (logLevel >= this.minimumOutputLogLevel &&
-            !this.suspending.IsSet)
+        if (!this.suspending.IsSet)
         {
-            var awaiter = new TaskCompletionSource<bool>();
+            if (logEntry.LogLevel < this.minimumOutputLogLevel)
+            {
+                throw new ArgumentException($"Invalid log level: {logEntry.LogLevel}");
+            }
 
-            var waitingLogEntry = new WaitingLogEntry(
-                facility, logLevel, DateTimeOffset.Now, scopeId,
-                message, additionalData,
-                memberName, filePath, line,
-                Thread.CurrentThread.ManagedThreadId,
-                CoreUtilities.NativeThreadId,
-                Task.CurrentId ?? -1,
-                awaiter, ct);
+            var task = logEntry.UpdateAdditionalsAndGetTask(
+                facility, scopeId, parentScopeId,
+                this.toExceptionObject,
+                ct);
+            this.InternalWrite(logEntry);
 
-            this.InternalWrite(waitingLogEntry);
-
-            return awaiter.Task;
+            return task;
         }
         else
         {

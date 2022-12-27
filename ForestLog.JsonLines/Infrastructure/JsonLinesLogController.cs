@@ -17,6 +17,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,6 +33,8 @@ internal sealed class JsonLinesLogController : LogController
     private readonly int maximumLogFiles;
     private readonly LoggerAsyncLock locker = new();
     private readonly LoggerAsyncLock rotationLocker = new();
+
+    private bool requiredMakesSafer = true;
 
     //////////////////////////////////////////////////////////////////////
 
@@ -86,15 +89,15 @@ internal sealed class JsonLinesLogController : LogController
             {
                 break;
             }
-            if (Utilities.IsNullOrWhiteSpace(line))
+            if (CoreUtilities.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
 
-            JsonSerializableLogEntry? jsLogEntry = null;
+            LogEntry? logEntry = null;
             try
             {
-                jsLogEntry = Utilities.JsonSerializer.Deserialize<JsonSerializableLogEntry>(
+                logEntry = Utilities.JsonSerializer.Deserialize<JsonSerializableLogEntry>(
                     new JsonTextReader(new StringReader(line)));
             }
             catch (Exception ex)
@@ -103,23 +106,8 @@ internal sealed class JsonLinesLogController : LogController
                     $"JsonLineLoggerCore: {ex.GetType().FullName}: {ex.Message}");
             }
 
-            if (jsLogEntry != null)
+            if (logEntry != null)
             {
-                var logEntry = new LogEntry(
-                    jsLogEntry.Id,
-                    jsLogEntry.Facility,
-                    jsLogEntry.LogLevel,
-                    jsLogEntry.Timestamp,
-                    jsLogEntry.ScopeId,
-                    jsLogEntry.Message,
-                    jsLogEntry.AdditionalData,
-                    jsLogEntry.MemberName,
-                    jsLogEntry.FilePath,
-                    jsLogEntry.Line,
-                    jsLogEntry.ManagedThreadId,
-                    jsLogEntry.NativeThreadId,
-                    jsLogEntry.TaskId,
-                    jsLogEntry.ProcessId);
                 if (predicate(logEntry))
                 {
                     results.Add(logEntry);
@@ -143,12 +131,12 @@ internal sealed class JsonLinesLogController : LogController
         using var __ = this.rotationLocker.UnsafeLock();
 
         var preloadPathList =
-            Utilities.EnumerateFiles(
+            CoreUtilities.EnumerateFiles(
                 this.basePath, "log*.jsonl", SearchOption.AllDirectories).
             Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
             ToArray();
 
-        var preloadResultsNotOrdered = (await Utilities.WhenAll(preloadPathList.
+        var preloadResultsNotOrdered = (await CoreUtilities.WhenAll(preloadPathList.
             Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
             SelectMany(results => results).
             ToArray();
@@ -166,13 +154,13 @@ internal sealed class JsonLinesLogController : LogController
         {
             var remainsPathList = new[] { Path.Combine(this.basePath, "log.jsonl") }.
                 Concat(
-                    Utilities.EnumerateFiles(
+                    CoreUtilities.EnumerateFiles(
                         this.basePath, "log*.jsonl", SearchOption.AllDirectories).
                     Where(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var _)).
                     Except(preloadPathList)).
                 ToArray();
 
-            remainsResultsNotOrdered = (await Utilities.WhenAll(remainsPathList.
+            remainsResultsNotOrdered = (await CoreUtilities.WhenAll(remainsPathList.
                 Select(path => LoadLogEntriesFromAsync(path, predicate, ct)))).
                 SelectMany(results => results).
                 ToArray();
@@ -187,11 +175,20 @@ internal sealed class JsonLinesLogController : LogController
 
     //////////////////////////////////////////////////////////////////////
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+    protected override object ToExceptionObject(Exception ex) =>
+        Utilities.CreateExceptionObject(ex, new());
+
     private readonly struct CandidatePaths
     {
         public readonly string BackupPath;
         public readonly string[] RemovePaths;
 
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public CandidatePaths(string backupPath, string[] removePaths)
         {
             this.BackupPath = backupPath;
@@ -202,7 +199,7 @@ internal sealed class JsonLinesLogController : LogController
     private static CandidatePaths GetCandidatePaths(
         string basePath, int maximumLogFiles)
     {
-        var indices = Utilities.EnumerateFiles(
+        var indices = CoreUtilities.EnumerateFiles(
             basePath, "log*.jsonl", SearchOption.AllDirectories).
             Select(path => int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(3), out var index) ? (int?)index : null).
             Where(index => index.HasValue).
@@ -233,8 +230,11 @@ internal sealed class JsonLinesLogController : LogController
     }
 
 #if NET35 || NET40
-    protected override LoggerAwaitable OnAvailableAsync(WaitingLogEntry waitingLogEntry) =>
-        Task.Factory.StartNew(() => this.OnAvailable(waitingLogEntry));
+    protected override LoggerAwaitable OnAvailableAsync(WaitingLogEntry waitingLogEntry)
+    {
+        this.OnAvailable(waitingLogEntry);
+        return default;
+    }
 
     private void OnAvailable(WaitingLogEntry waitingLogEntry)
 #else
@@ -280,6 +280,9 @@ internal sealed class JsonLinesLogController : LogController
                 {
                     fi.Delete();
                 }
+
+                // (Will create new file)
+                this.requiredMakesSafer = false;
             }
             catch (Exception ex)
             {
@@ -321,39 +324,41 @@ internal sealed class JsonLinesLogController : LogController
         tw.NewLine = "\n";
         var jw = new JsonTextWriter(tw);
 
-        // Will make safer by adding a newline into jsonl file when last output was broken.
-#if NET35 || NET40
-        tw.WriteLine();
-        tw.Flush();
-#else
-        static async LoggerAwaitable MakeSaferByAddingNewLineAsync(TextWriter tw)
-        {
-            await tw.WriteLineAsync();
-            await tw.FlushAsync();
-        }
-
-        var lastOffloadedTask = MakeSaferByAddingNewLineAsync(tw);
+#if !(NET35 || NET40)
+        LoggerAwaitable lastOffloadedTask;
 #endif
+
+        if (this.requiredMakesSafer)
+        {
+            this.requiredMakesSafer = false;
+
+            // Will make safer by adding a newline into jsonl file when last output was broken.
+#if NET35 || NET40
+            tw.WriteLine();
+            tw.Flush();
+#else
+            static async LoggerAwaitable MakeSaferByAddingNewLineAsync(TextWriter tw)
+            {
+                await tw.WriteLineAsync();
+                await tw.FlushAsync();
+            }
+
+            lastOffloadedTask = MakeSaferByAddingNewLineAsync(tw);
+#endif
+        }
+#if !(NET35 || NET40)
+        else
+        {
+            lastOffloadedTask = default;
+        }
+#endif
+
         do
         {
             JsonSerializableLogEntry? logEntry = null;
             try
             {
-                logEntry = new JsonSerializableLogEntry(
-                    Guid.NewGuid(),
-                    waitingLogEntry.Facility,
-                    waitingLogEntry.LogLevel,
-                    waitingLogEntry.Timestamp,
-                    waitingLogEntry.ScopeId,
-                    waitingLogEntry.Message.ToString(null, CultureInfo.InvariantCulture),
-                    waitingLogEntry.AdditionalData is { } ad ? JToken.FromObject(ad) : null,
-                    waitingLogEntry.MemberName,
-                    waitingLogEntry.FilePath,
-                    waitingLogEntry.Line,
-                    waitingLogEntry.ManagedThreadId,
-                    waitingLogEntry.NativeThreadId,
-                    waitingLogEntry.TaskId,
-                    Utilities.ProcessId);
+                logEntry = new JsonSerializableLogEntry(waitingLogEntry);
 
                 var jt = JToken.FromObject(logEntry, Utilities.JsonSerializer);
 
@@ -466,6 +471,9 @@ internal sealed class JsonLinesLogController : LogController
             }
             catch (Exception ex)
             {
+                // (Will recover error line)
+                this.requiredMakesSafer = true;
+
                 Trace.WriteLine(
                     $"JsonLineLoggerCore: {ex.GetType().FullName}: {ex.Message}");
             }

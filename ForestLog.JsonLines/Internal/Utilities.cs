@@ -9,19 +9,20 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ForestLog.Internal;
 
 internal static class Utilities
 {
+    private static readonly char[] splitChars = new[] { '\r', '\n' };
+
     public static readonly int ProcessId =
 #if NET5_0_OR_GREATER
         Environment.ProcessId;
@@ -34,59 +35,65 @@ internal static class Utilities
 
     static Utilities()
     {
-        var defaultNamingStrategy = new CamelCaseNamingStrategy();
         JsonSerializer = new JsonSerializer
         {
             ObjectCreationHandling = ObjectCreationHandling.Replace,
-            NullValueHandling = NullValueHandling.Include,
             Formatting = Formatting.None,
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             DateParseHandling = DateParseHandling.DateTimeOffset,
             DateTimeZoneHandling = DateTimeZoneHandling.Local,
-            ContractResolver = new DefaultContractResolver
-            { NamingStrategy = defaultNamingStrategy, },
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
         };
-        JsonSerializer.Converters.Add(new StringEnumConverter(defaultNamingStrategy));
+        JsonSerializer.Converters.Add(
+            new StringEnumConverter(new CamelCaseNamingStrategy()));
     }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public static Task<T[]> WhenAll<T>(IEnumerable<Task<T>> enumerable) =>
-#if NET35 || NET40
-        TaskEx.WhenAll(enumerable);
-#else
-        Task.WhenAll(enumerable);
-#endif
+    public static JObject CreateExceptionObject(Exception ex, HashSet<Exception> agged)
+    {
+        var exo = new JObject();
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public static Task<T> Run<T>(Func<T> action) =>
-#if NET35 || NET40
-        TaskEx.Run(action);
-#else
-        Task.Run(action);
-#endif
+        exo["name"] = ex.GetType().FullName ?? "unknown";
+        exo["message"] = ex.Message;
+        exo["stackFrames"] = new JArray(ex.StackTrace?.
+            Split(splitChars, StringSplitOptions.RemoveEmptyEntries).
+            Select(line => line.Trim()).
+            ToArray() ??
+            CoreUtilities.Empty<string>());
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public static IEnumerable<string> EnumerateFiles(
-        string path, string pattern, SearchOption so) =>
-#if NET35
-        Directory.GetFiles(path, pattern, so);
-#else
-        Directory.EnumerateFiles(path, pattern, so);
-#endif
+        static JObject CreateStopObject(string message)
+        {
+            var so = new JObject();
+            so["name"] = "ExceptionObject";
+            so["message"] = message;
+            return so;
+        }
 
-#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-    public static bool IsNullOrWhiteSpace(string? text) =>
-#if NET35
-        string.IsNullOrEmpty(text) || (text!.Trim().Length == 0);
-#else
-        string.IsNullOrWhiteSpace(text);
-#endif
+        try
+        {
+            exo["innerExceptions"] = new JArray(ex switch
+            {
+                AggregateException aex => aex.InnerExceptions.
+                    Select(iex => agged.Add(iex) ?
+                        CreateExceptionObject(iex, agged) :
+                        CreateStopObject($"(Recursive reference: {iex.GetType().FullName})")).
+                    ToArray(),
+                _ when ex.InnerException is { } iex =>
+                    new[] { iex }.
+                    Select(iex => agged.Add(iex) ?
+                        CreateExceptionObject(iex, agged) :
+                        CreateStopObject($"(Recursive reference: {iex.GetType().FullName})")).
+                    ToArray(),
+                _ => CoreUtilities.Empty<JObject>(),
+            });
+        }
+        catch (Exception ex2)
+        {
+            exo["innerExceptions"] = new JArray(new[] {
+                CreateStopObject(
+                    $"(Could not get inner exceptions: {ex2.GetType().FullName}: {ex2.Message})"),
+            });
+        }
+
+        return exo;
+    }
 }

@@ -21,6 +21,9 @@ using System.Threading.Tasks;
 
 namespace ForestLog;
 
+// Async method lacks 'await' operators and will run synchronously
+#pragma warning disable CS1998
+
 public sealed class JsonLinesLoggerTests
 {
     public static IEnumerable<JObject?> LoadLines(string path)
@@ -37,7 +40,7 @@ public sealed class JsonLinesLoggerTests
                 break;
             }
 
-            if (string.IsNullOrWhiteSpace(line))
+            if (CoreUtilities.IsNullOrWhiteSpace(line))
             {
                 continue;
             }
@@ -136,6 +139,7 @@ public sealed class JsonLinesLoggerTests
 
         Assert.AreEqual("AAA123BBB", lines.Single()?["message"]?.ToString());
         Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines.Single()?["logLevel"]?.ToString());
+        Assert.AreEqual("1", lines[0]?["scopeId"]?.ToString());
     }
 
     [Test]
@@ -224,7 +228,7 @@ public sealed class JsonLinesLoggerTests
                 action(logger);
 
                 // Wait for flushing.
-                await Task.Delay(500);
+                await CoreUtilities.Delay(1000);
 
                 return await logController.QueryLogEntriesAsync(
                     maximumLogEntries, predicate, default);
@@ -327,6 +331,64 @@ public sealed class JsonLinesLoggerTests
         Assert.IsTrue(entries.All(e => e.Message.StartsWith("CCC")));
     }
 
+    [Test]
+    public async Task ReadConcurrent()
+    {
+        var basePath = Path.Combine(
+            Path.GetDirectoryName(typeof(JsonLinesLoggerTests).Assembly.Location)!,
+            $"logs_{Guid.NewGuid():N}");
+
+        if (!Directory.Exists(basePath))
+        {
+            try
+            {
+                Directory.CreateDirectory(basePath);
+            }
+            catch
+            {
+            }
+        }
+
+        try
+        {
+            using (var logController = LogController.Factory.CreateJsonLines(
+                basePath, LogLevels.Debug, 10 * 1024, 10))
+            {
+                async Task ProduceLogsAsync()
+                {
+                    var logger = logController.CreateLogger();
+                    for (var index = 0; index < 2000; index++)
+                    {
+                        logger.Debug($"AAA{index}BBB");
+                        await CoreUtilities.Delay(1);
+                    }
+                }
+
+                async Task QueryLogsAsync(Task targetTask)
+                {
+                    while (!targetTask.IsCompleted)
+                    {
+                        var result = await logController.QueryLogEntriesAsync(
+                            logEntry => true);
+                        Assert.IsTrue(result.Length >= 1);
+                        await CoreUtilities.Delay(1000);
+                    }
+                }
+
+                var task = ProduceLogsAsync();
+
+                await CoreUtilities.WhenAll(new[] { task, QueryLogsAsync(task) });
+            }
+        }
+        finally
+        {
+            if (Directory.Exists(basePath))
+            {
+                Directory.Delete(basePath, true);
+            }
+        }
+    }
+
     //////////////////////////////////////////////////////////
 
     [Test]
@@ -382,8 +444,9 @@ public sealed class JsonLinesLoggerTests
 
         Assert.AreEqual(3, lines.Length);
 
-        Assert.AreEqual("Enter: Parent=2", lines[0]?["message"]?.ToString());
+        Assert.AreEqual("Enter.", lines[0]?["message"]?.ToString());
         Assert.AreEqual(logLevel.ToString().ToLowerInvariant(), lines[0]?["logLevel"]?.ToString());
+        Assert.AreEqual("2", lines[0]?["scopeId"]?.ToString());
 
         Assert.AreEqual("AAA123BBB", lines[1]?["message"]?.ToString());
         Assert.AreEqual(LogLevels.Warning.ToString().ToLowerInvariant(), lines[1]?["logLevel"]?.ToString());

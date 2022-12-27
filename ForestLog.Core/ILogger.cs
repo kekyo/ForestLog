@@ -7,8 +7,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Infrastructure;
 using ForestLog.Tasks;
-using System;
 using System.ComponentModel;
 using System.Threading;
 
@@ -20,6 +20,11 @@ namespace ForestLog;
 public interface ILogger
 {
     /// <summary>
+    /// Get facility.
+    /// </summary>
+    string Facility { get; }
+
+    /// <summary>
     /// For reference use only minimum output log level.
     /// </summary>
     LogLevels MinimumOutputLogLevel { get; }
@@ -30,44 +35,33 @@ public interface ILogger
     int ScopeId { get; }
 
     /// <summary>
-    /// Write a log entry.
+    /// For reference use only parent scope id.
     /// </summary>
-    /// <param name="logLevel">Log level</param>
-    /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
-    /// <param name="memberName">Member name</param>
-    /// <param name="filePath">File path</param>
-    /// <param name="line">File line number</param>
-    /// <remarks>This is a low-level API interface.</remarks>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    void Write(
-        LogLevels logLevel,
-        IFormattable message,
-        object? additionalData,
-        string memberName,
-        string filePath,
-        int line);
+    int ParentScopeId { get; }
+
+    //////////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// Write a log entry.
     /// </summary>
-    /// <param name="logLevel">Log level</param>
-    /// <param name="message">Message (Mostly string interpolation)</param>
-    /// <param name="additionalData">Additional data object when need to write</param>
-    /// <param name="memberName">Member name</param>
-    /// <param name="filePath">File path</param>
-    /// <param name="line">File line number</param>
+    /// <param name="logEntry">Log entry</param>
+    /// <remarks>This is a low-level API interface.</remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    void Write(
+        WaitingLogEntry logEntry);
+
+    /// <summary>
+    /// Write a log entry.
+    /// </summary>
+    /// <param name="logEntry">Log entry</param>
     /// <param name="ct">CancellationToken</param>
     /// <remarks>This is a low-level API interface.</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     LoggerAwaitable WriteAsync(
-        LogLevels logLevel,
-        IFormattable message,
-        object? additionalData,
-        string memberName,
-        string filePath,
-        int line,
+        WaitingLogEntry logEntry,
         CancellationToken ct);
+
+    //////////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// Create new scope logger interface.

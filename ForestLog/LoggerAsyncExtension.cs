@@ -11,6 +11,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using ForestLog.Infrastructure;
 using ForestLog.Internal;
 using ForestLog.Tasks;
 
@@ -73,7 +74,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             logLevel,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line, ct);
 
     /// <summary>
@@ -100,7 +101,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             logLevel,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
@@ -150,7 +151,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Debug,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line, ct);
 
     /// <summary>
@@ -175,7 +176,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Debug,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
@@ -225,7 +226,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Trace,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line, ct);
 
     /// <summary>
@@ -250,7 +251,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Trace,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
@@ -300,7 +301,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Information,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line, ct);
 
     /// <summary>
@@ -325,7 +326,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Information,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
@@ -375,7 +376,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Warning,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line, ct);
 
     /// <summary>
@@ -400,7 +401,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Warning,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
@@ -450,7 +451,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Error,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line, ct);
 
     /// <summary>
@@ -475,7 +476,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Error,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line, ct);
 
     //////////////////////////////////////////////////////////////////////
@@ -525,7 +526,7 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Fatal,
-            CoreUtilities.FormatException(ex), CoreUtilities.ToExceptionDetailObject(ex),
+            ex,
             memberName, filePath, line, ct);
 
     /// <summary>
@@ -550,6 +551,6 @@ public static class LoggerAsyncExtension
         [CallerLineNumber] int line = 0) =>
         logger.WriteAsync(
             LogLevels.Fatal,
-            message, CoreUtilities.ToExceptionDetailObject(ex),
+            ex, message,
             memberName, filePath, line, ct);
 }

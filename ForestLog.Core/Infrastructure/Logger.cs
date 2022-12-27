@@ -20,21 +20,32 @@ internal sealed class Logger : ILogger
     private readonly LogController controller;
     private readonly string facility;
     private readonly int scopeId;
+    private readonly int parentScopeId;
 
     //////////////////////////////////////////////////////////////////////
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-    public Logger(LogController controller, string facility)
+    public Logger(LogController controller, string facility, int parentScopeId)
     {
         this.controller = controller;
         this.facility = facility;
         this.scopeId = this.controller.NewScopeId();
+        this.parentScopeId = parentScopeId;
     }
 
     //////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Get facility.
+    /// </summary>
+    public string Facility =>
+        this.facility;
+
+    /// <summary>
+    /// For reference use only minimum output log level.
+    /// </summary>
     public LogLevels MinimumOutputLogLevel
     {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -44,6 +55,9 @@ internal sealed class Logger : ILogger
         get => this.controller.MinimumOutputLogLevel;
     }
 
+    /// <summary>
+    /// For reference use only current scope id.
+    /// </summary>
     public int ScopeId
     {
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
@@ -53,6 +67,20 @@ internal sealed class Logger : ILogger
         get => this.scopeId;
     }
 
+    /// <summary>
+    /// For reference use only parent scope id.
+    /// </summary>
+    public int ParentScopeId
+    {
+#if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        [DebuggerStepThrough]
+        get => this.parentScopeId;
+    }
+
+    //////////////////////////////////////////////////////////////////////
+
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -61,16 +89,9 @@ internal sealed class Logger : ILogger
 #endif
     [DebuggerStepThrough]
     public void Write(
-        LogLevels logLevel,
-        IFormattable message,
-        object? additionalData,
-        string memberName,
-        string filePath,
-        int line) =>
+        WaitingLogEntry logEntry) =>
         this.controller.Write(
-            this.facility, logLevel, this.scopeId,
-            message, additionalData,
-            memberName, filePath, line);
+            logEntry, this.facility, this.scopeId, this.parentScopeId);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,18 +101,12 @@ internal sealed class Logger : ILogger
 #endif
     [DebuggerStepThrough]
     public LoggerAwaitable WriteAsync(
-        LogLevels logLevel,
-        IFormattable message,
-        object? additionalData,
-        string memberName,
-        string filePath,
-        int line,
+        WaitingLogEntry logEntry,
         CancellationToken ct) =>
         this.controller.WriteAsync(
-            this.facility, logLevel, this.scopeId,
-            message, additionalData,
-            memberName, filePath, line,
-            ct);
+            logEntry, this.facility, this.scopeId, this.parentScopeId, ct);
+
+    //////////////////////////////////////////////////////////////////////
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,5 +116,10 @@ internal sealed class Logger : ILogger
 #endif
     [DebuggerStepThrough]
     public ILogger NewScope() =>
-        new Logger(this.controller, this.facility);
+        new Logger(this.controller, this.facility, this.scopeId);
+
+    //////////////////////////////////////////////////////////////////////
+
+    public override string ToString() =>
+        $"Root logger: Facility={this.facility}, Id={this.scopeId}";
 }

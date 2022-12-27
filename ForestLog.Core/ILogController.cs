@@ -7,6 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using ForestLog.Infrastructure;
 using ForestLog.Tasks;
 using System;
 using System.ComponentModel;
@@ -55,7 +56,7 @@ public interface ILogController : IDisposable
     /// <summary>
     /// Suspend log controller.
     /// </summary>
-    /// <remarks>Will writes queued log entries in log files and transition to susupend.</remarks>
+    /// <remarks>Will flush queued log entries in log files and transition to susupend.</remarks>
     void Suspend();
 
     /// <summary>
@@ -69,26 +70,7 @@ public interface ILogController : IDisposable
     /// </summary>
     /// <param name="facility">Facility name.</param>
     /// <returns>Logger interface</returns>
-    ILogger CreateLogger(string facility = "Unknown");
-
-    /// <summary>
-    /// Raw level write log entry.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    void Write(
-        string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, object? additionalData,
-        string memberName, string filePath, int line);
-
-    /// <summary>
-    /// Raw level write log entry.
-    /// </summary>
-    [EditorBrowsable(EditorBrowsableState.Never)]
-    LoggerAwaitable WriteAsync(
-        string facility, LogLevels logLevel, int scopeId,
-        IFormattable message, object? additionalData,
-        string memberName, string filePath, int line,
-        CancellationToken ct);
+    ILogger CreateLogger(string facility = "default");
 
     /// <summary>
     /// Query log entries now.
