@@ -121,7 +121,7 @@ public readonly struct ScopedLogger : IScopedLogger
         if (this.logLevel >= this.logger.MinimumOutputLogLevel)
         {
             this.logger.Write(
-                this.logLevel, $"Enter: Parent={this.logger.ParentScopeId}", arguments,
+                this.logLevel, $"Enter.", arguments,
                 this.memberName, this.filePath, this.line);
             this.sw.Start();
         }
@@ -147,7 +147,7 @@ public readonly struct ScopedLogger : IScopedLogger
         if (this.logLevel >= this.logger.MinimumOutputLogLevel)
         {
             await this.logger.WriteAsync(
-                this.logLevel, $"Enter: Parent={this.logger.ParentScopeId}", arguments,
+                this.logLevel, $"Enter.", arguments,
                 this.memberName, this.filePath, this.line, ct);
             this.sw.Start();
         }

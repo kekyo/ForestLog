@@ -90,7 +90,8 @@ internal sealed class Logger : ILogger
     [DebuggerStepThrough]
     public void Write(
         WaitingLogEntry logEntry) =>
-        this.controller.Write(logEntry, this.facility, this.scopeId);
+        this.controller.Write(
+            logEntry, this.facility, this.scopeId, this.parentScopeId);
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -102,7 +103,8 @@ internal sealed class Logger : ILogger
     public LoggerAwaitable WriteAsync(
         WaitingLogEntry logEntry,
         CancellationToken ct) =>
-        this.controller.WriteAsync(logEntry, this.facility, this.scopeId, ct);
+        this.controller.WriteAsync(
+            logEntry, this.facility, this.scopeId, this.parentScopeId, ct);
 
     //////////////////////////////////////////////////////////////////////
 

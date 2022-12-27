@@ -93,10 +93,10 @@ internal sealed class JsonLinesLogController : LogController
                 continue;
             }
 
-            JsonSerializableLogEntry? jsLogEntry = null;
+            LogEntry? logEntry = null;
             try
             {
-                jsLogEntry = Utilities.JsonSerializer.Deserialize<JsonSerializableLogEntry>(
+                logEntry = Utilities.JsonSerializer.Deserialize<JsonSerializableLogEntry>(
                     new JsonTextReader(new StringReader(line)));
             }
             catch (Exception ex)
@@ -105,23 +105,8 @@ internal sealed class JsonLinesLogController : LogController
                     $"JsonLineLoggerCore: {ex.GetType().FullName}: {ex.Message}");
             }
 
-            if (jsLogEntry != null)
+            if (logEntry != null)
             {
-                var logEntry = new LogEntry(
-                    jsLogEntry.Id,
-                    jsLogEntry.Facility,
-                    jsLogEntry.LogLevel,
-                    jsLogEntry.Timestamp,
-                    jsLogEntry.ScopeId,
-                    jsLogEntry.Message,
-                    jsLogEntry.AdditionalData,
-                    jsLogEntry.MemberName,
-                    jsLogEntry.FilePath,
-                    jsLogEntry.Line,
-                    jsLogEntry.ManagedThreadId,
-                    jsLogEntry.NativeThreadId,
-                    jsLogEntry.TaskId,
-                    jsLogEntry.ProcessId);
                 if (predicate(logEntry))
                 {
                     results.Add(logEntry);
@@ -363,21 +348,7 @@ internal sealed class JsonLinesLogController : LogController
             JsonSerializableLogEntry? logEntry = null;
             try
             {
-                logEntry = new JsonSerializableLogEntry(
-                    Guid.NewGuid(),
-                    waitingLogEntry.Facility,
-                    waitingLogEntry.LogLevel,
-                    waitingLogEntry.Timestamp,
-                    waitingLogEntry.ScopeId,
-                    waitingLogEntry.Message.ToString(null, CultureInfo.InvariantCulture),
-                    waitingLogEntry.AdditionalData is { } ad ? JToken.FromObject(ad) : null,
-                    waitingLogEntry.MemberName,
-                    waitingLogEntry.FilePath,
-                    waitingLogEntry.Line,
-                    waitingLogEntry.ManagedThreadId,
-                    waitingLogEntry.NativeThreadId,
-                    waitingLogEntry.TaskId,
-                    Utilities.ProcessId);
+                logEntry = new JsonSerializableLogEntry(waitingLogEntry);
 
                 var jt = JToken.FromObject(logEntry, Utilities.JsonSerializer);
 

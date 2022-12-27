@@ -28,6 +28,7 @@ public sealed class WaitingLogEntry
 
     public string Facility { get; private set; } = "Unknown";
     public int ScopeId { get; private set; }
+    public int ParentScopeId { get; private set; }
     public DateTimeOffset Timestamp { get; private set; }
     public IFormattable Message { get; private set; }
     public object? AdditionalData { get; private set; }
@@ -63,10 +64,11 @@ public sealed class WaitingLogEntry
     }
 
     internal void UpdateAdditionals(
-        string facility, int scopeId)
+        string facility, int scopeId, int parentScopeId)
     {
         this.Facility = facility;
         this.ScopeId = scopeId;
+        this.ParentScopeId = parentScopeId;
         this.Timestamp = DateTimeOffset.Now;
         this.ManagedThreadId = Thread.CurrentThread.ManagedThreadId;
         this.NativeThreadId = CoreUtilities.NativeThreadId;
@@ -84,10 +86,11 @@ public sealed class WaitingLogEntry
     }
 
     internal Task UpdateAdditionalsAndGetTask(
-        string facility, int scopeId, CancellationToken ct)
+        string facility, int scopeId, int parentScopeId, CancellationToken ct)
     {
         this.Facility = facility;
         this.ScopeId = scopeId;
+        this.ParentScopeId = parentScopeId;
         this.Timestamp = DateTimeOffset.Now;
         this.ManagedThreadId = Thread.CurrentThread.ManagedThreadId;
         this.NativeThreadId = CoreUtilities.NativeThreadId;

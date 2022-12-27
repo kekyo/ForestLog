@@ -317,7 +317,8 @@ public abstract class LogController : ILogController
     public void Write(
         WaitingLogEntry logEntry,
         string facility,
-        int scopeId)
+        int scopeId,
+        int parentScopeId)
     {
         if (!this.suspending.IsSet)
         {
@@ -326,7 +327,7 @@ public abstract class LogController : ILogController
                 throw new ArgumentException($"Invalid log level: {logEntry.LogLevel}");
             }
 
-            logEntry.UpdateAdditionals(facility, scopeId);
+            logEntry.UpdateAdditionals(facility, scopeId, parentScopeId);
             this.InternalWrite(logEntry);
         }
     }
@@ -342,6 +343,7 @@ public abstract class LogController : ILogController
         WaitingLogEntry logEntry,
         string facility,
         int scopeId,
+        int parentScopeId,
         CancellationToken ct)
     {
         if (!this.suspending.IsSet)
@@ -351,7 +353,7 @@ public abstract class LogController : ILogController
                 throw new ArgumentException($"Invalid log level: {logEntry.LogLevel}");
             }
 
-            var task = logEntry.UpdateAdditionalsAndGetTask(facility, scopeId, ct);
+            var task = logEntry.UpdateAdditionalsAndGetTask(facility, scopeId, parentScopeId, ct);
             this.InternalWrite(logEntry);
 
             return task;
