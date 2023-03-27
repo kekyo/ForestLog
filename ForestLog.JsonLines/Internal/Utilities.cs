@@ -41,7 +41,7 @@ internal static class Utilities
             Formatting = Formatting.None,
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             DateParseHandling = DateParseHandling.DateTimeOffset,
-            DateTimeZoneHandling = DateTimeZoneHandling.Local,
+            DateTimeZoneHandling = DateTimeZoneHandling.RoundtripKind,
             ContractResolver = new CamelCasePropertyNamesContractResolver(),
         };
         JsonSerializer.Converters.Add(
