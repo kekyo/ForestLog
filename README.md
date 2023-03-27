@@ -26,14 +26,14 @@ Minimum packages:
 
 ## What is this?
 
-ForestLog is a log controller that outputs [Json Lines (`*.jsonl`).](https://jsonlines.org/) format files
-with an easy-to-use and sufficient log output interface.
+ForestLog is a log controller that outputs [Json Lines (`*.jsonl`) format.](https://jsonlines.org/)
+The format is a de-facto to use continuous data stream, easy-to-use and sufficient.
 
 Json Lines are line-separated Json format files that are easy to parse and suitable for recording continuous data.
 Since the data is same as Json, it can handle structured data sets.
 This means that arbitrary data can be added to the log output, and the log can be mechanically processed later.
 
-```json
+```jsonc
 { "id": "12345", ... } [LF]
 { "id": "12346", ... } [LF]
 { "id": "12347", ... } [LF]
@@ -44,7 +44,7 @@ This means that arbitrary data can be added to the log output, and the log can b
 ForestLog has taken into account that logs containing arbitrary data can be output very easily.
 And we took care not to make log file configuration management too complicated to handle (Everything is programmable.)
 
-It is also suitable for self-hosted applications,
+It is also suitable for self-hosted applications, mobile applications,
 and the 3rd party binding makes it easy to connect to ASP.NET Core and MQTTnet.
 It would also be easy to combine with logging systems not included in the binding packages.
 
@@ -56,6 +56,8 @@ Core interface library:
 * .NET Core 3.1, 3.0, 2.2, 2.1, 2.0
 * .NET Standard 2.1, 2.0, 1.6, 1.3
 * .NET Framework 4.8, 4.6.1, 4.5, 4.0, 3.5
+
+(Included Xamarin/MAUI platforms)
 
 3rd party bridging interface:
 
@@ -95,7 +97,7 @@ logger.Trace($"Always using string interpolation: {arg2}");
 
 Result in base directory `log.jsonl` (Json Lines format):
 
-```json
+```jsonc
 {
     "id": "0a913e2e-4ba7-4606-b703-2c9eccc9d217",
     "facility": "default",
@@ -146,7 +148,7 @@ logger.Information($"See additional data below",
 
 Result:
 
-```json
+```jsonc
 {
     "message": "See additional data below",
     "additionalData": {
@@ -181,7 +183,7 @@ catch (Exception ex)
 
 Result:
 
-```json
+```jsonc
 {
     "logLevel": "error",
     "message": "System.ApplicationException: Failed a operation.",
@@ -243,7 +245,7 @@ logger.Information($"Through the valid unit: Units={unitCount}");
 
 Result:
 
-```json
+```jsonc
 {
     "facility": "DispatchController",
     "logLevel": "information",
@@ -312,7 +314,7 @@ public Task ScopeAsync(ILogger parentLogger)
 
 Result:
 
-```json
+```jsonc
 {
     "logLevel": "trace",
     "scopeId": 123,          // <-- Same scope id
@@ -361,7 +363,7 @@ public string Scope(ILogger parentLogger, int a, double b, string c)
 
 Result:
 
-```json
+```jsonc
 {
     "logLevel": "trace",
     "scopeId": 456, 
@@ -386,7 +388,7 @@ Result:
 
 When leave with exception:
 
-```json
+```jsonc
 {
     "logLevel": "trace",
     "scopeId": 456, 
