@@ -7,7 +7,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#if !(NETCOREAPP || NETSTANDARD2_1)
+#if !(NET45_OR_GREATER || NETCOREAPP || NETSTANDARD2_0_OR_GREATER)
 
 using System.Diagnostics;
 
