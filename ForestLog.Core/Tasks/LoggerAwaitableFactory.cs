@@ -36,13 +36,13 @@ partial struct LoggerAwaitable
 
     //////////////////////////////////////////////////////////////////////
 
-#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
+#if NET45_OR_GREATER || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static LoggerAwaitable<T> FromTask<T>(ValueTask<T> task) =>
         new(task);
 #endif
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NET45_OR_GREATER || NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_0_OR_GREATER
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static LoggerAwaitable FromTask(ValueTask task) =>
         new(task);
