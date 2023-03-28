@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // ForestLog - A minimalist logger interface.
 // Copyright (c) Kouji Matsui (@kozy_kekyo, @kekyo@mastodon.cloud)
@@ -282,11 +282,31 @@ public abstract class LogController : ILogController
                     }
                 }
             }
+#if NETSTANDARD1_3 || NETSTANDARD1_6
+            catch (Exception ex)
+            {
+                Trace.WriteLine(
+                    $"LogController: {ex.GetType().FullName}: {ex.Message}");
+                if (ex.GetType().FullName == "System.Threading.ThreadAbortException")
+                {
+                    // TAE is bad way, but someone are using it...
+                    break;
+                }
+            }
+#else
+            catch (ThreadAbortException ex)
+            {
+                Trace.WriteLine(
+                    $"LogController: {ex.GetType().FullName}: {ex.Message}");
+                // TAE is bad way, but someone are using it...
+                break;
+            }
             catch (Exception ex)
             {
                 Trace.WriteLine(
                     $"LogController: {ex.GetType().FullName}: {ex.Message}");
             }
+#endif
         }
 
         // Makes safer deadlocking when called Suspend() after shutdown.
