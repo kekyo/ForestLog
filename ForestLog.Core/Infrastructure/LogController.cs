@@ -69,7 +69,7 @@ public abstract class LogController : ILogController
         }
     }
 
-#if NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NET45_OR_GREATER || NETCOREAPP2_1_OR_GREATER || NETSTANDARD2_1_OR_GREATER
     /// <summary>
     /// Dispose method.
     /// </summary>
@@ -282,11 +282,31 @@ public abstract class LogController : ILogController
                     }
                 }
             }
+#if NETSTANDARD1_3 || NETSTANDARD1_6
+            catch (Exception ex)
+            {
+                Trace.WriteLine(
+                    $"LogController: {ex.GetType().FullName}: {ex.Message}");
+                if (ex.GetType().FullName == "System.Threading.ThreadAbortException")
+                {
+                    // TAE is bad way, but someone are using it...
+                    break;
+                }
+            }
+#else
+            catch (ThreadAbortException ex)
+            {
+                Trace.WriteLine(
+                    $"LogController: {ex.GetType().FullName}: {ex.Message}");
+                // TAE is bad way, but someone are using it...
+                break;
+            }
             catch (Exception ex)
             {
                 Trace.WriteLine(
                     $"LogController: {ex.GetType().FullName}: {ex.Message}");
             }
+#endif
         }
 
         // Makes safer deadlocking when called Suspend() after shutdown.

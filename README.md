@@ -689,3 +689,13 @@ So we can use `ValueTask` conversion naturally on these environments.
 ## License
 
 Apache-v2.
+
+
+## History
+
+* 1.1.0:
+  * Added more scoping logger methods.
+  * Fixed blocking at forced shutdown with TAE from another thread.
+  * Added DisposeAsync on net45 or greater.
+* 1.0.0:
+  * Initial general release.
