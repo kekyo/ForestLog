@@ -39,7 +39,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Log(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         [InterpolatedStringHandlerArgument("logger", "logLevel")] LoggerInterpolatedStringHandler message,
         object? additionalData = null,
@@ -65,7 +65,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Log(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger", "logLevel")] LoggerInterpolatedStringHandler message,
@@ -91,7 +91,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Debug(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] DebugInterpolatedStringHandler message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
@@ -114,7 +114,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Debug(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] DebugInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
@@ -139,7 +139,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Trace(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] TraceInterpolatedStringHandler message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
@@ -162,7 +162,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Trace(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] TraceInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
@@ -187,7 +187,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Information(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] InformationInterpolatedStringHandler message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
@@ -210,7 +210,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Information(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] InformationInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
@@ -235,7 +235,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Warning(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] WarningInterpolatedStringHandler message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
@@ -258,7 +258,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Warning(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] WarningInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
@@ -283,7 +283,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Error(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] ErrorInterpolatedStringHandler message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
@@ -306,7 +306,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Error(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] ErrorInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,
@@ -331,7 +331,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Fatal(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] FatalInterpolatedStringHandler message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
@@ -354,7 +354,7 @@ public static class LoggerHandlerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Fatal(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] FatalInterpolatedStringHandler message,
         [CallerMemberName] string memberName = null!,

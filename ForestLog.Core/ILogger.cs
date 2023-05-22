@@ -69,5 +69,5 @@ public interface ILogger
     /// <returns>Logger interface</returns>
     /// <remarks>This is a low-level API interface.</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    ILogger NewScope();
+    ILogger? NewScope();
 }

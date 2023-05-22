@@ -26,7 +26,7 @@ public static class LoggerExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void Write(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         IFormattable message,
         object? additionalData,
@@ -34,7 +34,7 @@ public static class LoggerExtension
         string filePath,
         int line)
     {
-        if (logLevel >= logger.MinimumOutputLogLevel)
+        if (logLevel >= logger?.MinimumOutputLogLevel)
         {
             logger.Write(new(
                 logLevel,
@@ -48,14 +48,14 @@ public static class LoggerExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void Write(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         string memberName,
         string filePath,
         int line)
     {
-        if (logLevel >= logger.MinimumOutputLogLevel)
+        if (logLevel >= logger?.MinimumOutputLogLevel)
         {
             logger.Write(new(
                 logLevel,
@@ -69,7 +69,7 @@ public static class LoggerExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void Write(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         IFormattable message,
@@ -77,7 +77,7 @@ public static class LoggerExtension
         string filePath,
         int line)
     {
-        if (logLevel >= logger.MinimumOutputLogLevel)
+        if (logLevel >= logger?.MinimumOutputLogLevel)
         {
             logger.Write(new(
                 logLevel,
@@ -93,7 +93,7 @@ public static class LoggerExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static LoggerAwaitable WriteAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         IFormattable message,
         object? additionalData,
@@ -101,7 +101,7 @@ public static class LoggerExtension
         string filePath,
         int line,
         CancellationToken ct) =>
-        logLevel >= logger.MinimumOutputLogLevel ?
+        logLevel >= logger?.MinimumOutputLogLevel ?
             logger.WriteAsync(new(
                 logLevel,
                 message, additionalData, null,
@@ -113,14 +113,14 @@ public static class LoggerExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static LoggerAwaitable WriteAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         string memberName,
         string filePath,
         int line,
         CancellationToken ct) =>
-        logLevel >= logger.MinimumOutputLogLevel ?
+        logLevel >= logger?.MinimumOutputLogLevel ?
             logger.WriteAsync(new(
                 logLevel,
                 null, null, ex,
@@ -132,7 +132,7 @@ public static class LoggerExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static LoggerAwaitable WriteAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         IFormattable message,
@@ -140,7 +140,7 @@ public static class LoggerExtension
         string filePath,
         int line,
         CancellationToken ct) =>
-        logLevel >= logger.MinimumOutputLogLevel ?
+        logLevel >= logger?.MinimumOutputLogLevel ?
             logger.WriteAsync(new(
                 logLevel,
                 message, null, ex,

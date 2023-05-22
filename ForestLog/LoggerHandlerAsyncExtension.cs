@@ -39,7 +39,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         [InterpolatedStringHandlerArgument("logger", "logLevel")] LoggerInterpolatedStringHandler message,
         object? additionalData = null,
@@ -66,7 +66,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger", "logLevel")] LoggerInterpolatedStringHandler message,
@@ -94,7 +94,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] DebugInterpolatedStringHandler message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -119,7 +119,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] DebugInterpolatedStringHandler message,
         CancellationToken ct = default,
@@ -146,7 +146,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] TraceInterpolatedStringHandler message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -171,7 +171,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] DebugInterpolatedStringHandler message,
         CancellationToken ct = default,
@@ -198,7 +198,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] InformationInterpolatedStringHandler message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -223,7 +223,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] InformationInterpolatedStringHandler message,
         CancellationToken ct = default,
@@ -250,7 +250,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] WarningInterpolatedStringHandler message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -275,7 +275,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] WarningInterpolatedStringHandler message,
         CancellationToken ct = default,
@@ -302,7 +302,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] ErrorInterpolatedStringHandler message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -327,7 +327,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] ErrorInterpolatedStringHandler message,
         CancellationToken ct = default,
@@ -354,7 +354,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable FatalAsync(
-        this ILogger logger,
+        this ILogger? logger,
         [InterpolatedStringHandlerArgument("logger")] FatalInterpolatedStringHandler message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -379,7 +379,7 @@ public static class LoggerHandlerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable FatalAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [InterpolatedStringHandlerArgument("logger")] FatalInterpolatedStringHandler message,
         CancellationToken ct = default,
