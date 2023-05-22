@@ -29,6 +29,8 @@ Minimum packages:
 ForestLog is a log controller that outputs [Json Lines (`*.jsonl`) format.](https://jsonlines.org/)
 The format is a de-facto to use continuous data stream, easy-to-use and sufficient.
 
+### What is Json Lines format?
+
 Json Lines are line-separated Json format files that are easy to parse and suitable for recording continuous data.
 Since the data is same as Json, it can handle structured data sets.
 This means that arbitrary data can be added to the log output, and the log can be mechanically processed later.
@@ -47,6 +49,30 @@ And we took care not to make log file configuration management too complicated t
 It is also suitable for self-hosted applications, mobile applications,
 and the 3rd party binding makes it easy to connect to ASP.NET Core and MQTTnet.
 It would also be easy to combine with logging systems not included in the binding packages.
+
+### Features
+
+Focus on API comprehensiveness. It has the following features:
+
+* Arbitrary structured data can be added to the log in Json Lines format.
+  * Easily edit structured data with a text editor.
+  * Flexible log data extraction with `sed`, `awk`, `jq`, etc.
+* Flexible API interfaces for various log output situations:
+  * Simple and easy message output methods for commonly expected logger system.
+  * Explicit methods for different log levels and/or programmable log level methods.
+  * Scoped methods that allow the scope of the log to be defined at compile time.
+  * Methods that can log exception objects, including nested exceptions.
+  * Null support in the logger interface; null cases are ignored, so there is no need to implement a separate decision.
+  * Asynchronous versions of all of the above methods.
+* Programmable query interface for logging data sets available.
+* Log size limits and rotations can be specified.
+* Suspend and resume support for log controllers. Fits into the application lifecycle of mobile platforms.
+* Supports third-party bindings (ASP.NET Core, MQTTnet).
+* Fully asynchronous operation is ready.
+  * All log output is processed in the background.
+  * We can await for output expliticly log entries to log file.
+* Only contains 100% managed code. Independent of any external libraries other than the BCL and its compliant libraries.
+* Wide range for target platforms between .NET Framework 3.5 to .NET 7, and .NET Standards.
 
 ### Operating Environment
 
