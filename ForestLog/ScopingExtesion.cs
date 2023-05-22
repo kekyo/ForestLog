@@ -25,61 +25,75 @@ namespace ForestLog;
 public static class ScopingExtesion
 {
     private static void Run(
-        ILogger logger,
+        ILogger? logger,
         LogLevels logLevel,
         object?[]? arguments,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         string memberName,
         string filePath,
         int line)
     {
-        using var scopedLogger = new ScopedLogger(
-            logger, logLevel, memberName, filePath, line);
-        scopedLogger.Enter(arguments);
+        if (logger is { })
+        {
+            using var scopedLogger = new ScopedLogger(
+                logger, logLevel, memberName, filePath, line);
+            scopedLogger.Enter(arguments);
 
-        try
-        {
-            scopedAction(scopedLogger);
+            try
+            {
+                scopedAction(scopedLogger);
+            }
+            catch (Exception ex)
+            {
+                scopedLogger.Leave(ex);
+                throw;
+            }
         }
-        catch (Exception ex)
+        else
         {
-            scopedLogger.Leave(ex);
-            throw;
+            scopedAction(logger);
         }
     }
 
     private static T Run<T>(
-        ILogger logger,
+        ILogger? logger,
         LogLevels logLevel,
         object?[]? arguments,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         string memberName,
         string filePath,
         int line)
     {
-        using var scopedLogger = new ScopedLogger(
-            logger, logLevel, memberName, filePath, line);
-        scopedLogger.Enter(arguments);
-
-        T result;
-        try
+        if (logger is { })
         {
-            result = scopedAction(scopedLogger);
-        }
-        catch (Exception ex)
-        {
-            scopedLogger.Leave(ex);
-            throw;
-        }
+            using var scopedLogger = new ScopedLogger(
+                logger, logLevel, memberName, filePath, line);
+            scopedLogger.Enter(arguments);
 
-        return result;
+            T result;
+            try
+            {
+                result = scopedAction(scopedLogger);
+            }
+            catch (Exception ex)
+            {
+                scopedLogger.Leave(ex);
+                throw;
+            }
+
+            return result;
+        }
+        else
+        {
+            return scopedAction(logger);
+        }
     }
 
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     private static void Run(
-        ILogger logger,
+        ILogger? logger,
         LogLevels logLevel,
         object?[]? arguments,
         Action scopedAction,
@@ -92,7 +106,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     private static T Run<T>(
-        ILogger logger,
+        ILogger? logger,
         LogLevels logLevel,
         object?[]? arguments,
         Func<T> scopedAction,
@@ -113,7 +127,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void Scope(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -133,7 +147,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T Scope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -152,7 +166,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void Scope(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         LoggerScopeArguments arguments,
         Action scopedAction,
@@ -174,7 +188,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T Scope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         LoggerScopeArguments arguments,
         Func<T> scopedAction,
@@ -195,9 +209,9 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void Scope(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -215,9 +229,9 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T Scope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -234,10 +248,10 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void Scope(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         LoggerScopeArguments arguments,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -256,10 +270,10 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T Scope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         LoggerScopeArguments arguments,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -275,7 +289,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void DebugScope(
-        this ILogger logger,
+        this ILogger? logger,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -292,7 +306,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T DebugScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -308,7 +322,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void DebugScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -327,7 +341,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T DebugScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -345,8 +359,8 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void DebugScope(
-        this ILogger logger,
-        Action<ILogger> scopedAction,
+        this ILogger? logger,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -362,8 +376,8 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T DebugScope<T>(
-        this ILogger logger,
-        Func<ILogger, T> scopedAction,
+        this ILogger? logger,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -378,9 +392,9 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void DebugScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -397,9 +411,9 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T DebugScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -415,7 +429,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void TraceScope(
-        this ILogger logger,
+        this ILogger? logger,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -432,7 +446,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T TraceScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -448,7 +462,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void TraceScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -467,7 +481,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T TraceScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -485,8 +499,8 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void TraceScope(
-        this ILogger logger,
-        Action<ILogger> scopedAction,
+        this ILogger? logger,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -502,8 +516,8 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T TraceScope<T>(
-        this ILogger logger,
-        Func<ILogger, T> scopedAction,
+        this ILogger? logger,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -518,9 +532,9 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void TraceScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -537,9 +551,9 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T TraceScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -555,7 +569,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void InformationScope(
-        this ILogger logger,
+        this ILogger? logger,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -572,7 +586,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T InformationScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -588,7 +602,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void InformationScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -607,7 +621,7 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T InformationScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -625,8 +639,8 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void InformationScope(
-        this ILogger logger,
-        Action<ILogger> scopedAction,
+        this ILogger? logger,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -642,8 +656,8 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T InformationScope<T>(
-        this ILogger logger,
-        Func<ILogger, T> scopedAction,
+        this ILogger? logger,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -658,9 +672,9 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static void InformationScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -677,9 +691,9 @@ public static class ScopingExtesion
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
     public static T InformationScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -696,7 +710,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void WarningScope(
-        this ILogger logger,
+        this ILogger? logger,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -714,7 +728,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T WarningScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -731,7 +745,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void WarningScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -751,7 +765,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T WarningScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -770,8 +784,8 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void WarningScope(
-        this ILogger logger,
-        Action<ILogger> scopedAction,
+        this ILogger? logger,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -788,8 +802,8 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T WarningScope<T>(
-        this ILogger logger,
-        Func<ILogger, T> scopedAction,
+        this ILogger? logger,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -805,9 +819,9 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void WarningScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -825,9 +839,9 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T WarningScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -844,7 +858,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void ErrorScope(
-        this ILogger logger,
+        this ILogger? logger,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -862,7 +876,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T ErrorScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -879,7 +893,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void ErrorScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -899,7 +913,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T ErrorScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -918,8 +932,8 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void ErrorScope(
-        this ILogger logger,
-        Action<ILogger> scopedAction,
+        this ILogger? logger,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -936,8 +950,8 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T ErrorScope<T>(
-        this ILogger logger,
-        Func<ILogger, T> scopedAction,
+        this ILogger? logger,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -953,9 +967,9 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void ErrorScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -973,9 +987,9 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T ErrorScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -992,7 +1006,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void FatalScope(
-        this ILogger logger,
+        this ILogger? logger,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -1010,7 +1024,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T FatalScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -1027,7 +1041,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void FatalScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Action scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -1047,7 +1061,7 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T FatalScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         Func<T> scopedAction,
         [CallerMemberName] string memberName = null!,
@@ -1066,8 +1080,8 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void FatalScope(
-        this ILogger logger,
-        Action<ILogger> scopedAction,
+        this ILogger? logger,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -1084,8 +1098,8 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T FatalScope<T>(
-        this ILogger logger,
-        Func<ILogger, T> scopedAction,
+        this ILogger? logger,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -1101,9 +1115,9 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static void FatalScope(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Action<ILogger> scopedAction,
+        Action<ILogger?> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
@@ -1121,9 +1135,9 @@ public static class ScopingExtesion
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static T FatalScope<T>(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
-        Func<ILogger, T> scopedAction,
+        Func<ILogger?, T> scopedAction,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>

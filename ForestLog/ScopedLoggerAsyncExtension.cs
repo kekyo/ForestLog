@@ -33,7 +33,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> ScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -59,7 +59,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> ScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         LoggerScopeArguments arguments,
         CancellationToken ct = default,
@@ -87,7 +87,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> DebugScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -111,7 +111,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> DebugScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -138,7 +138,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> TraceScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -162,7 +162,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> TraceScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -189,7 +189,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> InformationScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -213,7 +213,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> InformationScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -240,7 +240,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> WarningScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -264,7 +264,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> WarningScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -291,7 +291,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> ErrorScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -315,7 +315,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> ErrorScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -342,7 +342,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> FatalScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
@@ -366,7 +366,7 @@ public static class ScopedLoggerAsyncExtension
     [DebuggerStepperBoundary]
 #endif
     public static async LoggerAwaitable<ScopedLogger> FatalScopeAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LoggerScopeArguments arguments,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,

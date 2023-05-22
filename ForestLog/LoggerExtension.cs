@@ -38,14 +38,14 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Log(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             logLevel,
             message, additionalData,
             memberName, filePath, line);
@@ -63,13 +63,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Log(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             logLevel,
             ex,
             memberName, filePath, line);
@@ -88,14 +88,14 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Log(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         IFormattable message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             logLevel,
             ex, message,
             memberName, filePath, line);
@@ -114,13 +114,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Debug(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Debug,
             message, additionalData,
             memberName, filePath, line);
@@ -136,12 +136,12 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Debug(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Debug,
             ex,
             memberName, filePath, line);
@@ -158,13 +158,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Debug(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Debug,
             ex, message,
             memberName, filePath, line);
@@ -183,13 +183,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Trace(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Trace,
             message, additionalData,
             memberName, filePath, line);
@@ -205,12 +205,12 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Trace(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Trace,
             ex,
             memberName, filePath, line);
@@ -227,13 +227,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Trace(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Trace,
             ex, message,
             memberName, filePath, line);
@@ -252,13 +252,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Information(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Information, 
             message, additionalData,
             memberName, filePath, line);
@@ -274,12 +274,12 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Information(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Information,
             ex,
             memberName, filePath, line);
@@ -296,13 +296,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Information(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Information,
             ex, message,
             memberName, filePath, line);
@@ -321,13 +321,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Warning(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Warning,
             message, additionalData,
             memberName, filePath, line);
@@ -343,12 +343,12 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Warning(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Warning,
             ex,
             memberName, filePath, line);
@@ -365,13 +365,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Warning(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Warning,
             ex, message,
             memberName, filePath, line);
@@ -390,13 +390,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Error(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Error,
             message, additionalData,
             memberName, filePath, line);
@@ -412,12 +412,12 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Error(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Error,
             ex,
             memberName, filePath, line);
@@ -434,13 +434,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Error(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Error,
             ex, message,
             memberName, filePath, line);
@@ -459,13 +459,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Fatal(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Fatal,
             message, additionalData,
             memberName, filePath, line);
@@ -481,12 +481,12 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Fatal(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Fatal,
             ex,
             memberName, filePath, line);
@@ -503,13 +503,13 @@ public static class LoggerExtension
     [DebuggerStepperBoundary]
 #endif
     public static void Fatal(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,
         [CallerLineNumber] int line = 0) =>
-        logger.Write(
+        logger?.Write(
             LogLevels.Fatal,
             ex, message,
             memberName, filePath, line);

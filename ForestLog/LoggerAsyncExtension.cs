@@ -39,7 +39,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         IFormattable message,
         object? additionalData = null,
@@ -65,7 +65,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         CancellationToken ct = default,
@@ -91,7 +91,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable LogAsync(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         Exception ex,
         IFormattable message,
@@ -119,7 +119,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -143,7 +143,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -167,7 +167,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable DebugAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         CancellationToken ct = default,
@@ -194,7 +194,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -218,7 +218,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -242,7 +242,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable TraceAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         CancellationToken ct = default,
@@ -269,7 +269,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -293,7 +293,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -317,7 +317,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable InformationAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         CancellationToken ct = default,
@@ -344,7 +344,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -368,7 +368,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -392,7 +392,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable WarningAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         CancellationToken ct = default,
@@ -419,7 +419,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -443,7 +443,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -467,7 +467,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable ErrorAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         CancellationToken ct = default,
@@ -494,7 +494,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable FatalAsync(
-        this ILogger logger,
+        this ILogger? logger,
         IFormattable message,
         object? additionalData = null,
         CancellationToken ct = default,
@@ -518,7 +518,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable FatalAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         CancellationToken ct = default,
         [CallerMemberName] string memberName = null!,
@@ -542,7 +542,7 @@ public static class LoggerAsyncExtension
 #endif
     [DebuggerStepThrough]
     public static LoggerAwaitable FatalAsync(
-        this ILogger logger,
+        this ILogger? logger,
         Exception ex,
         IFormattable message,
         CancellationToken ct = default,

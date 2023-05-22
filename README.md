@@ -693,6 +693,8 @@ Apache-v2.
 
 ## History
 
+* 1.2.0:
+  * Supported null logger interface and will ignore log writing when not avoids null checking.
 * 1.1.0:
   * Added more scoping logger methods.
   * Fixed blocking at forced shutdown with TAE from another thread.

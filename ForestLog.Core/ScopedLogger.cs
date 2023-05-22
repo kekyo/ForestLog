@@ -24,7 +24,7 @@ namespace ForestLog;
 [DebuggerStepThrough]
 public readonly struct ScopedLogger : IScopedLogger
 {
-    private readonly ILogger logger;
+    private readonly ILogger? logger;
     private readonly LogLevels logLevel;
     private readonly string memberName;
     private readonly string filePath;
@@ -42,13 +42,13 @@ public readonly struct ScopedLogger : IScopedLogger
     /// <remarks>This is a low-level API interface.</remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ScopedLogger(
-        ILogger parentLogger,
+        ILogger? parentLogger,
         LogLevels logLevel,
         string memberName,
         string filePath,
         int line)
     {
-        this.logger = parentLogger.NewScope();
+        this.logger = parentLogger?.NewScope();
         this.logLevel = logLevel;
         this.memberName = memberName;
         this.filePath = filePath;
@@ -118,7 +118,7 @@ public readonly struct ScopedLogger : IScopedLogger
     public void Enter(
         object?[]? arguments)
     {
-        if (this.logLevel >= this.logger.MinimumOutputLogLevel)
+        if (this.logLevel >= this.logger?.MinimumOutputLogLevel)
         {
             this.logger.Write(
                 this.logLevel, $"Enter.", arguments,
@@ -144,7 +144,7 @@ public readonly struct ScopedLogger : IScopedLogger
         object?[]? arguments,
         CancellationToken ct)
     {
-        if (this.logLevel >= this.logger.MinimumOutputLogLevel)
+        if (this.logLevel >= this.logger?.MinimumOutputLogLevel)
         {
             await this.logger.WriteAsync(
                 this.logLevel, $"Enter.", arguments,
@@ -163,7 +163,7 @@ public readonly struct ScopedLogger : IScopedLogger
 #endif
     public void Leave(Exception? ex)
     {
-        if (this.sw.IsRunning)
+        if (this.logger is { } && this.sw.IsRunning)
         {
             bool isRunning;
             lock (this.sw)
@@ -205,7 +205,7 @@ public readonly struct ScopedLogger : IScopedLogger
 #endif
     public LoggerAwaitable LeaveAsync(Exception? ex, CancellationToken ct)
     {
-        if (this.sw.IsRunning)
+        if (this.logger is { } && this.sw.IsRunning)
         {
             bool isRunning;
             lock (this.sw)
@@ -247,7 +247,7 @@ public readonly struct ScopedLogger : IScopedLogger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        get => this.logger.Facility;
+        get => this.logger?.Facility ?? "(Unknown)";
     }
 
     /// <summary>
@@ -258,7 +258,7 @@ public readonly struct ScopedLogger : IScopedLogger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        get => this.logger.MinimumOutputLogLevel;
+        get => this.logger?.MinimumOutputLogLevel ?? LogLevels.Ignore;
     }
 
     /// <summary>
@@ -269,7 +269,7 @@ public readonly struct ScopedLogger : IScopedLogger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        get => this.logger.ScopeId;
+        get => this.logger?.ScopeId ?? -1;
     }
 
     /// <summary>
@@ -280,7 +280,7 @@ public readonly struct ScopedLogger : IScopedLogger
 #if NET45_OR_GREATER || NETSTANDARD || NETCOREAPP
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-        get => this.logger.ParentScopeId;
+        get => this.logger?.ParentScopeId ?? -1;
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -299,7 +299,7 @@ public readonly struct ScopedLogger : IScopedLogger
 #endif
     public void Write(
         WaitingLogEntry logEntry) =>
-        this.logger.Write(logEntry);
+        this.logger?.Write(logEntry);
 
     /// <summary>
     /// Write a log entry.
@@ -317,7 +317,7 @@ public readonly struct ScopedLogger : IScopedLogger
     public LoggerAwaitable WriteAsync(
         WaitingLogEntry logEntry,
         CancellationToken ct) =>
-        this.logger.WriteAsync(logEntry, ct);
+        this.logger?.WriteAsync(logEntry, ct) ?? default;
 
     /// <summary>
     /// Create new scope logger interface.
@@ -331,11 +331,11 @@ public readonly struct ScopedLogger : IScopedLogger
 #if NETFRAMEWORK || NETCOREAPP || NETSTANDARD2_0_OR_GREATER
     [DebuggerStepperBoundary]
 #endif
-    public ILogger NewScope() =>
-        this.logger.NewScope();
+    public ILogger? NewScope() =>
+        this.logger?.NewScope();
 
     //////////////////////////////////////////////////////////////////////
 
     public override string ToString() =>
-        $"Scoped: Facility={this.logger.Facility}, Id={this.ScopeId}, ParentId={this.logger.ParentScopeId}";
+        $"Scoped: Facility={this.Facility}, Id={this.ScopeId}, ParentId={this.ParentScopeId}";
 }

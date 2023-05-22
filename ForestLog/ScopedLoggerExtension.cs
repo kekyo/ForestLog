@@ -33,7 +33,7 @@ public static class ScopedLoggerExtension
 #endif
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     public static ScopedLogger Scope(
-        this ILogger logger,
+        this ILogger? logger,
         LogLevels logLevel,
         [CallerMemberName] string memberName = null!,
         [CallerFilePath] string filePath = null!,

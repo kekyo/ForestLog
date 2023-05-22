@@ -10,7 +10,6 @@
 namespace ForestLog
 
 open ForestLog.Infrastructure
-open ForestLog.Internal
 open System
 open System.ComponentModel
 open System.Diagnostics
@@ -41,7 +40,9 @@ module public LoggerExtension =
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(new WaitingLogEntry(
+            match logger with
+            | null -> ()
+            | _ -> logger.Write(new WaitingLogEntry(
                 logLevel,
                 message,
                 additionalData,
@@ -63,7 +64,9 @@ module public LoggerExtension =
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(new WaitingLogEntry(
+            match logger with
+            | null -> ()
+            | _ -> logger.Write(new WaitingLogEntry(
                 logLevel,
                 null,
                 null,
@@ -87,7 +90,9 @@ module public LoggerExtension =
             [<CallerMemberName; Optional; DefaultParameterValue(null)>] memberName: string,
             [<CallerFilePath; Optional; DefaultParameterValue(null)>] filePath: string,
             [<CallerLineNumber; Optional; DefaultParameterValue(0)>] line: int) =
-            logger.Write(new WaitingLogEntry(
+            match logger with
+            | null -> ()
+            | _ -> logger.Write(new WaitingLogEntry(
                 logLevel,
                 message,
                 null,
